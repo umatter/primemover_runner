@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "global.mode",
+  "type": "java.lang.String",
+  "description": "Running mode of the application. DEBUG or PROD"
+}]}
