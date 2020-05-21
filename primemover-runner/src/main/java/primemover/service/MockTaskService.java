@@ -3,7 +3,7 @@ package primemover.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import primemover.agent.Agent;
+import primemover.model.Agent;
 
 public class MockTaskService implements ITaskService {
 

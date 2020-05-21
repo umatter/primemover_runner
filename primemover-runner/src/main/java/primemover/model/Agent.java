@@ -1,4 +1,4 @@
-package primemover.agent;
+package primemover.model;
 
 public class Agent {
 	private int id;

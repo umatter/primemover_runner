@@ -2,7 +2,7 @@ package primemover.service;
 
 import java.util.List;
 
-import primemover.agent.Agent;
+import primemover.model.Agent;
 
 public interface ITaskService {
 
