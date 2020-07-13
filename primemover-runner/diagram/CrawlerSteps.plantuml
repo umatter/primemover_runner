@@ -1,0 +1,52 @@
+@startuml
+
+participant Configurator
+participant Runner
+collections Crawler
+collections Recorder
+collections Agent
+database Api
+
+== Daily Setup ==
+
+... every day at Midnight ...
+
+Configurator -> Configurator: Defining daily tasks incl. Settings (JSON)
+Configurator -> Api: Store input
+
+... sleeping ...
+
+== Supervising ==
+
+... every Minute ...
+Runner -> Runner: Waking up
+note left: Wake up every x - Minutes
+Runner -> Api: grab current tasks
+Api -> Runner:
+Runner -> Runner: Checking for pending tasks ???
+create Crawler
+Runner -> Crawler: init Crawler
+
+== Initialization ==
+
+create Recorder
+Crawler -> Recorder: Init recording
+Recorder -> Crawler
+|||
+Crawler -> Api: Reading settings
+Api -> Crawler:
+Crawler -> Crawler: Init Agent incl. Settings
+Crawler -> Crawler: Init Proxy
+== Doing ==
+create Agent
+Crawler -> Agent: Run Tasklist
+Recorder --> Crawler: Recording data
+Agent -> Crawler:
+Crawler -> Api: Store recorded data
+Api -> Crawler:
+Crawler -> Api: Store agent data incl. Settings
+Api -> Crawler:
+Crawler -> Api: Write job state
+Api -> Crawler:
+
+@enduml

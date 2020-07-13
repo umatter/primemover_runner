@@ -1,15 +1,25 @@
 package primemover.model;
 
 public class Agent {
-	private int id;
+	
+	public enum AgentType {
+		CHROME,
+		FIREFOX
+	}
+	
+	private Long id;
+	private AgentType type;
 	private String name;
 	private String description;
 	
+	public AgentType getType() {
+		return type;
+	}
 	
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public String getName() {
@@ -23,6 +33,18 @@ public class Agent {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Agent(Long id, AgentType type, String name, String description) {
+		super();
+		this.id = id;
+		this.type = type;
+		this.name = name;
+		this.description = description;
+	}
+
+	public Agent() {
+		super();
 	}
 	
 	

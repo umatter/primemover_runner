@@ -1,5 +1,17 @@
-{"properties": [{
-  "name": "global.mode",
-  "type": "java.lang.String",
-  "description": "Running mode of the application. DEBUG or PROD"
-}]}
+{"properties": [
+  {
+    "name": "global.mode",
+    "type": "java.lang.String",
+    "description": "Running mode of the application. DEBUG or PROD"
+  },
+  {
+    "name": "export.FileTargetFolder",
+    "type": "java.lang.String",
+    "description": "Folder where files are stored locally. Fixed or relative paths are supported"
+  },
+  {
+    "name": "runner.MaxParallelExecution",
+    "type": "java.lang.String",
+    "description": "Number of max parallel running job-lists"
+  }
+]}
