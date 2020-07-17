@@ -15,8 +15,6 @@ public class Waiter {
 	 * @param timeout in seconds for max wait
 	 */
     public static void waitUntilJSReady(WebDriver driver, Integer timeout) {
-        WebDriverWait wait = new WebDriverWait(driver, timeout);
-
         //Wait for Javascript to load
         ExpectedCondition<Boolean> jsLoad = jsExec -> ((JavascriptExecutor) driver)
                 .executeScript("return document.readyState").toString().equals("complete");
@@ -28,6 +26,7 @@ public class Waiter {
         if(!jsReady) {
             System.out.println("JS in NOT Ready!");
             //Wait for Javascript to load
+            WebDriverWait wait = new WebDriverWait(driver, timeout);
             wait.until(jsLoad);
         } else {
             System.out.println("JS is Ready!");

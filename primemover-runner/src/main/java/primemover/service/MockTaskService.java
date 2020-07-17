@@ -1,5 +1,6 @@
 package primemover.service;
 
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.openqa.selenium.WebDriver;
@@ -92,6 +93,13 @@ public class MockTaskService implements ITaskService {
 		case CHROME:
 			ChromeOptions chromeOptions = new ChromeOptions();
 			chromeOptions.merge(capabilities);
+			chromeOptions.addArguments("--start-maximized");
+			
+			// make navigator.webriver disappear
+			// see https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec
+			chromeOptions.addArguments("--disable-blink-features");
+			chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+			
 			driver = new ChromeDriver(chromeOptions);
 			
 			break;

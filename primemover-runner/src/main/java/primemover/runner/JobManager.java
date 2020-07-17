@@ -11,8 +11,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import primemover.model.Agent;
 import primemover.model.Agent.AgentType;
 import primemover.model.Crawler;
+import primemover.model.DecisionType;
+import primemover.model.EnterTextField;
 import primemover.model.Joblist;
+import primemover.model.ScrollJob;
+import primemover.model.SelectorBaseJob;
+import primemover.model.SelectorType;
+import primemover.model.SingleSelectUrl;
 import primemover.model.VisitJob;
+import primemover.model.WaitJob;
 import primemover.service.ITaskService;
 import primemover.service.TaskServiceFactory;
 
@@ -29,18 +36,46 @@ public class JobManager {
 		executorService = Executors.newFixedThreadPool(maxThreads);
 	}
 
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 90000)
 	public void run() {
 		// Basic settings
-		Agent agent = new Agent(1l, AgentType.CHROME, "Firefox", "Firefox");
+		Agent agent = new Agent(1l, AgentType.CHROME, "Chrome", "Chrome");
 		Crawler crawler = new Crawler();
 		crawler.setAgent(agent);
 
-		// job
-		VisitJob job = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		Joblist jobs = new Joblist();
-		jobs.appendJob(job);
-
+		
+		// job
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		jobs.appendJob(visitJob);
+		
+		SelectorBaseJob enterJob = new EnterTextField(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
+		jobs.appendJob(enterJob);
+		
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);
+				
+		SingleSelectUrl singleSelectUrlJob = new SingleSelectUrl(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.FIRST);
+		jobs.appendJob(singleSelectUrlJob);
+		
+		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);
+		
+		visitJob = new VisitJob(1l, "visit nzz.ch", "visit google", "https://www.nzz.ch");
+		jobs.appendJob(visitJob);
+		
+		waitJob = new WaitJob(1l, "wait", "wait", 5);
+		jobs.appendJob(waitJob);
+		
+		ScrollJob scrollJob = new ScrollJob(1l, "scroll", "scroll 50% down", ScrollJob.Direction.DOWN, 0, 60);
+		jobs.appendJob(scrollJob);
+		
+		scrollJob = new ScrollJob(1l, "scroll", "scroll 15% up", ScrollJob.Direction.UP, 0, 15);
+		jobs.appendJob(scrollJob);
+		
+		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);
+		
 		// running		
 		JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(), crawler, jobs);
 		executorService.execute(runner);
