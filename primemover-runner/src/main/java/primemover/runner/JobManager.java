@@ -46,13 +46,20 @@ public class JobManager {
 		Joblist jobs = new Joblist();
 		
 		// job
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		
+		VisitJob visitJob = new VisitJob(1l, "visit foxnews", "visit foxnews", "https://www.foxnews.com/");
+		//jobs.appendJob(visitJob);
+		
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 15);
+		//jobs.appendJob(waitJob);
+			
+		visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
 		
 		SelectorBaseJob enterJob = new EnterTextField(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
 		jobs.appendJob(enterJob);
 		
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(1l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 				
 		SingleSelectUrl singleSelectUrlJob = new SingleSelectUrl(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.FIRST);

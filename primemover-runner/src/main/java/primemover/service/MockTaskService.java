@@ -1,6 +1,5 @@
 package primemover.service;
 
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.openqa.selenium.WebDriver;
