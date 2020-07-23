@@ -1,5 +1,7 @@
 package primemover.service;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +13,16 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import primemover.model.AssertElementExistsJob;
+import primemover.model.AssertPageLoadedJob;
+import primemover.model.AssertScrolledMaxJob;
 import primemover.model.EnterTextField;
 import primemover.model.IJob;
 import primemover.model.ScrollJob;
 import primemover.model.SingleSelectUrl;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
+import selenium.util.Page;
 import selenium.util.Scrolling;
 import selenium.util.Selecting;
 import selenium.util.Waiter;
@@ -112,6 +118,47 @@ public class RunJobHandler {
 				}
 
 				selenium.util.Waiter.waitUntilJSReady(driver, 120);
+			}
+		});
+		
+		dispatch.put(AssertPageLoadedJob.class, new Handler() {
+			public void handle(WebDriver driver, IJob job) {
+				// AssertPageLoadedJob typedJob = (AssertPageLoadedJob) job;
+
+				Boolean isReady = Page.isPageReady(driver);
+				assertTrue("page is not ready", isReady);
+			}
+		});
+		
+		dispatch.put(AssertScrolledMaxJob.class, new Handler() {
+			public void handle(WebDriver driver, IJob job) {
+				AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) job;
+				Boolean res;
+				
+				switch (typedJob.getDirection()) {
+				case DOWN:
+					res = Scrolling.isScrolledToBootom(driver);
+					assertTrue("page is not scrolled to bottom", res);
+					break;
+				case UP:
+					res = Scrolling.isScrolledToTop(driver);
+					assertTrue("page is not scrolled to Top", res);
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented yet");
+				}
+			}
+		});
+		
+		
+		dispatch.put(AssertElementExistsJob.class, new Handler() {
+			public void handle(WebDriver driver, IJob job) {
+				AssertElementExistsJob typedJob = (AssertElementExistsJob) job;
+				
+				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				assertTrue("element(s) not found", elements.size() > 0);
 			}
 		});
 	}

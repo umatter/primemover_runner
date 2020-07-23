@@ -38,6 +38,7 @@ public class TestConfig {
 		return new TaskServiceFactory();
 	}
 	
+	/*
 	@Bean(name="jobmanager", initMethod = "setup")
 	JobManager getManager() {
 		JobManager jobManager = new JobManager();
@@ -45,4 +46,5 @@ public class TestConfig {
 		// jobManager will be called with spring's scheduler
 		return jobManager;		
 	}
+	*/
 }

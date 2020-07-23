@@ -41,7 +41,7 @@ public class MockTaskService implements ITaskService {
 		data.setHar(har);
 		
 		// capture page data
-		data.setPageSource(selenium.util.HTML.getBodyeFromJavascript(driver));
+		data.setPageSource(selenium.util.Page.getBodyeFromJavascript(driver));
 		
 		// capture cookies, localstorage, etc.
 		data.setCookies(driver.manage().getCookies());

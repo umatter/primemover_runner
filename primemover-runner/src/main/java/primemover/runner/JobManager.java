@@ -14,6 +14,7 @@ import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.EnterTextField;
 import primemover.model.Joblist;
+import primemover.model.ScrollDirection;
 import primemover.model.ScrollJob;
 import primemover.model.SelectorBaseJob;
 import primemover.model.SelectorType;
@@ -74,10 +75,10 @@ public class JobManager {
 		waitJob = new WaitJob(1l, "wait", "wait", 5);
 		jobs.appendJob(waitJob);
 		
-		ScrollJob scrollJob = new ScrollJob(1l, "scroll", "scroll 50% down", ScrollJob.Direction.DOWN, 0, 60);
+		ScrollJob scrollJob = new ScrollJob(1l, "scroll", "scroll 50% down", ScrollDirection.DOWN, 0, 60);
 		jobs.appendJob(scrollJob);
 		
-		scrollJob = new ScrollJob(1l, "scroll", "scroll 15% up", ScrollJob.Direction.UP, 0, 15);
+		scrollJob = new ScrollJob(1l, "scroll", "scroll 15% up", ScrollDirection.UP, 0, 15);
 		jobs.appendJob(scrollJob);
 		
 		waitJob = new WaitJob(1l, "wait", "wait", 10);

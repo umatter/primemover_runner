@@ -3,7 +3,7 @@ package selenium.util;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
-public class HTML {
+public class Page {
 
 	public static String getPageSourceFromDriver(WebDriver driver) {
 		return driver.getPageSource();
@@ -16,6 +16,12 @@ public class HTML {
 	public static String getBodyeFromJavascript(WebDriver driver) {
 		return ((JavascriptExecutor) driver).executeScript("return document.body.outerHTML;").toString();
 	}
+	
+	
+	public static Boolean isPageReady(WebDriver driver) {
+		return ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete");
+	}
+	
 	
 	
 	/*

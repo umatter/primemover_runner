@@ -2,26 +2,15 @@ package primemover.model;
 
 public class ScrollJob extends BaseJob {
 	
-	public enum Direction {
-		UP(1),
-		DOWN(2);
-		
-		private final int code;
-
-	    private Direction(int code) {
-	        this.code = code;
-	    }
-	}
-	
-	private Direction direction;
+	private ScrollDirection direction;
 	// TODO
 	private Integer duration;
 	private Integer length;
 	
-	public Direction getDirection() {
+	public ScrollDirection getDirection() {
 		return direction;
 	}
-	public void setDirection(Direction direction) {
+	public void setDirection(ScrollDirection direction) {
 		this.direction = direction;
 	}
 	public Integer getDuration() {
@@ -38,7 +27,7 @@ public class ScrollJob extends BaseJob {
 		this.length = length;
 	}
 	
-	public ScrollJob(Long id, String reference, String title, Direction direction, Integer duration, Integer length) {
+	public ScrollJob(Long id, String reference, String title, ScrollDirection direction, Integer duration, Integer length) {
 		super(id, reference, title);
 		this.direction = direction;
 		this.duration = duration;
