@@ -15,6 +15,7 @@ import net.lightbody.bmp.core.har.Har;
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;
+import primemover.model.IProxy;
 import primemover.model.Joblist;
 
 public class MockTaskService implements ITaskService {
@@ -82,9 +83,15 @@ public class MockTaskService implements ITaskService {
 		capabilities.setCapability (CapabilityType.ACCEPT_SSL_CERTS, true);
 		capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 		
-		// create a recording proxy
+		// create a recording proxy. Check also for any additional proxy
 		recorder = new RecordingProxy();
-		recorder.setup();
+		
+		IProxy crawlerProxy = crawler.getProxy();
+		if (crawlerProxy != null) {
+			recorder.setup(crawlerProxy);
+		} else {
+			recorder.setup();
+		}
 		recorder.applyProxy(capabilities);
 
 		// create driver		

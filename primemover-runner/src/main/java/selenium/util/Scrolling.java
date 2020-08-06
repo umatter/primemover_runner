@@ -66,6 +66,19 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 		System.out.println("Scrolling down with result: " + res);
 	}
 	
+	public static void scrollDownForDurationByJavascript(WebDriver driver, Integer seconds) {
+		JavascriptExecutor jse = (JavascriptExecutor) driver;
+		
+		
+	}
+	
+	public static void scrollUpForDurationByJavascript(WebDriver driver, Integer seconds) {
+		JavascriptExecutor jse = (JavascriptExecutor) driver;
+		
+		
+	}
+	
+	
 	public static void scrollUpByJavascript(WebDriver driver, Integer length) {
 		JavascriptExecutor jse = (JavascriptExecutor)driver;
    	 

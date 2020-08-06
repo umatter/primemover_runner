@@ -8,6 +8,7 @@ package primemover.model;
  */
 public interface IProxy {	
 	public String getUrl();
+	public Integer getPort();
 	public String getUsername();
 	public String getPassword();
 }

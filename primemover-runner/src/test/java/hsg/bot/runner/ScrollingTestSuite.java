@@ -12,7 +12,7 @@ import primemover.model.DecisionType;
 import primemover.model.EnterTextField;
 import primemover.model.Joblist;
 import primemover.model.ScrollDirection;
-import primemover.model.ScrollJob;
+import primemover.model.ScrollByLengthJob;
 import primemover.model.SelectorBaseJob;
 import primemover.model.SelectorType;
 import primemover.model.SingleSelectUrl;
@@ -63,7 +63,7 @@ class ScrollingTestSuite {
 		jobs.appendJob(pageLoadedJob);
 		
 		// scroll down
-		ScrollJob scrollJob = new ScrollJob(1l, "scroll", "scroll 100% down", ScrollDirection.DOWN, 0, 100);
+		ScrollByLengthJob scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 100% down", ScrollDirection.DOWN, 100);
 		jobs.appendJob(scrollJob);
 		
 		// Assert page loaded
