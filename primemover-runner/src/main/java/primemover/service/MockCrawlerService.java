@@ -59,7 +59,7 @@ public class MockCrawlerService implements ICrawlerService {
 	}
 
 	@Override
-	public Boolean writeJobData(Long jobId, String description, String mimeType, String fileContent) {
+	public Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent) {
 		return writeResult;
 	}
 

@@ -38,12 +38,13 @@ public class CrawlerService implements ICrawlerService {
 	 */
 	@Override
 	public List<Pair<Crawler, Joblist>> getCurrentTasks() {
-		CrawlerResult apiRes = restTemplate.getForObject("https://siaw.primemover.example/api/v1/crawlers", CrawlerResult.class);	
+		logger.debug("loading jobs");
+		CrawlerResult apiRes = restTemplate.getForObject("https://siaw.primemover.example/api/v1/crawlers", CrawlerResult.class);
 		return PrimemoverApiConverter.convertFromApi(apiRes);
 	}
 	
 	
-	public Boolean writeJobData(Long jobId, String description, String mimeType, String fileContent) {
+	public Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent) {
 		HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_JSON);
 	    JSONObject data = new JSONObject();
@@ -51,14 +52,16 @@ public class CrawlerService implements ICrawlerService {
 	    data.put("description", description);
 	    data.put("filecontent", fileContent);
 	    data.put("mimetype", mimeType);
+	    data.put("filename", filename);
 	    
 	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 	  	   
 	    try {
+	    	
 	    	ResponseEntity<String> response = restTemplate.postForEntity("https://siaw.primemover.example/api/v1/reports", request, String.class);
 		    
 	    	 if (response.getStatusCode().is2xxSuccessful()) {
-	 	    	logger.info("stored data to server for " + jobId);
+	 	    	logger.info("stored data to server for job " + jobId);
 	 	    	return true;
 	 	    } else {
 	 	    	logger.warn("failure storing data to server for job " + jobId);

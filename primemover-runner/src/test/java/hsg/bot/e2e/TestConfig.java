@@ -5,6 +5,9 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.runner.IJobManager;
+import primemover.runner.JobManager;
+import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
@@ -13,6 +16,10 @@ import primemover.service.IStorageService;
 
 @SpringBootConfiguration
 public class TestConfig {
+	@Bean(name="jobmanager", initMethod = "setup")
+	MockJobManager getManager() {
+		return new MockJobManager();	
+	}
 	
 	@Bean(name="storageService")
 	IStorageService getStorageService() {

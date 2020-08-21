@@ -6,6 +6,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.runner.IJobManager;
 import primemover.runner.ITaskOperator;
 import primemover.runner.JobManager;
 import primemover.runner.MockTaskOperator;
@@ -56,8 +57,8 @@ public class Config {
 	}
 	
 	@Bean(name="jobmanager", initMethod = "setup")
-	JobManager getManager() {
-		JobManager jobManager = new JobManager();
+	IJobManager getManager() {
+		IJobManager jobManager = new JobManager();
 	
 		// jobManager will be called with spring's scheduler
 		return jobManager;		

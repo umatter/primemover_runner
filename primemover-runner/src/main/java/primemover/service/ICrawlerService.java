@@ -11,6 +11,6 @@ import primemover.model.Joblist;
 public interface ICrawlerService {
 
 	List<Pair<Crawler, Joblist>> getCurrentTasks();
-	Boolean writeJobData(Long jobId, String description, String mimeType, String fileContent);
+	Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent);
 
 }

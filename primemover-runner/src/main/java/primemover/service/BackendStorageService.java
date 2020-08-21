@@ -1,10 +1,14 @@
 package primemover.service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -21,6 +25,10 @@ import primemover.model.IJob;
 public class BackendStorageService implements IStorageService {
 	private static Logger logger = LogManager.getLogger(BackendStorageService.class);
 	
+	@Value("${export.FileTargetFolder}")
+	private String targetFolder;
+	private Path localDir = Paths.get(".");		
+		
 
 	@Autowired
 	private ICrawlerService crawlerService;
@@ -126,11 +134,24 @@ public class BackendStorageService implements IStorageService {
 			zipOut.write(tmpByte);
 			
 			// make sure everything is written
+			zipOut.finish();
 			zipOut.flush();
 			
-			String zipContent = os.toString();
+			byte[] bytesEncoded = Base64.getEncoder().encode(os.toByteArray());
+			String content = new String(bytesEncoded);
 			
-			return crawlerService.writeJobData(job.getId(), "recording result", "application/zip", zipContent);
+			/*
+			// create a folder for the job
+			Path jobFolder = Paths.get(targetFolder + "/" + job.getId().toString() + "/");
+			jobFolder = localDir.resolve(jobFolder);
+			jobFolder.toFile().mkdirs();
+			
+			try (FileOutputStream fos = new FileOutputStream(jobFolder.toString() + "/" + filename)) {
+				fos.write(os.toByteArray());
+			}
+			*/
+			
+			return crawlerService.writeJobData(job.getId(), filename, "recording results for job " + job.getId(), "application/zip", content);
 			
 		} catch (IOException e) {
 			logger.warn("Error creating jobdata", e);

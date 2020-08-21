@@ -9,19 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import primemover.model.BasicAgent;
-import primemover.model.AgentType;
-import primemover.model.Crawler;
-import primemover.model.DecisionType;
-import primemover.model.EnterTextFieldJob;
-import primemover.model.IAgent;
 import primemover.model.Joblist;
-import primemover.model.SelectorBaseJob;
-import primemover.model.SelectorType;
-import primemover.model.SingleSelectUrlJob;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
+import primemover.model.Crawler;
 import primemover.runner.ITaskOperator;
+import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.ICrawlerService;
 
@@ -32,6 +23,9 @@ class LoadTasksFromServiceAndRunJobs {
 	private TaskOperatorFactory operatorFactory;
 	
 	@Autowired
+	private MockJobManager jobManager;
+	
+	@Autowired
 	private ICrawlerService crawlerService;
 	
 	@BeforeEach
@@ -40,7 +34,7 @@ class LoadTasksFromServiceAndRunJobs {
 	}
 
 	@Test
-	void runGoogleSearchSelectFirst() {
+	void LoadTasksAndWriteJobData() {
 		// get the jobList for each Crawler
 		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
 		
@@ -52,6 +46,26 @@ class LoadTasksFromServiceAndRunJobs {
 			service.tearDown();
 		}
 	}
+	
+	/*
+	@Test
+	void LoadTasksAndRunWithJobManager() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
+		
+		// Startzeiten setzen
+		
+		
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			jobManager.addTask(task.getKey(), task.getRight());
+		}
+		
+		jobManager.run();
+		
+		// Missing wait...
+	}
+	*/
 	
 	@AfterEach
     public void tearDown() {

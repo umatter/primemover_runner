@@ -23,7 +23,7 @@ import primemover.model.SingleSelectUrlJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
 
-public class JobManager {
+public class JobManager implements IJobManager {
 	@Value("${runner.MaxParallelExecution}")
 	private Integer maxThreads; // maximum parallel executions of joblists
 	
@@ -32,10 +32,18 @@ public class JobManager {
 	@Autowired
 	TaskOperatorFactory taskServiceFactory;
 	
+	/* (non-Javadoc)
+	 * @see primemover.runner.IJobManager#setup()
+	 */
+	@Override
 	public void setup() {
 		executorService = Executors.newFixedThreadPool(maxThreads);
 	}
 
+	/* (non-Javadoc)
+	 * @see primemover.runner.IJobManager#run()
+	 */
+	@Override
 	@Scheduled(fixedRate = 90000)
 	public void run() {
 		// Basic settings
