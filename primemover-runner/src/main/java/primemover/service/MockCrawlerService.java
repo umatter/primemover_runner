@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.convert.ConversionException;
+import org.springframework.util.MimeType;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,12 +24,17 @@ public class MockCrawlerService implements ICrawlerService {
 	
 	private ObjectMapper mapper = new ObjectMapper();
 	private String filePath;
+	private Boolean writeResult = true;
 	
 	public MockCrawlerService() {
 	}
 	
 	public void setMockFile(String filePath) {
 		this.filePath = filePath;
+	}
+	
+	public void setMockWriteResult(Boolean result) {
+		this.writeResult = result;
 	}
 
 	@Override
@@ -50,6 +56,11 @@ public class MockCrawlerService implements ICrawlerService {
 		} catch (IOException e) {
 			throw new IllegalStateException("could not read input file", e);
 		}
+	}
+
+	@Override
+	public Boolean writeJobData(Long jobId, String description, String mimeType, String fileContent) {
+		return writeResult;
 	}
 
 }

@@ -27,7 +27,7 @@ public class FileStorageService implements IStorageService {
 	 * @see primemover.service.IJobData#writeJobData(primemover.model.IJob, primemover.model.JobData)
 	 */
 	@Override
-	public void writeJobData(IJob job, JobData data) {
+	public Boolean writeJobData(IJob job, JobData data) {
 		// create a folder for the job
 		Path jobFolder = Paths.get(targetFolder + "/" + job.getId().toString() + "/");
 		jobFolder = localDir.resolve(jobFolder);
@@ -123,5 +123,7 @@ public class FileStorageService implements IStorageService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		return true;
 	}
 }

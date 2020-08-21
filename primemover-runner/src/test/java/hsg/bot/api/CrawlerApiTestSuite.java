@@ -38,7 +38,7 @@ class CrawlerApiTestSuite {
 
 	@Test
 	void runGoogleSearchSelectFirst() {
-		// get the current Crawler
+		// get the current Crawlers
 		List<Pair<Crawler, Joblist>> crawlers = service.getCurrentTasks();
 	}
 	

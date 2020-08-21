@@ -11,6 +11,7 @@ import primemover.runner.JobManager;
 import primemover.runner.MockTaskOperator;
 import primemover.runner.TaskOperator;
 import primemover.runner.TaskOperatorFactory;
+import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
@@ -32,6 +33,9 @@ public class Config {
 		switch (mode.toUpperCase()) {
 		case "DEBUG":
 			ret = new FileStorageService();
+			break;
+		case "INT":
+			ret = new BackendStorageService();
 			break;
 		default:
 			throw new IllegalStateException("Invalid argument for application mode");
