@@ -16,8 +16,8 @@ public class VisitJob extends BaseJob  {
 		super();
 	}
 
-	public VisitJob(Long id, String reference, String title, String url) {
-		super(id, reference, title);
+	public VisitJob(Long id, String name, String description, String url) {
+		super(id, name, description);
 		
 		this.url = url;
 	}

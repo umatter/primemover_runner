@@ -1,21 +1,52 @@
 package primemover.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Joblist {
-
+	private Long id;
+	private Boolean active;
+	private Date startTime;
 	private List<IJob> jobs;
 	
-	public List<IJob> getJobList() {
+	public List<IJob> getJobs() {
 		return jobs;
 	}
-	
+
+	public void setJobs(List<IJob> jobs) {
+		this.jobs = jobs;
+	}
+
 	public void appendJob(IJob job) {
 		if (jobs == null) {
 			jobs = new ArrayList<IJob>();
 		}
 		jobs.add(job);
+	}
+
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 	
 }

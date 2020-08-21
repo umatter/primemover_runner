@@ -2,21 +2,29 @@ package primemover.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
+import primemover.runner.ITaskOperator;
 import primemover.runner.JobManager;
+import primemover.runner.MockTaskOperator;
+import primemover.runner.TaskOperator;
+import primemover.runner.TaskOperatorFactory;
+import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
+import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
-import primemover.service.ITaskService;
-import primemover.service.MockTaskService;
-import primemover.service.TaskService;
-import primemover.service.TaskServiceFactory;
 
 @SpringBootConfiguration
 public class Config {
 	
 	@Value("${global.mode}")
 	private String mode;
+	
+	public String getMode() {
+		return mode;
+	}
 	
 	@Bean(name="storageService")
 	IStorageService getStorageService() {
@@ -32,10 +40,15 @@ public class Config {
 		
 		return ret;
 	}
+	
+	@Bean("CrawlerService")
+	ICrawlerService getCrawlerService() {
+		return new CrawlerService();
+	}
 
 	@Bean(name="TaskServiceFactory")
-	TaskServiceFactory getTaskServiceFactory() {
-		return new TaskServiceFactory();
+	TaskOperatorFactory getTaskOperatorFactory() {
+		return new TaskOperatorFactory();
 	}
 	
 	@Bean(name="jobmanager", initMethod = "setup")
@@ -44,5 +57,10 @@ public class Config {
 	
 		// jobManager will be called with spring's scheduler
 		return jobManager;		
+	}
+	
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplateBuilder().build();
 	}
 }

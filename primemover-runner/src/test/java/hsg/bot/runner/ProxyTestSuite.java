@@ -6,40 +6,42 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import primemover.model.Agent;
+import primemover.model.BasicAgent;
+import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
-import primemover.model.EnterTextField;
+import primemover.model.EnterTextFieldJob;
+import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.SelectorBaseJob;
 import primemover.model.SelectorType;
 import primemover.model.SimpleProxy;
-import primemover.model.SingleSelectUrl;
+import primemover.model.SingleSelectUrlJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
-import primemover.model.Agent.AgentType;
+import primemover.runner.ITaskOperator;
+import primemover.runner.TaskOperatorFactory;
 import primemover.model.AssertProxyByGeosurf;
-import primemover.service.ITaskService;
-import primemover.service.TaskServiceFactory;
 
 @SpringBootTest
 class ProxyTestSuite {
 	
 	@Autowired
-	private TaskServiceFactory serviceFactory;
+	private TaskOperatorFactory serviceFactory;
 	
-	private ITaskService service;
-	private Agent agent;
+	private ITaskOperator service;
+	private IAgent agent;
 	private Crawler crawler;
 	private SimpleProxy proxy;
 	
 	
 	@BeforeEach
-	public void setup() {
+	public void setupNewYork() {
+	
 		// Defined proxy for US and city of New York for test!
 		proxy = new SimpleProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
 		service = serviceFactory.getItem();
-		agent = new Agent(1l, AgentType.CHROME, "Chrome", "Chrome"); // Must run on Chrome as plain JSON is available. Firefox will display a table.
+		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome"); // Must run on Chrome as plain JSON is available. Firefox will display a table.
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		crawler.setProxy(proxy);
@@ -55,15 +57,16 @@ class ProxyTestSuite {
 		
 		/* kept as template on how to grab correct verification values from the page */
 		// open page
-		//VisitJob visitJob = new VisitJob(1l, "visit geosurf", "visit geosurf", "https://geo.geosurf.io");
-		//jobs.appendJob(visitJob);
+		/*VisitJob visitJob = new VisitJob(1l, "visit geosurf", "visit geosurf", "https://geo.geosurf.io");
+		jobs.appendJob(visitJob);
 		
 		// quick wait for search to finish
-		//WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
-		//jobs.appendJob(waitJob);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 45);
+		jobs.appendJob(waitJob);
+		*/
 		
 		// Verify city and country
-		AssertProxyByGeosurf assertProxyJob = new AssertProxyByGeosurf(1l, "wait", "wait", null, "US", "New York");
+		AssertProxyByGeosurf assertProxyJob = new AssertProxyByGeosurf(1l, "Assert New York", "Assert New York", null, "US", "New York");
 		jobs.appendJob(assertProxyJob);
 		
 		service.runJobList(jobs);
@@ -76,6 +79,7 @@ class ProxyTestSuite {
         service = null;
         agent = null;
         crawler = null;
+        proxy = null;
     }
 
 }

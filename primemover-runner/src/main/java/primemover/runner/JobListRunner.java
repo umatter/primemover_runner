@@ -2,12 +2,9 @@ package primemover.runner;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
-import primemover.service.ITaskService;
-import primemover.service.MockTaskService;
-import primemover.service.TaskServiceFactory;
 
 public class JobListRunner implements Runnable  {
-	ITaskService taskService;
+	ITaskOperator taskService;
 	Crawler crawler;
 	Joblist jobs;
 
@@ -23,7 +20,7 @@ public class JobListRunner implements Runnable  {
 		taskService.tearDown();		
 	}
 
-	public JobListRunner(ITaskService taskService, Crawler crawler, Joblist jobs) {
+	public JobListRunner(ITaskOperator taskService, Crawler crawler, Joblist jobs) {
 		super();
 		this.taskService = taskService;
 		this.crawler = crawler;

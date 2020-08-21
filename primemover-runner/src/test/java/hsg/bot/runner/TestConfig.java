@@ -4,17 +4,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 
+import primemover.runner.ITaskOperator;
 import primemover.runner.JobManager;
+import primemover.runner.MockTaskOperator;
+import primemover.runner.TaskOperator;
+import primemover.runner.TaskOperatorFactory;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
-import primemover.service.ITaskService;
-import primemover.service.MockTaskService;
-import primemover.service.TaskService;
-import primemover.service.TaskServiceFactory;
 
 @SpringBootConfiguration
 public class TestConfig {
-	
 	@Value("${global.mode}")
 	private String mode;
 	
@@ -34,8 +33,8 @@ public class TestConfig {
 	}
 
 	@Bean(name="TaskServiceFactory")
-	TaskServiceFactory getTaskServiceFactory() {
-		return new TaskServiceFactory();
+	TaskOperatorFactory getTaskServiceFactory() {
+		return new TaskOperatorFactory();
 	}
 	
 	/*

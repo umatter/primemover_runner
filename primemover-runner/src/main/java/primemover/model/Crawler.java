@@ -5,7 +5,7 @@ public class Crawler {
 	private Long id;
 	private String name;
 	private String description;
-	private Agent agent;
+	private IAgent agent;
 	private Configuration config;
 	private IProxy proxy;
 	private Behaviour behaviour;
@@ -71,12 +71,12 @@ public class Crawler {
 	}
 
 
-	public void setAgent(Agent agent) {
+	public void setAgent(IAgent agent) {
 		this.agent = agent;
 	}
 
 
-	public Agent getAgent() {
+	public IAgent getAgent() {
 		return agent;
 	}
 }

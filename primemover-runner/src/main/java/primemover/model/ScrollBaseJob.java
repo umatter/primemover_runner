@@ -8,8 +8,8 @@ public abstract class ScrollBaseJob extends BaseJob {
 		super();
 	}
 
-	public ScrollBaseJob(Long id, String reference, String title, ScrollDirection direction) {
-		super(id, reference, title);
+	public ScrollBaseJob(Long id, String name, String description, ScrollDirection direction) {
+		super(id, name, description);
 		this.direction = direction;
 	}
 

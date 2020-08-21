@@ -6,8 +6,8 @@ public class AssertElementExistsJob extends SelectorBaseJob {
 		super();
 	}
 
-	public AssertElementExistsJob(Long id, String reference, String title, SelectorType type, String selector) {
-		super(id, reference, title, type, selector);
+	public AssertElementExistsJob(Long id, String name, String description, SelectorType type, String selector) {
+		super(id, name, description, type, selector);
 	}
 	
 }

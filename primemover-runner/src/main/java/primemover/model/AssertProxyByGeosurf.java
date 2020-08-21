@@ -9,7 +9,7 @@ public class AssertProxyByGeosurf extends AssertProxy {
 		super();
 	}
 
-	public AssertProxyByGeosurf(Long id, String reference, String title, String ip, String country, String city) {
-		super(id, reference, title, ip, country, city);
+	public AssertProxyByGeosurf(Long id, String name, String description, String ip, String country, String city) {
+		super(id, name, description, ip, country, city);
 	}
 }

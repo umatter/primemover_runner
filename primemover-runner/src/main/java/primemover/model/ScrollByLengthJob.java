@@ -11,8 +11,8 @@ public class ScrollByLengthJob extends ScrollBaseJob {
 		this.length = length;
 	}
 	
-	public ScrollByLengthJob(Long id, String reference, String title, ScrollDirection direction, Integer length) {
-		super(id, reference, title, direction);
+	public ScrollByLengthJob(Long id, String name, String description, ScrollDirection direction, Integer length) {
+		super(id, name, description, direction);
 		this.length = length;
 	}
 	

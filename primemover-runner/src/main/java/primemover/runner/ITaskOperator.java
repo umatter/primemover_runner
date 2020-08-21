@@ -1,9 +1,9 @@
-package primemover.service;
+package primemover.runner;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 
-public interface ITaskService {
+public interface ITaskOperator {
 	/**
 	 * Initialize the TaskService
 	 * 

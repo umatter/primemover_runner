@@ -13,5 +13,25 @@
     "name": "runner.MaxParallelExecution",
     "type": "java.lang.String",
     "description": "Number of max parallel running job-lists"
+  },
+  {
+    "name": "multilogin.StartupRetryCount",
+    "type": "java.lang.String",
+    "description": "A description for 'multilogin.StartupRetryCount'"
+  },
+  {
+    "name": "export.isEnabled",
+    "type": "java.lang.String",
+    "description": "A description for 'export.isEnabled'"
+  },
+  {
+    "name": "export.isEnabled",
+    "type": "java.lang.String",
+    "description": "A description for 'export.isEnabled'"
+  },
+  {
+    "name": "multilogin.StartupRetryCount",
+    "type": "java.lang.String",
+    "description": "A description for 'multilogin.StartupRetryCount'"
   }
 ]}

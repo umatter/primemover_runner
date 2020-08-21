@@ -1,22 +1,22 @@
-package primemover.service;
+package primemover.runner;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class TaskServiceFactory implements ApplicationContextAware {
+public class TaskOperatorFactory implements ApplicationContextAware {
 	
 	@Value("${global.mode}")
 	private String mode;
 	private ApplicationContext ctx;
-	private static TaskServiceFactory instance = new TaskServiceFactory();
+	private static TaskOperatorFactory instance = new TaskOperatorFactory();
 	
-	public ITaskService getItem() {
-		ITaskService ret = null;
+	public ITaskOperator getItem() {
+		ITaskOperator ret = null;
 		switch (mode.toUpperCase()) {
 		case "DEBUG":
-			ret = new MockTaskService();
+			ret = new MockTaskOperator();
 			break;
 		default:
 			throw new IllegalStateException("Invalid argument for application mode");
@@ -28,7 +28,7 @@ public class TaskServiceFactory implements ApplicationContextAware {
 		return ret;
 	}
 	
-	public static TaskServiceFactory getInstance() {
+	public static TaskOperatorFactory getInstance() {
 		return instance;
 	}
 

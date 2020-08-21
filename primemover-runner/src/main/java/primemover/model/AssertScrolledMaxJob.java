@@ -10,8 +10,8 @@ public class AssertScrolledMaxJob extends BaseJob {
 	public void setDirection(ScrollDirection direction) {
 		this.direction = direction;
 	}
-	public AssertScrolledMaxJob(Long id, String reference, String title, ScrollDirection direction) {
-		super(id, reference, title);
+	public AssertScrolledMaxJob(Long id, String name, String description, ScrollDirection direction) {
+		super(id, name, description);
 		this.direction = direction;
 	}
 	public AssertScrolledMaxJob() {

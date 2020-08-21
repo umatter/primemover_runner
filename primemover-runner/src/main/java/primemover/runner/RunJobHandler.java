@@ -1,4 +1,4 @@
-package primemover.service;
+package primemover.runner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -21,18 +21,18 @@ import primemover.model.AssertElementExistsJob;
 import primemover.model.AssertPageLoadedJob;
 import primemover.model.AssertProxyByGeosurf;
 import primemover.model.AssertScrolledMaxJob;
-import primemover.model.EnterTextField;
+import primemover.model.EnterTextFieldJob;
 import primemover.model.IJob;
 import primemover.model.ScrollByDurationJob;
 import primemover.model.ScrollByLengthJob;
-import primemover.model.SingleSelectUrl;
+import primemover.model.SingleSelectUrlJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
 import primemover.model.geosurf.IpInfo;
-import selenium.util.Page;
-import selenium.util.Scrolling;
-import selenium.util.Selecting;
-import selenium.util.Waiter;
+import primemover.util.Page;
+import primemover.util.Scrolling;
+import primemover.util.Selecting;
+import primemover.util.Waiter;
 
 public class RunJobHandler {
 
@@ -51,7 +51,7 @@ public class RunJobHandler {
 			public void handle(WebDriver driver, IJob job) {
 				VisitJob typedJob = (VisitJob) job;
 				driver.get(typedJob.getUrl());
-				selenium.util.Waiter.waitUntilJSReady(driver, 120);
+				primemover.util.Waiter.waitUntilJSReady(driver, 120);
 			}
 		});
 
@@ -107,9 +107,9 @@ public class RunJobHandler {
 			}
 		});
 
-		dispatch.put(EnterTextField.class, new Handler() {
+		dispatch.put(EnterTextFieldJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
-				EnterTextField typedJob = (EnterTextField) job;
+				EnterTextFieldJob typedJob = (EnterTextFieldJob) job;
 
 				WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
@@ -122,17 +122,17 @@ public class RunJobHandler {
 					// nothing to do
 				}
 
-				selenium.util.Waiter.waitUntilJSReady(driver, 120);
+				primemover.util.Waiter.waitUntilJSReady(driver, 120);
 			}
 		});
 
-		dispatch.put(SingleSelectUrl.class, new Handler() {
+		dispatch.put(SingleSelectUrlJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
-				SingleSelectUrl typedJob = (SingleSelectUrl) job;
+				SingleSelectUrlJob typedJob = (SingleSelectUrlJob) job;
 
 				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
-				WebElement selectedElement = Selecting.chooseElement(elements, typedJob.getDecision());
+				WebElement selectedElement = Selecting.chooseElement(elements, typedJob.getDecisionType());
 
 				if (selectedElement != null) {
 					selectedElement.click();
@@ -144,7 +144,7 @@ public class RunJobHandler {
 					// nothing to do
 				}
 
-				selenium.util.Waiter.waitUntilJSReady(driver, 120);
+				primemover.util.Waiter.waitUntilJSReady(driver, 120);
 			}
 		});
 		

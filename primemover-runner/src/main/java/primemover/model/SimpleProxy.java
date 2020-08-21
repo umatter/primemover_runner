@@ -37,5 +37,23 @@ public class SimpleProxy implements IProxy {
 
 	public SimpleProxy() {
 		super();
-	}	
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	
 }

@@ -6,39 +6,40 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import primemover.model.Agent;
+import primemover.model.BasicAgent;
+import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
-import primemover.model.EnterTextField;
+import primemover.model.EnterTextFieldJob;
+import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.ScrollDirection;
 import primemover.model.ScrollByLengthJob;
 import primemover.model.SelectorBaseJob;
 import primemover.model.SelectorType;
-import primemover.model.SingleSelectUrl;
+import primemover.model.SingleSelectUrlJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
-import primemover.model.Agent.AgentType;
+import primemover.runner.ITaskOperator;
+import primemover.runner.TaskOperatorFactory;
 import primemover.model.AssertPageLoadedJob;
 import primemover.model.AssertScrolledMaxJob;
-import primemover.service.ITaskService;
-import primemover.service.TaskServiceFactory;
 
 @SpringBootTest
 class ScrollingTestSuite {
 	
 	@Autowired
-	private TaskServiceFactory serviceFactory;
+	private TaskOperatorFactory serviceFactory;
 	
-	private ITaskService service;
-	private Agent agent;
+	private ITaskOperator service;
+	private IAgent agent;
 	Crawler crawler;
 	
 	
 	@BeforeEach
 	public void setup() {
 		service = serviceFactory.getItem();
-		agent = new Agent(1l, AgentType.CHROME, "Chrome", "Chrome");
+		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome");
 		crawler = new Crawler();
 		crawler.setAgent(agent);	
 

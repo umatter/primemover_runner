@@ -1,0 +1,89 @@
+package hsg.bot.runner;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import primemover.model.BasicAgent;
+import primemover.model.AgentType;
+import primemover.model.Crawler;
+import primemover.model.DecisionType;
+import primemover.model.EnterTextFieldJob;
+import primemover.model.IAgent;
+import primemover.model.Joblist;
+import primemover.model.MultiLoginAgent;
+import primemover.model.SelectorBaseJob;
+import primemover.model.SelectorType;
+import primemover.model.SimpleProxy;
+import primemover.model.SingleSelectUrlJob;
+import primemover.model.VisitJob;
+import primemover.model.WaitJob;
+import primemover.runner.ITaskOperator;
+import primemover.runner.TaskOperatorFactory;
+import primemover.model.AssertProxyByGeosurf;
+
+@SpringBootTest
+class MultiLoginTestSuite {
+	
+	@Autowired
+	private TaskOperatorFactory serviceFactory;
+	
+	private ITaskOperator service;
+	private IAgent agent;
+	private Crawler crawler;
+	private SimpleProxy proxy;
+	
+	
+	@BeforeEach
+	public void setupNewYork() {
+		//System.setProperty("https.protocols", "SSLv3,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3");
+		//String prot = System.getProperty("https.protocols");
+		
+		// Defined proxy for US and city of New York for test!
+		proxy = new SimpleProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
+		service = serviceFactory.getItem();
+		agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "bf4cd0e3-68b7-4cb6-a38f-6ed12ac2c666");
+		crawler = new Crawler();
+		crawler.setAgent(agent);
+		crawler.setProxy(proxy);
+		
+		service.setup(crawler);
+	}
+
+	
+	@Test
+	void checkLocationUS() {	
+		// Define jobs for google search
+		Joblist jobs = new Joblist();
+		
+		/* kept as template on how to grab correct verification values from the page */
+		
+		// open page
+		 
+		VisitJob visitJob = new VisitJob(1l, "visit geosurf", "visit geosurf", "https://geo.geosurf.io");
+		jobs.appendJob(visitJob);
+		
+		// quick wait for search to finish
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);
+		
+		// Verify city and country
+		AssertProxyByGeosurf assertProxyJob = new AssertProxyByGeosurf(1l, "Assert US / New York", "Assert US / New York", null, "US", "New York");
+		jobs.appendJob(assertProxyJob);
+		
+		service.runJobList(jobs);
+	}
+	
+	
+	@AfterEach
+    public void tearDown() {
+        service.tearDown();
+        service = null;
+        agent = null;
+        crawler = null;
+        proxy = null;
+    }
+
+}

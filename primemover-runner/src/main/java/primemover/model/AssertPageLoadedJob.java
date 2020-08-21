@@ -6,8 +6,8 @@ public class AssertPageLoadedJob extends BaseJob {
 		super();
 	}
 
-	public AssertPageLoadedJob(Long id, String reference, String title) {
-		super(id, reference, title);
+	public AssertPageLoadedJob(Long id, String name, String description) {
+		super(id, name, description);
 	}
 	
 }

@@ -15,8 +15,8 @@ public class WaitJob extends BaseJob {
 		super();
 	}
 
-	public WaitJob(Long id, String reference, String title, Integer seconds) {
-		super(id, reference, title);
+	public WaitJob(Long id, String name, String description, Integer seconds) {
+		super(id, name, description);
 		
 		this.secs = seconds;
 	}
