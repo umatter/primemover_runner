@@ -26,6 +26,7 @@ import primemover.model.IJob;
 import primemover.model.ScrollByDurationJob;
 import primemover.model.ScrollByLengthJob;
 import primemover.model.SingleSelectUrlJob;
+import primemover.model.TryClickJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
 import primemover.model.geosurf.IpInfo;
@@ -145,6 +146,27 @@ public class RunJobHandler {
 				}
 
 				primemover.util.Waiter.waitUntilJSReady(driver, 120);
+			}
+		});
+		
+		dispatch.put(TryClickJob.class, new Handler() {
+			public void handle(WebDriver driver, IJob job) {
+				TryClickJob typedJob = (TryClickJob) job;
+
+				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				if (elements.size() == 1) {
+					WebElement selectedElement = elements.get(0);
+					
+					selectedElement.click();
+				}
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// nothing to do
+				}
 			}
 		});
 		

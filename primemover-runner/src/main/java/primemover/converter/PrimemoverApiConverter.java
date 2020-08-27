@@ -22,6 +22,7 @@ import primemover.model.MultiLoginAgent;
 import primemover.model.SelectorType;
 import primemover.model.SimpleProxy;
 import primemover.model.SingleSelectUrlJob;
+import primemover.model.TryClickJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
 import primemover.model.api.CrawlerResult;
@@ -107,7 +108,11 @@ public class PrimemoverApiConverter {
 	private static WaitJob convertApiWaitJob(Integer id, String name, String description, Map<String, String> behaviours) {
 		WaitJob job = new WaitJob();
 		setBaseFields(job, id, name, description);
-		job.setSeconds(new Integer(behaviours.get("seconds")));
+		if (behaviours.containsKey("seconds")) {
+			job.setSeconds(new Integer(behaviours.get("seconds")));
+		} else {
+			job.setSeconds(30);
+		}		
 	
 		return job;
 	}
@@ -122,6 +127,16 @@ public class PrimemoverApiConverter {
 		return job;
 	}
 	
+	private static TryClickJob convertApiTryClickJob(Integer id, String name, String description, Map<String, String> behaviours) {
+		TryClickJob job = new TryClickJob();
+		setBaseFields(job, id, name, description);
+		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setSelector(behaviours.get("selector"));
+	
+		return job;
+	}
+	
+	
 	private static SingleSelectUrlJob convertApiSingleSelectUrlJob(Integer id, String name, String description, Map<String, String> behaviours) {
 		SingleSelectUrlJob job = new SingleSelectUrlJob();
 		setBaseFields(job, id, name, description);
@@ -135,21 +150,24 @@ public class PrimemoverApiConverter {
 	private static IJob convertApiJob(primemover.model.api.Job job) {
 		IJob res;
 		
-		// grab behaviour list
-		Map<String, String> behaviours = convertApiBehaviourList(job.getBehaviors());
+		// grab behavior list
+		Map<String, String> behaviors = convertApiBehaviourList(job.getBehaviors());
 		
 		switch (job.getType().toLowerCase()) {
 		case "visitjob":
-			res = convertApiVisitJob(job.getId(), job.getName(), job.getDescription(), behaviours);
+			res = convertApiVisitJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;
 		case "waitjob":
-			res = convertApiWaitJob(job.getId(), job.getName(), job.getDescription(), behaviours);
+			res = convertApiWaitJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;						
 		case "entertextfieldjob":
-			res = convertApiEnterTextFieldJob(job.getId(), job.getName(), job.getDescription(), behaviours);
+			res = convertApiEnterTextFieldJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;
 		case "singleselecturljob":
-			res = convertApiSingleSelectUrlJob(job.getId(), job.getName(), job.getDescription(), behaviours);
+			res = convertApiSingleSelectUrlJob(job.getId(), job.getName(), job.getDescription(), behaviors);
+			break;
+		case "tryclickjob":
+			res = convertApiTryClickJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;
 
 		default:
@@ -221,5 +239,6 @@ public class PrimemoverApiConverter {
 		
 		return res;
 	}
+	
 
 }

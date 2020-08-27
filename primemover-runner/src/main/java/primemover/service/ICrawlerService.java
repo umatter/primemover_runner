@@ -12,5 +12,6 @@ public interface ICrawlerService {
 
 	List<Pair<Crawler, Joblist>> getCurrentTasks();
 	Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent);
+	List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id);
 
 }

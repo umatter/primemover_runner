@@ -4,25 +4,25 @@ import primemover.model.Crawler;
 import primemover.model.Joblist;
 
 public class JobListRunner implements Runnable  {
-	ITaskOperator taskService;
+	ITaskOperator taskOperator;
 	Crawler crawler;
 	Joblist jobs;
 
 	@Override
 	public void run() {
 		// get Taskservice and setup
-		taskService.setup(crawler);
+		taskOperator.setup(crawler);
 	
 		// run jobs
-		taskService.runJobList(jobs);
+		taskOperator.runJobList(jobs);
 		
 		// release resources
-		taskService.tearDown();		
+		taskOperator.tearDown();		
 	}
 
 	public JobListRunner(ITaskOperator taskService, Crawler crawler, Joblist jobs) {
 		super();
-		this.taskService = taskService;
+		this.taskOperator = taskService;
 		this.crawler = crawler;
 		this.jobs = jobs;
 	}

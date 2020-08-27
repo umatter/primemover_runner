@@ -2,10 +2,14 @@ package primemover.runner;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -36,8 +40,8 @@ public class MockTaskOperator implements ITaskOperator {
 	
 	private OperatorContext context;
 	
-	@Autowired
-	IStorageService storage;
+	@Autowired(required=false)
+	List<IStorageService> storages = new ArrayList<IStorageService>();
 	
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
 	
@@ -131,6 +135,15 @@ public class MockTaskOperator implements ITaskOperator {
 		// running job
 		RunJobHandler.handle(context.getDriver(), job);
 		
+		// capture screenshot
+		if (context.getDriver() instanceof TakesScreenshot) {
+			
+			TakesScreenshot camera = (TakesScreenshot) context.getDriver();
+			byte[] screenshot = camera.getScreenshotAs(OutputType.BYTES);
+			
+			data.setScreenshot(screenshot);	
+		}
+		
 		// capture trafic data
 		Har har = context.getRecorder().stopCapturing();
 		data.setHar(har);
@@ -145,7 +158,9 @@ public class MockTaskOperator implements ITaskOperator {
 		
 		
 		// Writing data
-		storage.writeJobData(job, data);
+		for (IStorageService storage : storages) {
+			storage.writeJobData(job, data);
+		}		
 		
 		return true;
 	}

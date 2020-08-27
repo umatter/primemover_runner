@@ -8,7 +8,6 @@ public class SingleSelectUrlJob extends SelectorBaseJob {
 		return decision;
 	}
 
-
 	public void setDecisionType(DecisionType decision) {
 		this.decision = decision;
 	}

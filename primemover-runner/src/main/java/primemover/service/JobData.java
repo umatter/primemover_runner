@@ -8,6 +8,7 @@ import net.lightbody.bmp.core.har.Har;
 
 public class JobData {
 	
+	private byte[] screenshot;
 	private Har har;
 	private String pageSource;
 	private Set<Cookie> cookies;
@@ -53,7 +54,13 @@ public class JobData {
 	public void setLocalStorage(String localStorage) {
 		this.localStorage = localStorage;
 	}
+
+	public void setScreenshot(byte[] screenshot) {
+		this.screenshot = screenshot;
+	}
 	
 	
-	
+	public byte[] getScreenshot() {
+		return this.screenshot;
+	}
 }

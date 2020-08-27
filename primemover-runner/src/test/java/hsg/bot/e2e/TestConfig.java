@@ -1,9 +1,15 @@
 package hsg.bot.e2e;
 
+import java.util.List;
+
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import primemover.runner.IJobManager;
 import primemover.runner.JobManager;
@@ -11,6 +17,7 @@ import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
+import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 
@@ -21,8 +28,13 @@ public class TestConfig {
 		return new MockJobManager();	
 	}
 	
-	@Bean(name="storageService")
-	IStorageService getStorageService() {
+	@Bean(name="fileStorageService")
+	IStorageService getFileStorageServices() {
+		return new FileStorageService();
+	}
+	
+	@Bean(name="backendStorageService")
+	IStorageService getBackendStorageServices() {
 		return new BackendStorageService();
 	}
 	
@@ -33,10 +45,21 @@ public class TestConfig {
 	
 	@Bean
 	public RestTemplate restTemplate() {
-		return new RestTemplateBuilder().build();
+		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		
+		RestTemplate restTemplate = new RestTemplateBuilder().build();
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+		
+		for (Object converter : converters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
+				jconverter.getObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+			}
+		}
+         return restTemplate; 
 	}
 	
-
+	
 	@Bean(name="TaskOperatorFactory")
 	TaskOperatorFactory getTaskOperatorFactory() {
 		return new TaskOperatorFactory();

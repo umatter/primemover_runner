@@ -23,9 +23,6 @@ class LoadTasksFromServiceAndRunJobs {
 	private TaskOperatorFactory operatorFactory;
 	
 	@Autowired
-	private MockJobManager jobManager;
-	
-	@Autowired
 	private ICrawlerService crawlerService;
 	
 	@BeforeEach
@@ -34,9 +31,79 @@ class LoadTasksFromServiceAndRunJobs {
 	}
 
 	@Test
-	void LoadTasksAndWriteJobData() {
+	void LoadTasksAndWriteJobDataForCrawlerId1() {
 		// get the jobList for each Crawler
-		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(1l);
+		
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = operatorFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	@Test
+	void LoadTasksAndWriteJobDataForCrawlerId2() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(2l);
+		
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = operatorFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	@Test
+	void LoadTasksAndWriteJobDataForCrawlerId3() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(3l);
+		
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = operatorFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	@Test
+	void LoadTasksAndWriteJobDataForCrawlerId4() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(4l);
+		
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = operatorFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	@Test
+	void LoadTasksAndWriteJobDataForCrawlerId5() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(5l);
+		
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = operatorFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	@Test
+	void LoadTasksAndWriteJobDataForCrawlerId6() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(6l);
 		
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {

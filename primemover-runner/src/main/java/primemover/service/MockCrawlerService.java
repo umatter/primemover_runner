@@ -63,4 +63,9 @@ public class MockCrawlerService implements ICrawlerService {
 		return writeResult;
 	}
 
+	@Override
+	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
+		return getCurrentTasks();
+	}
+
 }

@@ -43,6 +43,13 @@ public class CrawlerService implements ICrawlerService {
 		return PrimemoverApiConverter.convertFromApi(apiRes);
 	}
 	
+	@Override
+	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
+		logger.debug("loading jobs");
+		CrawlerResult apiRes = restTemplate.getForObject("https://siaw.primemover.example/api/v1/crawlers/" + id.toString(), CrawlerResult.class);
+		return PrimemoverApiConverter.convertFromApi(apiRes);
+	}
+	
 	
 	public Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent) {
 		HttpHeaders headers = new HttpHeaders();
@@ -71,7 +78,5 @@ public class CrawlerService implements ICrawlerService {
 	    	logger.warn("failure storing data to server for job " + jobId, ex);
 	    	return false;
 	    }
-	    
-	   
 	}	
 }
