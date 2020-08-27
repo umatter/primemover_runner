@@ -9,20 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import primemover.model.BasicAgent;
-import primemover.model.AgentType;
 import primemover.model.Crawler;
-import primemover.model.DecisionType;
-import primemover.model.EnterTextFieldJob;
-import primemover.model.IAgent;
 import primemover.model.Joblist;
-import primemover.model.SelectorBaseJob;
-import primemover.model.SelectorType;
-import primemover.model.SingleSelectUrlJob;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
-import primemover.runner.ITaskOperator;
-import primemover.runner.TaskOperatorFactory;
 import primemover.service.ICrawlerService;
 
 @SpringBootTest
@@ -40,6 +28,7 @@ class CrawlerApiTestSuite {
 	void runGoogleSearchSelectFirst() {
 		// get the current Crawlers
 		List<Pair<Crawler, Joblist>> crawlers = service.getCurrentTasks();
+		
 	}
 	
 	@AfterEach

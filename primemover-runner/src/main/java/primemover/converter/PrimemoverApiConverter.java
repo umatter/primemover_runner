@@ -19,6 +19,9 @@ import primemover.model.IAgent;
 import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
+import primemover.model.ScrollByDurationJob;
+import primemover.model.ScrollByLengthJob;
+import primemover.model.ScrollDirection;
 import primemover.model.SelectorType;
 import primemover.model.SimpleProxy;
 import primemover.model.SingleSelectUrlJob;
@@ -26,7 +29,6 @@ import primemover.model.TryClickJob;
 import primemover.model.VisitJob;
 import primemover.model.WaitJob;
 import primemover.model.api.CrawlerResult;
-import primemover.model.api.Job;
 import primemover.model.IJob;
 
 public class PrimemoverApiConverter {
@@ -147,6 +149,24 @@ public class PrimemoverApiConverter {
 		return job;
 	}
 	
+	private static ScrollByDurationJob convertApiScrollByDurationJob(Integer id, String name, String description, Map<String, String> behaviours) {
+		ScrollByDurationJob job = new ScrollByDurationJob();
+		setBaseFields(job, id, name, description);
+		job.setDuration(new Integer(behaviours.get("duration")));
+		job.setDirection(ScrollDirection.valueOf("scrollDirection"));
+	
+		return job;
+	}
+	
+	private static ScrollByLengthJob convertApiScrollByLengthJob(Integer id, String name, String description, Map<String, String> behaviours) {
+		ScrollByLengthJob job = new ScrollByLengthJob();
+		setBaseFields(job, id, name, description);
+		job.setLength(new Integer(behaviours.get("duration")));
+		job.setDirection(ScrollDirection.valueOf("scrollDirection"));
+	
+		return job;
+	}
+	
 	private static IJob convertApiJob(primemover.model.api.Job job) {
 		IJob res;
 		
@@ -169,7 +189,12 @@ public class PrimemoverApiConverter {
 		case "tryclickjob":
 			res = convertApiTryClickJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;
-
+		case "scrollbydurationjob":
+			res = convertApiScrollByDurationJob(job.getId(), job.getName(), job.getDescription(), behaviors);
+			break;
+		case "scrollbylengthjob":
+			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), behaviors);
+			break;
 		default:
 			throw new IllegalArgumentException("Invalid Job type found: " + job.getType());
 		}		

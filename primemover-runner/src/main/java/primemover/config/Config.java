@@ -1,6 +1,5 @@
 package primemover.config;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,14 +10,10 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import primemover.runner.IJobManager;
-import primemover.runner.ITaskOperator;
 import primemover.runner.JobManager;
-import primemover.runner.MockTaskOperator;
-import primemover.runner.TaskOperator;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;

@@ -11,8 +11,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
-import primemover.runner.IJobManager;
-import primemover.runner.JobManager;
 import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.BackendStorageService;

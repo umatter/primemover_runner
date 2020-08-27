@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import primemover.capture.RecordingProxy;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;

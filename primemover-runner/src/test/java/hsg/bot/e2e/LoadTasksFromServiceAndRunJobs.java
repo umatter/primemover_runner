@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import primemover.model.Joblist;
 import primemover.model.Crawler;
 import primemover.runner.ITaskOperator;
-import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.ICrawlerService;
 

@@ -6,16 +6,11 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-import primemover.runner.ITaskOperator;
-import primemover.runner.JobManager;
-import primemover.runner.MockTaskOperator;
-import primemover.runner.TaskOperator;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
-import primemover.service.MockCrawlerService;
 
 @SpringBootConfiguration
 public class TestConfig {

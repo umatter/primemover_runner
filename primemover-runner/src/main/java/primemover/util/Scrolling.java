@@ -2,8 +2,6 @@ package primemover.util;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Scrolling {
 	
@@ -69,13 +67,13 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 	public static void scrollDownForDurationByJavascript(WebDriver driver, Integer seconds) {
 		JavascriptExecutor jse = (JavascriptExecutor) driver;
 		
-		
+		// TODO
 	}
 	
 	public static void scrollUpForDurationByJavascript(WebDriver driver, Integer seconds) {
 		JavascriptExecutor jse = (JavascriptExecutor) driver;
 		
-		
+		// TODO		
 	}
 	
 	
