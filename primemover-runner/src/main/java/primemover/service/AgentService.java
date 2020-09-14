@@ -1,0 +1,71 @@
+package primemover.service;
+
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import primemover.config.StartupMode;
+import primemover.model.MultiLoginAgent;
+
+@Service
+public class AgentService {
+	
+	@Value("${global.mode:PRODUCTION}")
+	private StartupMode mode;
+
+	private static Logger logger = LogManager.getLogger(AgentService.class);
+	
+	public AgentService() {
+		// nothing to do
+	}
+
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	
+	private String calculateAgentUrl(Long id) {
+		String url = "https://siaw.primemover.example/api/v1/agents";
+		
+		if (id != null) {
+			url = url + '/' + id.toString();
+		}
+		
+		return url;
+	}
+	
+	public Boolean updateMultiloginProfile(MultiLoginAgent agent, String newProfile) {
+		String url = calculateAgentUrl(agent.getId());
+
+		HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_JSON);
+	    JSONObject data = new JSONObject();
+	    data.put("multilogin_id", newProfile);
+	    
+	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
+	  	   
+	    try {
+	    	
+	    	ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+		    
+	    	 if (response.getStatusCode().is2xxSuccessful()) {
+	 	    	logger.info("updated multilogin-profile for agent {} with {} ", agent.getId(), newProfile);
+	 	    	return true;
+	 	    } else {
+	 	    	logger.warn("failure updating multilogin-profile for agent {} ", agent.getId());
+	 	    	return false;
+	 	    }	    
+	    } catch (ResourceAccessException ex) {
+	    	logger.warn("failure updating multilogin-profile for agent {} ", agent.getId());
+	    	return false;
+	    }
+	}
+}

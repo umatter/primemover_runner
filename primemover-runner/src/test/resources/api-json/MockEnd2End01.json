@@ -8,8 +8,8 @@
             "name": "Kunde",
             "description": "Nulla voluptate sunt sit sequi modi officiis. Sunt deleniti temporibus nisi eos delectus cupiditate et. Voluptatem amet quis architecto laudantium.",
             "active": 0,
-            "updated_at": "2020-08-14T12:07:34.000000Z",
-            "created_at": "2020-08-14T12:07:34.000000Z",
+            "updated_at": "2020-08-14T12:07:34.000+02:00",
+            "created_at": "2020-08-14T12:07:34.000+02:00",
             "queues": [{
                     "id": 1,
                     "name": "Kuphal",
@@ -21,9 +21,9 @@
                     "order": 1,
                     "user_id": 1,
                     "crawler_id": 1,
-                    "start_at": "2020-08-14T14:07:34.000000Z",
-                    "updated_at": "2020-08-14T12:07:34.000000Z",
-                    "created_at": "2020-08-14T12:07:34.000000Z",
+                    "start_at": "2020-08-14T14:07:34.000+02:00",
+                    "updated_at": "2020-08-14T12:07:34.000+02:00",
+                    "created_at": "2020-08-14T12:07:34.000+02:00",
                     "jobs": [{
                             "id": 1,
                             "user_id": 1,
@@ -791,15 +791,30 @@
                 "created_at": "2020-08-14T14:07:34.000000Z"
             },
             "configuration": {
-                "id": 1,
-                "user_id": 1,
-                "name": "Hand",
-                "description": "Aperiam asperiores illo quos. Quisquam quod magnam dolor fuga animi maxime. Sit molestiae quidem eius unde excepturi adipisci sunt. Iste vero quo nam cum quia.",
-                "active": 0,
-                "updated_at": "2020-08-14T12:07:34.000000Z",
-                "created_at": "2020-08-14T12:07:34.000000Z"
-            }
-        }
+            	"updated_at": "2020-08-14T12:07:34.000000Z",
+                "created_at": "2020-08-14T12:07:34.000000Z",
+	            "name":"Configuration created through API",
+	            "description":"A basic Configuration",
+	            "params":[
+	               {
+	                  "pi":-0.8441270315193785,
+	                  "psi":-0.15200161677194193,
+	                  "kappa":"",
+	                  "tau":"",
+	                  "beta":"",
+	                  "alpha":"",
+	                  "search_terms":[
+	                     "intimate partner",
+	                     "american energy"
+	                  ],
+	                  "media_outlet_urls":[
+	                     "https://whoradio.iheart.com/",
+	                     "https://www.newschannel10.com/"
+	                  ]
+	               }
+	            ]
+	         }
+     }
     ],
     "columns": ["name", "description", "active", "updated_at"],
     "version": "1.0.0",

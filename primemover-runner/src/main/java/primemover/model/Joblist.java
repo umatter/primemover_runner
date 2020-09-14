@@ -1,13 +1,13 @@
 package primemover.model;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Joblist {
 	private Long id;
 	private Boolean active;
-	private Date startTime;
+	private ZonedDateTime startTime;
 	private List<IJob> jobs;
 	
 	public List<IJob> getJobs() {
@@ -25,11 +25,11 @@ public class Joblist {
 		jobs.add(job);
 	}
 
-	public Date getStartTime() {
+	public ZonedDateTime getStartTime() {
 		return startTime;
 	}
 
-	public void setStartTime(Date startTime) {
+	public void setStartTime(ZonedDateTime startTime) {
 		this.startTime = startTime;
 	}
 

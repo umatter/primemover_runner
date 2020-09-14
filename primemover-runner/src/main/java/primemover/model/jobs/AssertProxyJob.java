@@ -1,16 +1,16 @@
-package primemover.model;
+package primemover.model.jobs;
 
 import org.springframework.util.StringUtils;
 
 /*
  * Base class for Asserting the proxy
  */
-public abstract class AssertProxy extends BaseJob {
+public abstract class AssertProxyJob extends BaseJob {
 	private String ip;
 	private String country;
 	private String city;
 			
-	public AssertProxy() {
+	public AssertProxyJob() {
 		super();
 	}	
 	
@@ -24,7 +24,7 @@ public abstract class AssertProxy extends BaseJob {
 	 * @param country
 	 * @param city
 	 */
-	public AssertProxy(Long id, String name, String description, String ip, String country, String city) {
+	public AssertProxyJob(Long id, String name, String description, String ip, String country, String city) {
 		super(id, name, description);
 		
 		if (!StringUtils.hasText(ip) && !StringUtils.hasText(country) && !StringUtils.hasText(city)) {

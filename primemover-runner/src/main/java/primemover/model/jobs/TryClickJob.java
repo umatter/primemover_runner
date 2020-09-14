@@ -1,4 +1,6 @@
-package primemover.model;
+package primemover.model.jobs;
+
+import primemover.model.SelectorType;
 
 public class TryClickJob extends SelectorBaseJob {
 

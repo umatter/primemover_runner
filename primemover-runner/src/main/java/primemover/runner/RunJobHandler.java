@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -17,19 +19,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.model.AssertElementExistsJob;
-import primemover.model.AssertPageLoadedJob;
-import primemover.model.AssertProxyByGeosurf;
-import primemover.model.AssertScrolledMaxJob;
-import primemover.model.EnterTextFieldJob;
 import primemover.model.IJob;
-import primemover.model.ScrollByDurationJob;
-import primemover.model.ScrollByLengthJob;
-import primemover.model.SingleSelectUrlJob;
-import primemover.model.TryClickJob;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
 import primemover.model.geosurf.IpInfo;
+import primemover.model.jobs.AssertElementExistsJob;
+import primemover.model.jobs.AssertPageLoadedJob;
+import primemover.model.jobs.AssertProxyByGeosurfJob;
+import primemover.model.jobs.AssertScrolledMaxJob;
+import primemover.model.jobs.EnterTextFieldJob;
+import primemover.model.jobs.ScrollByDurationJob;
+import primemover.model.jobs.ScrollByLengthJob;
+import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
 import primemover.util.Page;
 import primemover.util.Scrolling;
 import primemover.util.Selecting;
@@ -37,6 +39,10 @@ import primemover.util.Waiter;
 
 public class RunJobHandler {
 
+	private static Logger logger = LogManager.getLogger(RunJobHandler.class);
+	
+	
+	
 	// Interface for our IJob-Handlers
 	private interface Handler {
 		void handle(WebDriver driver, IJob job);
@@ -48,6 +54,8 @@ public class RunJobHandler {
 
 	// Populate handlers
 	static {
+		logger.trace("populating handlers");
+		logger.trace("creating VisitJob-Handler");
 		dispatch.put(VisitJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				VisitJob typedJob = (VisitJob) job;
@@ -56,6 +64,7 @@ public class RunJobHandler {
 			}
 		});
 
+		logger.trace("creating WaitJob-Handler");
 		dispatch.put(WaitJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				WaitJob typedJob = (WaitJob) job;
@@ -68,6 +77,8 @@ public class RunJobHandler {
 			}
 		});
 
+
+		logger.trace("creating ScrollByLengthJob-Handler");
 		dispatch.put(ScrollByLengthJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				ScrollByLengthJob typedJob = (ScrollByLengthJob) job;
@@ -88,6 +99,8 @@ public class RunJobHandler {
 			}
 		});
 		
+
+		logger.trace("creating ScrollByDurationJob-Handler");
 		dispatch.put(ScrollByDurationJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				ScrollByDurationJob typedJob = (ScrollByDurationJob) job;
@@ -108,6 +121,7 @@ public class RunJobHandler {
 			}
 		});
 
+		logger.trace("creating EnterTextFieldJob-Handler");
 		dispatch.put(EnterTextFieldJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				EnterTextFieldJob typedJob = (EnterTextFieldJob) job;
@@ -127,6 +141,7 @@ public class RunJobHandler {
 			}
 		});
 
+		logger.trace("creating SingleSelectUrlJob-Handler");
 		dispatch.put(SingleSelectUrlJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				SingleSelectUrlJob typedJob = (SingleSelectUrlJob) job;
@@ -149,6 +164,7 @@ public class RunJobHandler {
 			}
 		});
 		
+		logger.trace("creating TryClickJob-Handler");
 		dispatch.put(TryClickJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				TryClickJob typedJob = (TryClickJob) job;
@@ -170,6 +186,7 @@ public class RunJobHandler {
 			}
 		});
 		
+		logger.trace("creating AssertPageLoadedJob-Handler");
 		dispatch.put(AssertPageLoadedJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				// AssertPageLoadedJob typedJob = (AssertPageLoadedJob) job;
@@ -179,6 +196,7 @@ public class RunJobHandler {
 			}
 		});
 		
+		logger.trace("creating AssertScrolledMaxJob-Handler");
 		dispatch.put(AssertScrolledMaxJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) job;
@@ -199,7 +217,7 @@ public class RunJobHandler {
 			}
 		});
 		
-		
+		logger.trace("creating AssertElementExistsJob-Handler");
 		dispatch.put(AssertElementExistsJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				AssertElementExistsJob typedJob = (AssertElementExistsJob) job;
@@ -211,12 +229,13 @@ public class RunJobHandler {
 			}
 		});
 		
-		dispatch.put(AssertProxyByGeosurf.class, new Handler() {
+		logger.trace("creating AssertProxyByGeosurf-Handler");
+		dispatch.put(AssertProxyByGeosurfJob.class, new Handler() {
 			
 			private ObjectMapper mapper = new ObjectMapper();
 			
 			public void handle(WebDriver driver, IJob job) {
-				AssertProxyByGeosurf typedJob = (AssertProxyByGeosurf) job;
+				AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) job;
 				
 				// get IP-Info from geosurf
 				driver.get("https://geo.geosurf.io/");
@@ -244,15 +263,8 @@ public class RunJobHandler {
 				} catch (JsonProcessingException e) {
 					throw new AssertionError("Error processing json", e);
 				}
-				
-				
 			}
 		});
-		
-		
-		
-		
-		
 	}
 
 	// Call the job specific handler

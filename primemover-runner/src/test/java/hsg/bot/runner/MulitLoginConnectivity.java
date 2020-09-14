@@ -11,8 +11,8 @@ import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 

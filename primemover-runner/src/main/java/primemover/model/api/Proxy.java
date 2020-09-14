@@ -16,6 +16,8 @@ public class Proxy {
 	private Boolean active;
 	private Date updated_at;
 	private Date created_at;
+	private String type;
+	
 
 	public Proxy() {
 	}
@@ -98,6 +100,14 @@ public class Proxy {
 
 	public void setCreated_at(Date created_at) {
 		this.created_at = created_at;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 	

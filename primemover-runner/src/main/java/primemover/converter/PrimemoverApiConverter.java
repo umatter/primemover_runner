@@ -10,25 +10,26 @@ import org.openqa.selenium.InvalidArgumentException;
 import org.springframework.util.StringUtils;
 
 import primemover.model.AgentType;
-import primemover.model.BaseJob;
 import primemover.model.BasicAgent;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
-import primemover.model.EnterTextFieldJob;
+import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
 import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
-import primemover.model.ScrollByDurationJob;
-import primemover.model.ScrollByLengthJob;
 import primemover.model.ScrollDirection;
 import primemover.model.SelectorType;
-import primemover.model.SimpleProxy;
-import primemover.model.SingleSelectUrlJob;
-import primemover.model.TryClickJob;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
+import primemover.model.HttpProxy;
 import primemover.model.api.CrawlerResult;
+import primemover.model.jobs.BaseJob;
+import primemover.model.jobs.EnterTextFieldJob;
+import primemover.model.jobs.ScrollByDurationJob;
+import primemover.model.jobs.ScrollByLengthJob;
+import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
 import primemover.model.IJob;
 
 public class PrimemoverApiConverter {
@@ -37,7 +38,22 @@ public class PrimemoverApiConverter {
 	}
 	
 	private static IProxy convertApiProxy(primemover.model.api.Proxy item) {
-		SimpleProxy res = new SimpleProxy();
+		
+		HttpProxy res;	
+		
+		String type = item.getType();
+		if (StringUtils.isEmpty(type)) {
+			res = new HttpProxy();
+		} else {
+			type = type.toLowerCase();
+			if (type.contains("geosurf")) {
+				res = new GeoSurfProxy();
+			} else if (type.contains("http")) {
+				res = new HttpProxy();
+			} else {
+				throw new InvalidArgumentException("Unknown proxy type");
+			}
+		}		
 		
 		if (StringUtils.isEmpty(item.getHostname())) {
 			throw new InvalidArgumentException("Hostname must not be empty");
@@ -59,23 +75,21 @@ public class PrimemoverApiConverter {
 		IAgent agent;
 		
 		String ident = item.getIdentification();
-		String multiloginId = item.getMultilogin_id();
 		
-		if (StringUtils.isEmpty(multiloginId)) {
-			if (StringUtils.isEmpty(ident) ) {
-				throw new InvalidArgumentException("Emtpy string for agent found");
-			} else {
-				
-				if (ident.contains("Firefox")) {
-					agent = new BasicAgent(new Long(item.getId()), AgentType.FIREFOX, item.getName(), item.getDescription());
-				} else if(ident.contains("Chrom")) {
-					agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription());
-				} else {
-					throw new InvalidArgumentException("No valid agent found");
-				}
-			}
-		} else {
+		if (StringUtils.isEmpty(ident)) {
+			throw new InvalidArgumentException("Identification is required");
+		}
+		
+		ident = ident.toLowerCase();
+		
+		if (ident.contains("firefox")) {
+			agent = new BasicAgent(new Long(item.getId()), AgentType.FIREFOX, item.getName(), item.getDescription());
+		} else if(ident.contains("chrome")) {
+			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription());
+		} else if(ident.contains("multilogin")) {
 			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getMultilogin_id());
+		} else {
+			throw new InvalidArgumentException("No valid agent found");
 		}
 		
 		return agent;

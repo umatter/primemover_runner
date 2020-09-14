@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import primemover.model.Joblist;
 import primemover.model.Crawler;
 import primemover.runner.ITaskOperator;
+import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.ICrawlerService;
 
@@ -23,6 +24,9 @@ class LoadTasksFromServiceAndRunJobs {
 	
 	@Autowired
 	private ICrawlerService crawlerService;
+	
+	@Autowired
+	private MockJobManager jobManager;
 	
 	@BeforeEach
 	public void setup() {
@@ -113,13 +117,11 @@ class LoadTasksFromServiceAndRunJobs {
 		}
 	}
 	
-	/*
+	
 	@Test
 	void LoadTasksAndRunWithJobManager() {
 		// get the jobList for each Crawler
 		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
-		
-		// Startzeiten setzen
 		
 		
 		// run the tasks
@@ -129,9 +131,8 @@ class LoadTasksFromServiceAndRunJobs {
 		
 		jobManager.run();
 		
-		// Missing wait...
 	}
-	*/
+	
 	
 	@AfterEach
     public void tearDown() {

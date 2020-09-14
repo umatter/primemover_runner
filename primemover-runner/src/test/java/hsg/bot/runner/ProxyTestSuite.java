@@ -11,10 +11,10 @@ import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
-import primemover.model.SimpleProxy;
+import primemover.model.jobs.AssertProxyByGeosurfJob;
+import primemover.model.HttpProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
-import primemover.model.AssertProxyByGeosurf;
 
 @SpringBootTest
 class ProxyTestSuite {
@@ -25,14 +25,14 @@ class ProxyTestSuite {
 	private ITaskOperator service;
 	private IAgent agent;
 	private Crawler crawler;
-	private SimpleProxy proxy;
+	private HttpProxy proxy;
 	
 	
 	@BeforeEach
 	public void setupNewYork() {
 	
 		// Defined proxy for US and city of New York for test!
-		proxy = new SimpleProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
+		proxy = new HttpProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
 		service = serviceFactory.getItem();
 		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome"); // Must run on Chrome as plain JSON is available. Firefox will display a table.
 		crawler = new Crawler();
@@ -59,7 +59,7 @@ class ProxyTestSuite {
 		*/
 		
 		// Verify city and country
-		AssertProxyByGeosurf assertProxyJob = new AssertProxyByGeosurf(1l, "Assert New York", "Assert New York", null, "US", "New York");
+		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "New York");
 		jobs.appendJob(assertProxyJob);
 		
 		service.runJobList(jobs);

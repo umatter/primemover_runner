@@ -12,13 +12,13 @@ import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.ScrollDirection;
-import primemover.model.ScrollByLengthJob;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
+import primemover.model.jobs.AssertPageLoadedJob;
+import primemover.model.jobs.AssertScrolledMaxJob;
+import primemover.model.jobs.ScrollByLengthJob;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
-import primemover.model.AssertPageLoadedJob;
-import primemover.model.AssertScrolledMaxJob;
 
 @SpringBootTest
 class ScrollingTestSuite {

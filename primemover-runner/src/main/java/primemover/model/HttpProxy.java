@@ -1,6 +1,6 @@
 package primemover.model;
 
-public class SimpleProxy implements IProxy {
+public class HttpProxy implements IProxy {
 
 	private String url;
 	private Integer port;
@@ -27,7 +27,7 @@ public class SimpleProxy implements IProxy {
 		return port;
 	}
 
-	public SimpleProxy(String url, Integer port, String username, String password) {
+	public HttpProxy(String url, Integer port, String username, String password) {
 		super();
 		this.url = url;
 		this.port = port;
@@ -35,7 +35,7 @@ public class SimpleProxy implements IProxy {
 		this.password = password;
 	}
 
-	public SimpleProxy() {
+	public HttpProxy() {
 		super();
 	}
 

@@ -11,8 +11,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
+import primemover.capture.RecordingProxyFactory;
 import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
+import primemover.service.AgentService;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
@@ -25,6 +27,13 @@ public class TestConfig {
 	MockJobManager getManager() {
 		return new MockJobManager();	
 	}
+	
+
+	@Bean(name="AgentService")
+	AgentService getAgentService() {
+		return new AgentService();
+	}
+	
 	
 	@Bean(name="fileStorageService")
 	IStorageService getFileStorageServices() {
@@ -62,4 +71,9 @@ public class TestConfig {
 	TaskOperatorFactory getTaskOperatorFactory() {
 		return new TaskOperatorFactory();
 	}
+	
+	@Bean(name="RecordingProxyFactory")
+	RecordingProxyFactory getRecorderFactory() {
+		return new RecordingProxyFactory();
+	}	
 }

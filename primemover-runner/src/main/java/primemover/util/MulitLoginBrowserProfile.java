@@ -1,8 +1,17 @@
 package primemover.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.openqa.selenium.InvalidArgumentException;
 
 import primemover.capture.RecordingProxy;
+import primemover.model.Crawler;
+import primemover.model.IAgent;
+import primemover.model.MultiLoginAgent;
+import primemover.model.MultiLoginIBrowserType;
+import primemover.model.MultiLoginIOsType;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,14 +20,62 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class MulitLoginBrowserProfile {
+	
+	private static Logger logger = LogManager.getLogger(MulitLoginBrowserProfile.class);
+	
+	
 	String profileId;
-
+	
+	
+	/**
+	 * Loads an existing profile
+	 * 
+	 * @param profileId: The profile-id to load
+	 */
 	public MulitLoginBrowserProfile(String profileId) {
 		super();
 
 		this.profileId = profileId;
 	}
+	
+	
+	/**
+	 * Tests for an existing profile in the crawler. Creates a new profile if required
+	 * 
+	 * @param crawler
+	 * @throws Exception 
+	 */
+	public MulitLoginBrowserProfile(Crawler crawler, RecordingProxy proxy) {
+		super();
 
+		IAgent agent = crawler.getAgent();
+		
+		if (!(agent instanceof MultiLoginAgent)) {
+			throw new InvalidArgumentException("Only multilogin-agents are supported");
+		}
+		
+		MultiLoginAgent typedAgent = (MultiLoginAgent) agent;
+		String id = typedAgent.getMultiLoginId();
+		
+		if (!StringUtils.isEmpty(id)) {
+			this.profileId = id;
+			return; // done
+		}
+		
+		// create a new profile
+		try {
+			this.profileId = createNewProfile(typedAgent, proxy);
+		} catch (Exception ex) {
+			logger.error("Error creating new profile id for agent " + typedAgent.getId(), ex);
+			
+			throw new IllegalStateException("profile was not created", ex);
+		}
+	}
+
+	public String getProfileId() {
+		return this.profileId;
+	}
+	
 	public void updateProxy(RecordingProxy proxy) throws Exception {
 		String url = "http://127.0.0.1:35000/api/v2/profile/" + this.profileId;
 
@@ -31,13 +88,13 @@ public class MulitLoginBrowserProfile {
 		con.setDoOutput(true);
 		
 		// Request data
-		String jsonInputString = "{\"network\": {\r\n" + 
-				"    \"proxy\": {\r\n" + 
-				"      \"type\": \"HTTP\",\r\n" + 
-				"      \"host\": \"" + proxy.getIp() + "\",\r\n" + 
-				"      \"port\": \"" + proxy.getPort() + "\",\r\n" + 
-				"      \"username\": \"\",\r\n" + 
-				"      \"password\": \"\"\r\n" + 
+		String jsonInputString = "{\"network\": {" + 
+				"    \"proxy\": {" + 
+				"      \"type\": \"HTTP\"," + 
+				"      \"host\": \"" + proxy.getIp() + "\"," + 
+				"      \"port\": \"" + proxy.getPort() + "\"," + 
+				"      \"username\": \"\"," + 
+				"      \"password\": \"\"" + 
 				"    }," +
 				" \"dns\": []" +
 				"}}";
@@ -98,7 +155,6 @@ public class MulitLoginBrowserProfile {
 		 */
 		String url = "http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=" + this.profileId;
 
-		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setRequestMethod("GET");
@@ -121,6 +177,104 @@ public class MulitLoginBrowserProfile {
 		}
 		
 		throw new IllegalStateException("Could not load Mulitlogin profile");
+	}
+	
+	public Boolean deleteProfile() throws Exception {
+		String url = "http://127.0.0.1:35000/api/v2/profile/" + this.profileId;
+
+		
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("DELETE");
+		
+		Integer responseCode = con.getResponseCode();
+
+		if (responseCode == 204) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/* not supported yet to grab an individual profile
+	public Boolean isValidProfile() throws Exception {
+		String url = "http://127.0.0.1:35000/api/v2/profile/" + this.profileId;
+
+		
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("GET");
+		
+		Integer responseCode = con.getResponseCode();
+
+		if (responseCode == HttpURLConnection.HTTP_OK) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	*/
+	
+	private static String createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) throws Exception{
+		String url = "http://127.0.0.1:35000/api/v2/profile";
+		
+		// default
+		MultiLoginIOsType operatingSytem = MultiLoginIOsType.WINDOWS;
+		MultiLoginIBrowserType browser = MultiLoginIBrowserType.MIMIC;
+		
+		String jsonInput = "{" + 
+				" \"name\": \"" + agent.getName() + "\"," +
+				" \"os\": \"" + operatingSytem.getMultiLoginValue() + "\"," +
+				" \"browser\": \"" + browser.getMultiLoginValue()+ "\"," + 
+				" \"network\": {" + 
+						"    \"proxy\": {" + 
+						"      \"type\": \"HTTP\"," + 
+						"      \"host\": \"" + proxy.getIp() + "\"," + 
+						"      \"port\": \"" + proxy.getPort() + "\"," + 
+						"      \"username\": \"\"," + 
+						"      \"password\": \"\"" + 
+						"    }," +
+						" \"dns\": []" +
+						"}" +
+				"}";
+
+		// setup method
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("POST");
+		con.setRequestProperty("Content-Type", "application/json; utf-8");
+		con.setDoOutput(true);
+				
+		try(OutputStream os = con.getOutputStream()) {
+		    byte[] input = jsonInput.getBytes("utf-8");
+		    os.write(input, 0, input.length);			
+		}		
+		
+		if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+			throw new IllegalStateException("Could not create browser profile for agent " + agent.getId());
+		}
+		
+		
+		// read in id of the profile
+		String newProfileId = "";
+		try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));){
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			
+			// Get JSON text from the response and return the value by key "value"
+			JSONObject jsonResponse = new JSONObject(response.toString());
+			newProfileId =  jsonResponse.getString("uuid");
+		}	
+		
+		if (StringUtils.isEmpty(newProfileId)) {
+			throw new IllegalStateException("no profile-id was created for agent " + agent.getId());
+		}
+		
+		return newProfileId;
 	}
 
 }

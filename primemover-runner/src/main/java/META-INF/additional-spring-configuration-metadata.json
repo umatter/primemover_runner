@@ -33,5 +33,40 @@
     "name": "multilogin.StartupRetryCount",
     "type": "java.lang.String",
     "description": "A description for 'multilogin.StartupRetryCount'"
+  },
+  {
+    "name": "runner.UpdateInterval",
+    "type": "java.lang.String",
+    "description": "A description for 'runner.UpdateInterval'"
+  },
+  {
+    "name": "export.Compression",
+    "type": "java.lang.String",
+    "description": "A description for 'export.Compression'"
+  },
+  {
+    "name": "recorder.certificate.path",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.certificate.path'"
+  },
+  {
+    "name": "recorder.certificate.user",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.certificate.user'"
+  },
+  {
+    "name": "recorder.certificate.password",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.certificate.password'"
+  },
+  {
+    "name": "recorder.certificate.type",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.certificate.type'"
+  },
+  {
+    "name": "recorder.certificate.alias",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.certificate.alias'"
   }
 ]}

@@ -1,4 +1,6 @@
-package primemover.model;
+package primemover.model.jobs;
+
+import primemover.model.ScrollDirection;
 
 public abstract class ScrollBaseJob extends BaseJob {
 

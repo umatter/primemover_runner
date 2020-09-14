@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 
+import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
@@ -32,6 +33,11 @@ public class TestConfig {
 	TaskOperatorFactory getTaskServiceFactory() {
 		return new TaskOperatorFactory();
 	}
+	
+	@Bean(name="RecordingProxyFactory")
+	RecordingProxyFactory getRecorderFactory() {
+		return new RecordingProxyFactory();
+	}	
 	
 	/*
 	@Bean(name="jobmanager", initMethod = "setup")

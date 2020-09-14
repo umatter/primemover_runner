@@ -5,19 +5,27 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import primemover.config.StartupMode;
+
 public class TaskOperatorFactory implements ApplicationContextAware {
 	
 	@Value("${global.mode}")
-	private String mode;
+	private  StartupMode mode;
 	private ApplicationContext ctx;
 	private static TaskOperatorFactory instance = new TaskOperatorFactory();
 	
 	public ITaskOperator getItem() {
 		ITaskOperator ret = null;
-		switch (mode.toUpperCase()) {
-		case "DEBUG":
+		switch (mode) {
+		case DEVELOP:
 			ret = new MockTaskOperator();
 			break;
+		case INTEGRATION:
+			ret = new MockTaskOperator();
+			break;
+		case PRODUCTION:
+			ret = new MockTaskOperator();
+			break;		
 		default:
 			throw new IllegalStateException("Invalid argument for application mode");
 			//break;

@@ -1,33 +1,48 @@
 package primemover.runner;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import primemover.model.BasicAgent;
-import primemover.model.AgentType;
+import primemover.config.StartupMode;
 import primemover.model.Crawler;
-import primemover.model.DecisionType;
-import primemover.model.EnterTextFieldJob;
-import primemover.model.IAgent;
 import primemover.model.Joblist;
-import primemover.model.ScrollDirection;
-import primemover.model.ScrollByLengthJob;
-import primemover.model.SelectorBaseJob;
-import primemover.model.SelectorType;
-import primemover.model.SingleSelectUrlJob;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
+import primemover.service.ICrawlerService;
 
 public class JobManager implements IJobManager {
-	@Value("${runner.MaxParallelExecution}")
-	private Integer maxThreads; // maximum parallel executions of joblists
+	private static Logger logger = LogManager.getLogger(JobManager.class);
+	
+	@Value("${global.mode:PRODUCTION}")
+	private StartupMode mode;
+	
+	@Value("${runner.MaxParallelExecution:4}")
+	private Integer maxThreads = 4; // maximum parallel executions of joblists
+	
+	@Value("${runner.UpdateInterval:5}")
+	private Integer updateInterval = 5; // Update Interval to grab planned jobs in minutes
+	
+	private ZonedDateTime lastExecution = null; // last execution time of scheduler
+	private ZonedDateTime lastTimeAdded = ZonedDateTime.now(); // the max datetime of the jobs added during the last run
 	
 	private ExecutorService executorService;
+	
+	private ScheduledExecutorService scheduler;
 
+
+	@Autowired
+	private ICrawlerService crawlerService;
+	
 	@Autowired
 	TaskOperatorFactory taskServiceFactory;
 	
@@ -37,62 +52,55 @@ public class JobManager implements IJobManager {
 	@Override
 	public void setup() {
 		executorService = Executors.newFixedThreadPool(maxThreads);
+		scheduler = Executors.newSingleThreadScheduledExecutor(); // jobs will only pass the execution to the executor service
 	}
 
 	/* (non-Javadoc)
 	 * @see primemover.runner.IJobManager#run()
 	 */
 	@Override
-	@Scheduled(fixedRate = 90000)
+	@Scheduled(fixedRate = 60000)
 	public void run() {
-		// Basic settings
-		IAgent agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome");
-		Crawler crawler = new Crawler();
-		crawler.setAgent(agent);
-
-		Joblist jobs = new Joblist();
+		ZonedDateTime curRun = ZonedDateTime.now();
 		
-		// job
-		
-		VisitJob visitJob = new VisitJob(1l, "visit foxnews", "visit foxnews", "https://www.foxnews.com/");
-		//jobs.appendJob(visitJob);
-		
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 15);
-		//jobs.appendJob(waitJob);
+		if (lastExecution != null) {
+			long diff = ChronoUnit.MINUTES.between(lastExecution, curRun);
 			
-		visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
-		jobs.appendJob(visitJob);
+			// reduce invocations to update interval
+			if (diff < updateInterval) {
+				logger.trace("Intervall not reached - Skipping execution");
+				return;
+			}
+		}
 		
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
-		jobs.appendJob(enterJob);
+		logger.info("Scheduled execution");
 		
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
-		jobs.appendJob(waitJob);
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
+		
+		// add scheduler tasks
+		ZonedDateTime newLastTimeToAdd = curRun.plusMinutes(updateInterval);
+		for (Pair<Crawler, Joblist> task : taskList) {
+		
+			Joblist jobs = task.getRight();
+			ZonedDateTime startTime = jobs.getStartTime();
+			
+			if (lastTimeAdded.isBefore(startTime) && newLastTimeToAdd.isAfter(startTime)) {
 				
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.FIRST);
-		jobs.appendJob(singleSelectUrlJob);
+				// just pass the job to the executor after reaching the starttime
+				scheduler.schedule(new Runnable() {
+					// running		
+					JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(), task.getLeft(), jobs);
+					
+		            @Override
+		            public void run(){
+		            	executorService.submit(runner);
+		            }
+		        }, ChronoUnit.SECONDS.between(startTime, curRun), TimeUnit.SECONDS);
+			}
+		}
 		
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
-		jobs.appendJob(waitJob);
-		
-		visitJob = new VisitJob(1l, "visit nzz.ch", "visit google", "https://www.nzz.ch");
-		jobs.appendJob(visitJob);
-		
-		waitJob = new WaitJob(1l, "wait", "wait", 5);
-		jobs.appendJob(waitJob);
-		
-		ScrollByLengthJob scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 50% down", ScrollDirection.DOWN, 60);
-		jobs.appendJob(scrollJob);
-		
-		scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 15% up", ScrollDirection.UP, 15);
-		jobs.appendJob(scrollJob);
-		
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
-		jobs.appendJob(waitJob);
-		
-		// running		
-		JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(), crawler, jobs);
-		executorService.execute(runner);
+		lastExecution = curRun;
+		lastTimeAdded = newLastTimeToAdd;
 	}
-
 }

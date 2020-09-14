@@ -12,9 +12,11 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
+import primemover.capture.RecordingProxyFactory;
 import primemover.runner.IJobManager;
 import primemover.runner.JobManager;
 import primemover.runner.TaskOperatorFactory;
+import primemover.service.AgentService;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
@@ -41,16 +43,25 @@ public class Config {
 		return new BackendStorageService();
 	}
 	
+	@Bean(name="AgentService")
+	AgentService getAgentService() {
+		return new AgentService();
+	}
 	
 	@Bean("CrawlerService")
 	ICrawlerService getCrawlerService() {
 		return new CrawlerService();
 	}
 
-	@Bean(name="TaskServiceFactory")
+	@Bean(name="TaskOperatorFactory")
 	TaskOperatorFactory getTaskOperatorFactory() {
 		return new TaskOperatorFactory();
 	}
+	
+	@Bean(name="RecordingProxyFactory")
+	RecordingProxyFactory getRecorderFactory() {
+		return new RecordingProxyFactory();
+	}	
 	
 	@Bean(name="jobmanager", initMethod = "setup")
 	IJobManager getManager() {

@@ -1,4 +1,7 @@
-package primemover.model;
+package primemover.model.jobs;
+
+import primemover.model.DecisionType;
+import primemover.model.SelectorType;
 
 public class SingleSelectUrlJob extends SelectorBaseJob {
 	

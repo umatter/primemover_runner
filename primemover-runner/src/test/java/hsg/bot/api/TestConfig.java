@@ -6,6 +6,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
@@ -15,22 +16,12 @@ import primemover.service.IStorageService;
 @SpringBootConfiguration
 public class TestConfig {
 	
-	@Value("${global.mode}")
+	@Value("${global.mode:DEVELOP}")
 	private String mode;
 	
 	@Bean(name="storageService")
 	IStorageService getStorageService() {
-		IStorageService ret = null;
-		switch (mode.toUpperCase()) {
-		case "DEBUG":
-			ret = new FileStorageService();
-			break;
-		default:
-			throw new IllegalStateException("Invalid argument for application mode");
-			//break;
-		}
-		
-		return ret;
+		return new FileStorageService();
 	}
 	
 	@Bean("CrawlerService")
@@ -48,4 +39,9 @@ public class TestConfig {
 	TaskOperatorFactory getTaskServiceFactory() {
 		return new TaskOperatorFactory();
 	}
+	
+	@Bean(name="RecordingProxyFactory")
+	RecordingProxyFactory getRecorderFactory() {
+		return new RecordingProxyFactory();
+	}	
 }

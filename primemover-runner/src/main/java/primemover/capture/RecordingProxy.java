@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.springframework.beans.factory.annotation.Value;
 
 import net.lightbody.bmp.BrowserMobProxy;
 import net.lightbody.bmp.BrowserMobProxyServer;
@@ -26,6 +27,18 @@ import org.apache.logging.log4j.LogManager;
 
 public class RecordingProxy {
 	private static Logger logger = LogManager.getLogger(RecordingProxy.class);
+	
+	@Value("${recorder.certificate.type}")
+	private  String certType;
+	
+	@Value("${recorder.certificate.path}")
+	private  String certPath;
+	
+	@Value("${recorder.certificate.alias}")
+	private  String certAlias;
+	
+	@Value("${recorder.certificate.password}")
+	private  String certPassword;
 	
 
 	BrowserMobProxy proxy = null;
@@ -58,10 +71,16 @@ public class RecordingProxy {
 	    // or save the certificate and private key as a PKCS12 keystore, for later use
 	    rootCertificateGenerator.saveRootCertificateAndKey("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), 
 	            "primemover", "CHANGEME-password");
-*/
+
 	    CertificateAndKeySource existingCertificateSource = 
 	            new KeyStoreFileCertificateSource("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), "primemover", "CHANGEME-password");
 	            
+	    */
+		
+	    CertificateAndKeySource existingCertificateSource = 
+	            new KeyStoreFileCertificateSource(this.certType, new File(this.certPath), this.certAlias, this.certPassword);
+	            
+	    
 	    // tell the ImpersonatingMitmManager to generate EC keys and to use the EC RootCertificateGenerator
 	    ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
 	            .rootCertificateSource(existingCertificateSource)

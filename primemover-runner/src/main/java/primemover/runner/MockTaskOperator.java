@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.OutputType;
@@ -22,11 +23,13 @@ import org.springframework.beans.factory.annotation.Value;
 
 import net.lightbody.bmp.core.har.Har;
 import primemover.capture.RecordingProxy;
+import primemover.capture.RecordingProxyFactory;
 import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
+import primemover.service.AgentService;
 import primemover.service.IStorageService;
 import primemover.service.JobData;
 import primemover.util.MulitLoginBrowserProfile;
@@ -39,8 +42,14 @@ public class MockTaskOperator implements ITaskOperator {
 	
 	private OperatorContext context;
 	
+	@Autowired
+	private AgentService agentService;
+	
 	@Autowired(required=false)
 	List<IStorageService> storages = new ArrayList<IStorageService>();
+	
+	@Autowired
+	private RecordingProxyFactory recorderFactory;
 	
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
 	
@@ -92,7 +101,16 @@ public class MockTaskOperator implements ITaskOperator {
 		Integer retryCount = 0;
 		
 		MultiLoginAgent typedAgent = (MultiLoginAgent) crawler.getAgent();
-		MulitLoginBrowserProfile bp = new MulitLoginBrowserProfile(typedAgent.getMultiLoginId());
+		
+		MulitLoginBrowserProfile bp;
+		
+		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
+			bp = new MulitLoginBrowserProfile(crawler, recorder);
+			agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
+		} else {
+			bp = new MulitLoginBrowserProfile(typedAgent.getMultiLoginId());
+		}
+		
 		
 		while (!done && retryCount < maxRetryCount) {
 			retryCount += 1;
@@ -166,7 +184,7 @@ public class MockTaskOperator implements ITaskOperator {
 	
 	public RecordingProxy setupRecorder(Crawler crawler) {
 		// create a recording proxy. Check also for any additional proxy
-		RecordingProxy recorder = new RecordingProxy();
+		RecordingProxy recorder = recorderFactory.createRecordingProxy();
 		
 		IProxy crawlerProxy = crawler.getProxy();
 		if (crawlerProxy != null) {

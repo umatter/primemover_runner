@@ -1,4 +1,4 @@
-package primemover.model;
+package primemover.model.jobs;
 
 public class AssertPageLoadedJob extends BaseJob {
 

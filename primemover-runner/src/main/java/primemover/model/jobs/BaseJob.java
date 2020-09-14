@@ -1,4 +1,6 @@
-package primemover.model;
+package primemover.model.jobs;
+
+import primemover.model.IJob;
 
 public abstract class BaseJob implements IJob {
 	Long id;

@@ -1,6 +1,6 @@
 package primemover.model.api;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -14,9 +14,9 @@ public class Queue {
 	private Boolean active;
 	private Boolean success;
 	private Boolean failure;
-	private Date start_at;
-	private Date updated_at;
-	private Date created_at;
+	private ZonedDateTime start_at;
+	private ZonedDateTime updated_at;
+	private ZonedDateTime created_at;
 	private List<Job> jobs;
 	
 	public Queue() {
@@ -79,27 +79,27 @@ public class Queue {
 		this.failure = failure;
 	}
 	
-	public Date getStart_at() {
+	public ZonedDateTime getStart_at() {
 		return start_at;
 	}
 	
-	public void setStart_at(Date start_at) {
+	public void setStart_at(ZonedDateTime start_at) {
 		this.start_at = start_at;
 	}
 
-	public Date getUpdated_at() {
+	public ZonedDateTime getUpdated_at() {
 		return updated_at;
 	}
 
-	public void setUpdated_at(Date updated_at) {
+	public void setUpdated_at(ZonedDateTime updated_at) {
 		this.updated_at = updated_at;
 	}
 
-	public Date getCreated_at() {
+	public ZonedDateTime getCreated_at() {
 		return created_at;
 	}
 
-	public void setCreated_at(Date created_at) {
+	public void setCreated_at(ZonedDateTime created_at) {
 		this.created_at = created_at;
 	}
 

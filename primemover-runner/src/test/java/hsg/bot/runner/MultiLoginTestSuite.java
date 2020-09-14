@@ -10,12 +10,12 @@ import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
-import primemover.model.SimpleProxy;
-import primemover.model.VisitJob;
-import primemover.model.WaitJob;
+import primemover.model.jobs.AssertProxyByGeosurfJob;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
+import primemover.model.HttpProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
-import primemover.model.AssertProxyByGeosurf;
 
 @SpringBootTest
 class MultiLoginTestSuite {
@@ -26,7 +26,7 @@ class MultiLoginTestSuite {
 	private ITaskOperator service;
 	private IAgent agent;
 	private Crawler crawler;
-	private SimpleProxy proxy;
+	private HttpProxy proxy;
 	
 	
 	@BeforeEach
@@ -35,7 +35,7 @@ class MultiLoginTestSuite {
 		//String prot = System.getProperty("https.protocols");
 		
 		// Defined proxy for US and city of New York for test!
-		proxy = new SimpleProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
+		proxy = new HttpProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
 		service = serviceFactory.getItem();
 		agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "bf4cd0e3-68b7-4cb6-a38f-6ed12ac2c666");
 		crawler = new Crawler();
@@ -63,7 +63,7 @@ class MultiLoginTestSuite {
 		jobs.appendJob(waitJob);
 		
 		// Verify city and country
-		AssertProxyByGeosurf assertProxyJob = new AssertProxyByGeosurf(1l, "Assert US / New York", "Assert US / New York", null, "US", "New York");
+		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert US / New York", "Assert US / New York", null, "US", "New York");
 		jobs.appendJob(assertProxyJob);
 		
 		service.runJobList(jobs);

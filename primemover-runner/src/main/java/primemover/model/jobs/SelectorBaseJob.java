@@ -1,4 +1,6 @@
-package primemover.model;
+package primemover.model.jobs;
+
+import primemover.model.SelectorType;
 
 public abstract class SelectorBaseJob extends BaseJob {
 
