@@ -37,7 +37,7 @@ public class JobListRunner implements Callable<Boolean> {
 			
 			logger.info("done running jobs for " + crawler.getId() + "(" + crawler.getName() + ")");
 		} catch (Exception e) {
-			logger.error("uncaught error during execution of joblist for " + crawler.getId() + "(" + crawler.getName() + ")");
+			logger.error("uncaught error during execution of joblist for " + crawler.getId() + "(" + crawler.getName() + ")", e);
 			return false;
 		}
 

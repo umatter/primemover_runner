@@ -33,6 +33,9 @@ public class JobManager implements IJobManager {
 	@Value("${runner.UpdateInterval:5}")
 	private Integer updateInterval = 5; // Update Interval to grab planned jobs in minutes
 	
+	@Value("${runner.MaxRedoMinutes:15}")
+	private Integer redoMinutes = 15; // Update Interval to grab planned jobs in minutes
+	
 	private ZonedDateTime lastExecution = null; // last execution time of scheduler
 	private ZonedDateTime lastTimeAdded = ZonedDateTime.now(); // the max datetime of the jobs added during the last run
 	
@@ -60,7 +63,7 @@ public class JobManager implements IJobManager {
 	 * @see primemover.runner.IJobManager#run()
 	 */
 	@Override
-	@Scheduled(fixedRate = 60000)
+	@Scheduled(fixedRate = 60000, initialDelay = 10000)
 	public void run() {
 		ZonedDateTime curRun = ZonedDateTime.now();
 		
@@ -81,23 +84,33 @@ public class JobManager implements IJobManager {
 		
 		// add scheduler tasks
 		ZonedDateTime newLastTimeToAdd = curRun.plusMinutes(updateInterval);
+		ZonedDateTime lastTimeAddedInclRedo = lastTimeAdded.minusMinutes(this.redoMinutes);
+		
 		for (Pair<Crawler, Joblist> task : taskList) {
 		
 			Joblist jobs = task.getRight();
 			ZonedDateTime startTime = jobs.getStartTime();
 			
-			if (lastTimeAdded.isBefore(startTime) && newLastTimeToAdd.isAfter(startTime)) {
+			if (lastTimeAddedInclRedo.isBefore(startTime) && newLastTimeToAdd.isAfter(startTime)) {
+				// calculating execution delay (positive only)
+				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
+				
+				logger.info("Preparing execution of {} in {} seconds", task.getRight().getId(), delaySeconds);
 				
 				// just pass the job to the executor after reaching the starttime
 				scheduler.schedule(new Runnable() {
-					// running		
+					// Job to run		
 					JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(), task.getLeft(), jobs);
+					// ID of joblist
+					Long jobListId = task.getRight().getId();
 					
 		            @Override
-		            public void run(){
+		            public void run() {
+		            	logger.info("Init execution of joblist {}", jobListId);
 		            	executorService.submit(runner);
 		            }
-		        }, ChronoUnit.SECONDS.between(startTime, curRun), TimeUnit.SECONDS);
+		            
+		        }, delaySeconds, TimeUnit.SECONDS);
 			}
 		}
 		
