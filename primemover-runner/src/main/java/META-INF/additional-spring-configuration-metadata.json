@@ -68,5 +68,10 @@
     "name": "recorder.certificate.alias",
     "type": "java.lang.String",
     "description": "A description for 'recorder.certificate.alias'"
+  },
+  {
+    "name": "recorder.timeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.timeoutSeconds'"
   }
 ]}

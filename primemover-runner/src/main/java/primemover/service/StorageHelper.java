@@ -9,14 +9,15 @@ import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.openqa.selenium.Cookie;
 
 import primemover.model.IJob;
 
 public class StorageHelper {
-	private static Logger logger = LogManager.getLogger(StorageHelper.class);
+	private static Logger logger = LoggerFactory.getLogger(StorageHelper.class);
 
 	public static void writeCookies(OutputStream os, JobData data) throws IOException {
 		logger.debug("writting cookeis");

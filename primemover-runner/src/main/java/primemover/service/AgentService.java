@@ -1,6 +1,8 @@
 package primemover.service;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -10,8 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import primemover.config.StartupMode;
 import primemover.model.MultiLoginAgent;
@@ -22,7 +22,7 @@ public class AgentService {
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
 
-	private static Logger logger = LogManager.getLogger(AgentService.class);
+	private static Logger logger = LoggerFactory.getLogger(AgentService.class);
 	
 	public AgentService() {
 		// nothing to do

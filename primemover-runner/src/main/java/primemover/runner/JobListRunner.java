@@ -2,14 +2,14 @@ package primemover.runner;
 
 import java.util.concurrent.Callable;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 
 public class JobListRunner implements Callable<Boolean> {
-	private static Logger logger = LogManager.getLogger(JobListRunner.class);
+	private static Logger logger = LoggerFactory.getLogger(JobListRunner.class);
 	
 	private ITaskOperator taskOperator;
 	private Crawler crawler;

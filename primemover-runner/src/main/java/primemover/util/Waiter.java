@@ -1,16 +1,16 @@
 package primemover.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class Waiter {
-	private static Logger logger = LogManager.getLogger(Waiter.class);
+	private static Logger logger = LoggerFactory.getLogger(Waiter.class);
 	
 	//Wait Until JS Ready
 	/**

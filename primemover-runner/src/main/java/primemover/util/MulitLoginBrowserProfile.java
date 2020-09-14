@@ -1,10 +1,10 @@
 package primemover.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.openqa.selenium.InvalidArgumentException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
@@ -21,7 +21,7 @@ import java.net.URL;
 
 public class MulitLoginBrowserProfile {
 	
-	private static Logger logger = LogManager.getLogger(MulitLoginBrowserProfile.class);
+	private static Logger logger = LoggerFactory.getLogger(MulitLoginBrowserProfile.class);
 	
 	
 	String profileId;

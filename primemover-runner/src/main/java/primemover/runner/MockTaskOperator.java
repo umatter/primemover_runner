@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -18,6 +16,8 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -35,7 +35,7 @@ import primemover.service.JobData;
 import primemover.util.MulitLoginBrowserProfile;
 
 public class MockTaskOperator implements ITaskOperator {
-	private static Logger logger = LogManager.getLogger(MockTaskOperator.class);
+	private static Logger logger = LoggerFactory.getLogger(MockTaskOperator.class);
 	
 	@Value("${multilogin.StartupRetryCount}")
 	private Integer maxRetryCount;

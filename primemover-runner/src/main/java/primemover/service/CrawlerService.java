@@ -14,8 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import primemover.config.StartupMode;
 import primemover.converter.PrimemoverApiConverter;
@@ -29,7 +30,7 @@ public class CrawlerService implements ICrawlerService {
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
 
-	private static Logger logger = LogManager.getLogger(CrawlerService.class);
+	private static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 	
 	public CrawlerService() {
 		// nothing to do

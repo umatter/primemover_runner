@@ -6,13 +6,14 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
 import primemover.model.IJob;
 
 public class FileStorageService implements IStorageService {
-	private static Logger logger = LogManager.getLogger(FileStorageService.class);
+	private static Logger logger = LoggerFactory.getLogger(FileStorageService.class);
 	
 	
 	@Value("${export.FileTargetFolder}")

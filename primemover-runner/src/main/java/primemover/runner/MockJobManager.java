@@ -7,15 +7,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 
 public class MockJobManager implements IJobManager {
-	private static Logger logger = LogManager.getLogger(MockJobManager.class);
+	private static Logger logger = LoggerFactory.getLogger(MockJobManager.class);
 
 	private Integer maxThreads = 2; // maximum parallel executions of joblists
 	

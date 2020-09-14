@@ -8,6 +8,8 @@ import java.net.UnknownHostException;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import net.lightbody.bmp.BrowserMobProxy;
@@ -21,12 +23,10 @@ import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
 import net.lightbody.bmp.proxy.CaptureType;
 import net.lightbody.bmp.proxy.auth.AuthType;
 import primemover.model.IProxy;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 
 public class RecordingProxy {
-	private static Logger logger = LogManager.getLogger(RecordingProxy.class);
+	private static Logger logger = LoggerFactory.getLogger(RecordingProxy.class);
 	
 	@Value("${recorder.certificate.type}")
 	private  String certType;
@@ -87,8 +87,8 @@ public class RecordingProxy {
 	            .serverKeyGenerator(new ECKeyGenerator())
 	            //.trustAllServers(true)
 	            .build();
-	    
-		proxy = new BrowserMobProxyServer();
+
+	    proxy = new BrowserMobProxyServer();
 		// proxy.setMitmDisabled(true);
 		proxy.setMitmManager(mitmManager);
 		

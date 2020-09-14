@@ -9,8 +9,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +22,7 @@ import primemover.model.Joblist;
 import primemover.service.ICrawlerService;
 
 public class JobManager implements IJobManager {
-	private static Logger logger = LogManager.getLogger(JobManager.class);
+	private static Logger logger = LoggerFactory.getLogger(JobManager.class);
 	
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
