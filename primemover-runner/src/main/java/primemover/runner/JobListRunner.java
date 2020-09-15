@@ -1,9 +1,12 @@
 package primemover.runner;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
@@ -14,12 +17,26 @@ public class JobListRunner implements Callable<Boolean> {
 	private ITaskOperator taskOperator;
 	private Crawler crawler;
 	private Joblist jobs;
+	
+	@Value("${runner.MaxRedoMinutes:15}")
+	private Long redoMinutes = 15l;
 
 	@Override
 	public Boolean call() {
+		// Check for max delay
+		long diff = ChronoUnit.MINUTES.between(jobs.getStartTime(), ZonedDateTime.now());
+		
+		if (diff > redoMinutes) {
+			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff, redoMinutes);
+			return false;
+		}
+		
+		// running
 		Boolean res = false;
+		
 		try {
-			logger.info("setup crawler for " + crawler.getId() + "(" + crawler.getName() + ")");
+			logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
+			
 			// get Taskservice and setup
 			if (taskOperator.setup(crawler)) {
 				

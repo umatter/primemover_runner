@@ -84,8 +84,18 @@ public class JobManager implements IJobManager {
 		
 		// add scheduler tasks
 		ZonedDateTime newLastTimeToAdd = curRun.plusMinutes(updateInterval);
-		ZonedDateTime lastTimeAddedInclRedo = lastTimeAdded.minusMinutes(this.redoMinutes);
 		
+		// consider redo-minutes after startup
+		ZonedDateTime lastTimeAddedInclRedo;
+		if (this.lastExecution == null) {
+			lastTimeAddedInclRedo = lastTimeAdded.minusMinutes(this.redoMinutes);
+		} else {
+			lastTimeAddedInclRedo = lastTimeAdded;
+		}
+		
+		logger.info("consider joblists between {} and {}", lastTimeAddedInclRedo, newLastTimeToAdd);
+		
+		// loop all available joblists
 		for (Pair<Crawler, Joblist> task : taskList) {
 		
 			Joblist jobs = task.getRight();

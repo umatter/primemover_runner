@@ -7,6 +7,7 @@ public class GeoSurfProxy extends HttpProxy {
 	}
 
 	public GeoSurfProxy() {
+		super();
 	}
 
 }
