@@ -17,31 +17,34 @@ public class JobListRunner implements Callable<Boolean> {
 
 	@Override
 	public Boolean call() {
+		Boolean res = false;
 		try {
 			logger.info("setup crawler for " + crawler.getId() + "(" + crawler.getName() + ")");
 			// get Taskservice and setup
 			if (taskOperator.setup(crawler)) {
 				
-				logger.trace("running jobs for " + crawler.getId() + "(" + crawler.getName() + ")");
+				logger.trace("running jobs for {} ({})", crawler.getId(), crawler.getName());
 				// run jobs
 				if (taskOperator.runJobList(jobs)) {
-					logger.trace("success running jobs for " + crawler.getId() + "(" + crawler.getName() + ")");
+					logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
 				} else {
-					logger.trace("failure running jobs for " + crawler.getId() + "(" + crawler.getName() + ")");
+					logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
 				};
 			};
-
+			
+			logger.trace("done running jobs for {} ({})", crawler.getId(), crawler.getName());
+			
 			// release resources
-			logger.trace("tearing down crawler for " + crawler.getId() + "(" + crawler.getName() + ")");
+			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
 			taskOperator.tearDown();
 			
-			logger.info("done running jobs for " + crawler.getId() + "(" + crawler.getName() + ")");
+			res = true;
 		} catch (Exception e) {
-			logger.error("uncaught error during execution of joblist for " + crawler.getId() + "(" + crawler.getName() + ")", e);
-			return false;
+			logger.warn("uncaught error during execution of joblist for {} ({})", crawler.getId(), crawler.getName(), e);
 		}
+		
 
-		return true;
+		return res;
 	}
 
 	public JobListRunner(ITaskOperator taskService, Crawler crawler, Joblist jobs) {

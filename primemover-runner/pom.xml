@@ -72,6 +72,38 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+			    <artifactId>maven-resources-plugin</artifactId>
+			    <configuration>
+				    <outputDirectory>config</outputDirectory>
+				    <resources>
+				        <resource>
+				            <directory>cert</directory>
+				            <excludes>
+				                <exclude>*.cer</exclude>
+				                <exclude>*.pem</exclude>
+				                <exclude>installCertOnUbuntu</exclude>
+				            </excludes>
+				            <filtering>true</filtering>
+				        </resource>
+				    </resources>
+				</configuration>
+			</plugin>
+			<plugin>
+			    <artifactId>maven-resources-plugin</artifactId>
+			    <configuration>
+				    <outputDirectory>config</outputDirectory>
+				    <resources>
+				        <resource>
+				            <directory>src/main/resources</directory>
+				            <includes>
+				                <include>*.properties</include>
+				            </includes>
+				            <filtering>true</filtering>
+				        </resource>
+				    </resources>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

@@ -11,6 +11,7 @@ public class MultiLoginAgent extends BasicAgent {
 	}
 
 	public MultiLoginAgent() {
+		super(-1l, AgentType.MULTILOGIN, "", "");
 	}
 
 	public String getMultiLoginId() {

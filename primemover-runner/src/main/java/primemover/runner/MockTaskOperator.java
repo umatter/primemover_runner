@@ -37,8 +37,10 @@ import primemover.util.MulitLoginBrowserProfile;
 public class MockTaskOperator implements ITaskOperator {
 	private static Logger logger = LoggerFactory.getLogger(MockTaskOperator.class);
 	
-	@Value("${multilogin.StartupRetryCount}")
+	@Value("${multilogin.StartupRetryCount:3}")
 	private Integer maxRetryCount;
+	@Value("${multilogin.StartupDelaySeconds:30}")
+	private Integer retryDelay;
 	
 	private OperatorContext context;
 	
@@ -128,12 +130,20 @@ public class MockTaskOperator implements ITaskOperator {
 				mlContext.setDriver(driver);
 				
 				// remember
-				this.context = mlContext;		
-				
+				this.context = mlContext;	
+
 			} catch (MalformedURLException e) {
 				logger.warn("catched exception starting profile", e);				
 			} catch (Exception e) {
 				logger.warn("catched exception starting profile", e);
+			}
+			
+			if (!done) {
+				try {
+					Thread.sleep(this.retryDelay*1000);
+				} catch (InterruptedException e) {
+					// nothing to do
+				}
 			}
 		}
 		
@@ -145,6 +155,8 @@ public class MockTaskOperator implements ITaskOperator {
 	}
 	
 	private Boolean runJob(IJob job) {
+		logger.info("Starting job {}", job.getId());
+		
 		// init data recording
 		JobData data = new JobData();
 		this.context.getRecorder().startCapturing(job.getDescription(), job.getName());
@@ -179,6 +191,8 @@ public class MockTaskOperator implements ITaskOperator {
 			storage.writeJobData(job, data);
 		}		
 		
+		logger.info("Done running job {}", job.getId());
+		
 		return true;
 	}
 	
@@ -198,15 +212,22 @@ public class MockTaskOperator implements ITaskOperator {
 	
 	@Override
 	public Boolean runJobList(Joblist jobs) {
+		Boolean res = false;
 		if (!isSetup.get()) {
 			throw new IllegalStateException("please setup service first");
 		}
 		
-		for (IJob jobItem : jobs.getJobs()) {
-			runJob(jobItem);			
+		try {
+			for (IJob jobItem : jobs.getJobs()) {
+				runJob(jobItem);			
+			}
+			
+			res = true;
+		} catch (Exception ex) {
+			logger.warn("Error running joblist {}", jobs.getId(), ex);
 		}
 		
-		return true;
+		return res;
 	}
 
 	@Override

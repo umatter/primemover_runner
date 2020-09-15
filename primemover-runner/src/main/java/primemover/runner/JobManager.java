@@ -114,6 +114,8 @@ public class JobManager implements IJobManager {
 			}
 		}
 		
+		logger.info("Done initializing jobs");
+		
 		lastExecution = curRun;
 		lastTimeAdded = newLastTimeToAdd;
 	}

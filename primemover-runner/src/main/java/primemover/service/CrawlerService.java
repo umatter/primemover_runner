@@ -21,8 +21,17 @@ import org.slf4j.LoggerFactory;
 import primemover.config.StartupMode;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
+import primemover.model.DecisionType;
+import primemover.model.HttpProxy;
 import primemover.model.Joblist;
+import primemover.model.MultiLoginAgent;
+import primemover.model.SelectorType;
 import primemover.model.api.CrawlerResult;
+import primemover.model.jobs.EnterTextFieldJob;
+import primemover.model.jobs.SelectorBaseJob;
+import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
 
 @Service
 public class CrawlerService implements ICrawlerService {
@@ -74,6 +83,42 @@ public class CrawlerService implements ICrawlerService {
 		}
 	}
 	
+	private void appendFakeJob(List<Pair<Crawler, Joblist>> inItems) {
+		Crawler crawler = new Crawler();
+		MultiLoginAgent agent = new MultiLoginAgent();
+		agent.setId(1l);
+		agent.setName("End2End - 00");
+		agent.setMultiLoginId("c00b9234-3908-44b6-b8a9-40cf1cf24ee9");
+		crawler.setAgent(agent);
+
+		Joblist jobs = new Joblist();
+		jobs.setId(-1l);
+		jobs.setStartTime(ZonedDateTime.now().plusSeconds(30));
+		
+		// open page
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		jobs.appendJob(visitJob);
+		
+		// enter search term
+		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
+		jobs.appendJob(enterJob);
+		
+		// quick wait for search to finish
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);
+			
+		// select url
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.FIRST);
+		jobs.appendJob(singleSelectUrlJob);
+		
+		// wait for search result
+		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);
+		
+		
+		inItems.add(Pair.of(crawler, jobs));
+	}
+	
 	/* (non-Javadoc)
 	 * @see primemover.service.ICrawlerService#getCurrentTasks()
 	 */
@@ -85,6 +130,7 @@ public class CrawlerService implements ICrawlerService {
 		
 		if (mode != StartupMode.PRODUCTION) {
 			adjustJobsToToday(res);
+			appendFakeJob(res);
 		}
 		
 		return res;
