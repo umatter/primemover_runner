@@ -62,7 +62,9 @@ public class RunJobHandler {
 			public void handle(WebDriver driver, IJob job) {
 				VisitJob typedJob = (VisitJob) job;
 				driver.get(typedJob.getUrl());
-				primemover.util.Waiter.waitUntilJSReady(driver, 120);
+				
+				// wait with retry until loaded
+				primemover.util.Waiter.waitUntilJSReady(driver, 10, 12); // check every 10 seconds for 2 Minutes
 			}
 		});
 

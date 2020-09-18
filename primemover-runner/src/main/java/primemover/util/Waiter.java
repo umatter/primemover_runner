@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 public class Waiter {
 	private static Logger logger = LoggerFactory.getLogger(Waiter.class);
 	
-	//Wait Until JS Ready
+	
 	/**
 	 * Waits for Javascript to finish loading
 	 * 
@@ -20,6 +20,17 @@ public class Waiter {
 	 * @param timeout in seconds for max wait
 	 */
     public static Boolean waitUntilJSReady(WebDriver driver, Integer timeout) {
+    	return waitUntilJSReady(driver, timeout, 1);
+    }
+    
+	//Wait Until JS Ready
+	/**
+	 * Waits for Javascript to finish loading
+	 * 
+	 * @param driver to run wait in
+	 * @param timeout in seconds for max wait
+	 */
+    public static Boolean waitUntilJSReady(WebDriver driver, Integer timeout, Integer numRetries) {
         //Wait for Javascript to load
         ExpectedCondition<Boolean> jsLoad = jsExec -> ((JavascriptExecutor) driver)
                 .executeScript("return document.readyState").toString().equals("complete");
@@ -29,22 +40,27 @@ public class Waiter {
 
         //Wait Javascript until it is Ready!
         if(!jsReady) {
-            System.out.println("JS in NOT Ready!");
-            //Wait for Javascript to load
-            
-            try {
-            	WebDriverWait wait = new WebDriverWait(driver, timeout);
-                wait.until(jsLoad);
-                logger.debug("successfully waited for js-ready");
-            } catch (TimeoutException ex){
-            	logger.warn("timeout waiting for js-ready", ex);
-            	return false;
-            }
-            
+        	logger.trace("JS is not ready got to wait", timeout);
+        	
+        	for (int n = 0; n < numRetries; n++) {
+        		logger.debug("trial {} of {}", n + 1, numRetries);
+                
+        		//Wait for Javascript to load
+                try {
+                	WebDriverWait wait = new WebDriverWait(driver, timeout);
+                    wait.until(jsLoad);
+                    logger.debug("successfully waited for js-ready");
+                    
+                    return true;
+                } catch (TimeoutException ex){
+                	logger.warn("timeout waiting for js-ready", ex);
+                }
+        	}
+        	return false;
+        	
         } else {
-            System.out.println("JS is Ready!");
+            logger.debug("JS is Ready");
+            return true;
         }
-        
-        return true;
     }
 }

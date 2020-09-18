@@ -6,11 +6,15 @@ import java.util.Random;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import primemover.model.DecisionType;
 import primemover.model.SelectorType;
 
 public class Selecting {
+
+	private static Logger logger = LoggerFactory.getLogger(Selecting.class);
 	
 	private static Random rand = new Random();
 
@@ -74,7 +78,11 @@ public class Selecting {
 
 			switch (type) {
 			case CALCULATED:
-				throw new UnsupportedOperationException("Not implemented yet");
+				logger.warn("faking with random selection!");
+				Long idx = Math.round(rand.nextDouble() * (elements.size() - 1));
+				selection = elements.get(idx.intValue());	
+				
+				//throw new UnsupportedOperationException("Not implemented yet");
 				// break;
 			case FIRST:
 				selection = elements.get(0);
@@ -83,9 +91,8 @@ public class Selecting {
 				selection = elements.get(elements.size() - 1);
 				break;
 			case RANDOM:
-				Long idx = Math.round(rand.nextDouble() * (elements.size() - 1));
-				
-				selection = elements.get(idx.intValue());				
+				Long id = Math.round(rand.nextDouble() * (elements.size() - 1));
+				selection = elements.get(id.intValue());				
 				break;
 			default:
 				throw new UnsupportedOperationException("Not implemented yet");
