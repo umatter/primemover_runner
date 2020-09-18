@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import primemover.capture.RecordingProxyFactory;
+import primemover.runner.JobListRunnerFactory;
 import primemover.runner.MockJobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
@@ -20,6 +21,7 @@ import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
+import primemover.service.JobService;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -28,6 +30,15 @@ public class TestConfig {
 		return new MockJobManager();	
 	}
 	
+	@Bean(name="jobListRunnerFactory")
+	JobListRunnerFactory getJobListRunnerFactory() {
+		return new JobListRunnerFactory();
+	}
+	
+	@Bean(name="JobService")
+	JobService getJobService() {
+		return new JobService();
+	}
 
 	@Bean(name="AgentService")
 	AgentService getAgentService() {

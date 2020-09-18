@@ -30,7 +30,7 @@ class MulitLoginConnectivity {
 	@BeforeEach
 	public void setup() {
 		service = serviceFactory.getItem();
-		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome");
+		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		

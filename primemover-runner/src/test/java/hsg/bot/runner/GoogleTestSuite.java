@@ -13,6 +13,7 @@ import primemover.model.DecisionType;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.SelectorType;
+import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectUrlJob;
@@ -25,22 +26,22 @@ import primemover.runner.TaskOperatorFactory;
 class GoogleTestSuite {
 	
 	@Autowired
-	private TaskOperatorFactory serviceFactory;
+	private TaskOperatorFactory operatorFactory;
 	
-	private ITaskOperator service;
+	private ITaskOperator operator;
 	private IAgent agent;
 	Crawler crawler;
 	
 	
 	@BeforeEach
 	public void setup() {
-		service = serviceFactory.getItem();
-		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome");
+		operator = operatorFactory.getItem();
+		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		
 
-		service.setup(crawler);
+		operator.setup(crawler);
 	}
 
 	@Test
@@ -53,7 +54,7 @@ class GoogleTestSuite {
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
+		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
@@ -68,7 +69,7 @@ class GoogleTestSuite {
 		waitJob = new WaitJob(1l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
-		service.runJobList(jobs);
+		operator.runJobList(jobs);
 	}
 	
 	@Test
@@ -81,7 +82,7 @@ class GoogleTestSuite {
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
+		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
@@ -96,14 +97,14 @@ class GoogleTestSuite {
 		waitJob = new WaitJob(1l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
-		service.runJobList(jobs);
+		operator.runJobList(jobs);
 	}
 	
 	
 	@AfterEach
     public void tearDown() {
-        service.tearDown();
-        service = null;
+        operator.tearDown();
+        operator = null;
         agent = null;
         crawler = null;
     }

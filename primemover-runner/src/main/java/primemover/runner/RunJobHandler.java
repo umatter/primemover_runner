@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
@@ -20,11 +19,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.model.IJob;
+import primemover.model.TypingModeType;
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertElementExistsJob;
 import primemover.model.jobs.AssertPageLoadedJob;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
 import primemover.model.jobs.AssertScrolledMaxJob;
+import primemover.model.jobs.AssertTextInFieldJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
@@ -35,6 +36,7 @@ import primemover.model.jobs.WaitJob;
 import primemover.util.Page;
 import primemover.util.Scrolling;
 import primemover.util.Selecting;
+import primemover.util.Typing;
 import primemover.util.Waiter;
 
 public class RunJobHandler {
@@ -120,6 +122,22 @@ public class RunJobHandler {
 
 			}
 		});
+		
+		
+		
+		logger.trace("creating AssertTextInFieldJob-Handler");
+		dispatch.put(AssertTextInFieldJob.class, new Handler() {
+			public void handle(WebDriver driver, IJob job) {
+				AssertTextInFieldJob typedJob = (AssertTextInFieldJob) job;
+
+				WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				String textFound = element.getAttribute("innerText");
+				assertEquals(textFound, typedJob.getValue());	
+			}
+		});
+		
 
 		logger.trace("creating EnterTextFieldJob-Handler");
 		dispatch.put(EnterTextFieldJob.class, new Handler() {
@@ -128,9 +146,26 @@ public class RunJobHandler {
 
 				WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
+				
+				TypingModeType typingMode = typedJob.getTypingMode();
+				
+				switch (typingMode) {
+				case DIRECT:
+					Typing.typeTextDirect(element, typedJob.getValue(), typedJob.getAppendReturn());
+					break;
+				case SIMULATED_NOTYPOS:
+					Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), false, false);
+					break;
+				case SIMULATED_KEEPINGTYPOS:
+					Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, true);
+					break;
+				case SIMULATED_FIXINGTYPOS:
+					Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, false);
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented yet (" + typingMode + ")");
+				}
 
-				element.sendKeys(typedJob.getValue());
-				element.sendKeys(Keys.RETURN);
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {

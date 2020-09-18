@@ -48,7 +48,7 @@ public class JobManager implements IJobManager {
 	private ICrawlerService crawlerService;
 	
 	@Autowired
-	TaskOperatorFactory taskServiceFactory;
+	JobListRunnerFactory jobListRunnerFactory;
 	
 	/* (non-Javadoc)
 	 * @see primemover.runner.IJobManager#setup()
@@ -110,7 +110,7 @@ public class JobManager implements IJobManager {
 				// just pass the job to the executor after reaching the starttime
 				scheduler.schedule(new Runnable() {
 					// Job to run		
-					JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(), task.getLeft(), jobs);
+					JobListRunner runner = jobListRunnerFactory.createJobListRunner(task.getLeft(), jobs);
 					// ID of joblist
 					Long jobListId = task.getRight().getId();
 					

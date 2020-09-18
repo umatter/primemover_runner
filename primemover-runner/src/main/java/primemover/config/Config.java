@@ -1,7 +1,12 @@
 package primemover.config;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -11,9 +16,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.IJobManager;
+import primemover.runner.JobListRunnerFactory;
 import primemover.runner.JobManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
@@ -22,15 +29,22 @@ import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
+import primemover.service.JobService;
 
 @SpringBootConfiguration
 public class Config {
+	private static Logger logger = LoggerFactory.getLogger(JobManager.class);
 	
 	@Value("${global.mode}")
 	private String mode;
 	
 	public String getMode() {
 		return mode;
+	}
+	
+	@Bean(name="jobListRunnerFactory")
+	JobListRunnerFactory getJobListRunnerFactory() {
+		return new JobListRunnerFactory();
 	}
 	
 	@Bean(name="fileStorageService")
@@ -46,6 +60,11 @@ public class Config {
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
+	}
+	
+	@Bean(name="JobService")
+	JobService getJobService() {
+		return new JobService();
 	}
 	
 	@Bean("CrawlerService")
@@ -81,7 +100,7 @@ public class Config {
 		for (Object converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
-				jconverter.getObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+				ObjectMapper mapper = jconverter.getObjectMapper();
 			}
 		}
          return restTemplate; 

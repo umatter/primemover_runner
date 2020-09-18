@@ -18,13 +18,13 @@ public class TaskOperatorFactory implements ApplicationContextAware {
 		ITaskOperator ret = null;
 		switch (mode) {
 		case DEVELOP:
-			ret = new MockTaskOperator();
+			ret = new TaskOperator();
 			break;
 		case INTEGRATION:
-			ret = new MockTaskOperator();
+			ret = new TaskOperator();
 			break;
 		case PRODUCTION:
-			ret = new MockTaskOperator();
+			ret = new TaskOperator();
 			break;		
 		default:
 			throw new IllegalStateException("Invalid argument for application mode");

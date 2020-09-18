@@ -14,6 +14,7 @@ public class Agent {
 	private Boolean active;
 	private Date updated_at;
 	private Date created_at;
+	private String location;
 
 	public Agent() {
 	}
@@ -80,5 +81,13 @@ public class Agent {
 
 	public void setIdentification(String identification) {
 		this.identification = identification;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 }

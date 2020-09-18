@@ -22,13 +22,12 @@ import primemover.config.StartupMode;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
-import primemover.model.HttpProxy;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
 import primemover.model.SelectorType;
+import primemover.model.TypingModeType;
 import primemover.model.api.CrawlerResult;
 import primemover.model.jobs.EnterTextFieldJob;
-import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
@@ -69,7 +68,8 @@ public class CrawlerService implements ICrawlerService {
 		
 		return in.withYear(now.getYear())
 				.withMonth(now.getMonth().getValue())
-				.withDayOfMonth(now.getDayOfMonth());	
+				.withDayOfMonth(now.getDayOfMonth());
+				//.withZoneSameLocal(now.getZone());	
 	}
 	
 	private void adjustJobsToToday(List<Pair<Crawler, Joblist>> inItems) {
@@ -100,7 +100,7 @@ public class CrawlerService implements ICrawlerService {
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung");
+		EnterTextFieldJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_KEEPINGTYPOS, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
@@ -108,7 +108,7 @@ public class CrawlerService implements ICrawlerService {
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.FIRST);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select random entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result

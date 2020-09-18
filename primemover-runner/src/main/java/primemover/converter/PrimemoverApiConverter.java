@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.openqa.selenium.InvalidArgumentException;
@@ -20,6 +21,7 @@ import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
 import primemover.model.ScrollDirection;
 import primemover.model.SelectorType;
+import primemover.model.TypingModeType;
 import primemover.model.HttpProxy;
 import primemover.model.api.CrawlerResult;
 import primemover.model.jobs.BaseJob;
@@ -37,7 +39,7 @@ public class PrimemoverApiConverter {
 	public PrimemoverApiConverter() {
 	}
 	
-	private static IProxy convertApiProxy(primemover.model.api.Proxy item) {
+	private static IProxy convertApiProxy(primemover.model.api.Proxy item, Crawler crawler) {
 		
 		HttpProxy res;	
 		
@@ -47,7 +49,10 @@ public class PrimemoverApiConverter {
 		} else {
 			type = type.toLowerCase();
 			if (type.contains("geosurf")) {
-				res = new GeoSurfProxy();
+				GeoSurfProxy geoProxy = new GeoSurfProxy();
+				geoProxy.setLocation(crawler.getAgent().getLocation());
+				res = geoProxy;
+				
 			} else if (type.contains("http")) {
 				res = new HttpProxy();
 			} else {
@@ -83,11 +88,11 @@ public class PrimemoverApiConverter {
 		ident = ident.toLowerCase();
 		
 		if (ident.contains("firefox")) {
-			agent = new BasicAgent(new Long(item.getId()), AgentType.FIREFOX, item.getName(), item.getDescription());
+			agent = new BasicAgent(new Long(item.getId()), AgentType.FIREFOX, item.getName(), item.getDescription(), item.getLocation());
 		} else if(ident.contains("chrome")) {
-			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription());
+			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription(), item.getLocation());
 		} else if(ident.contains("multilogin")) {
-			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getMultilogin_id());
+			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getMultilogin_id(), item.getLocation());
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
 		}
@@ -139,6 +144,20 @@ public class PrimemoverApiConverter {
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setValue(behaviours.get("text"));
+		
+		// optional fields
+		Boolean appendReturn = true;
+		if (behaviours.containsKey("appendReturn")) {
+			appendReturn = Boolean.valueOf(behaviours.get("appendReturn"));
+		}
+		
+		TypingModeType typingMode = TypingModeType.SIMULATED_NOTYPOS;
+		if (behaviours.containsKey("typingMode")) {
+			typingMode = TypingModeType.valueOf(behaviours.get("typingMode"));
+		}
+		
+		job.setAppendReturn(appendReturn);
+		job.setTypingMode(typingMode);		
 	
 		return job;
 	}
@@ -251,7 +270,7 @@ public class PrimemoverApiConverter {
 		crawler.setName(item.getName());
 		crawler.setDescription(item.getDescription());
 		crawler.setAgent(convertApiAgent(item.getAgent()));
-		crawler.setProxy(convertApiProxy(item.getProxy()));
+		crawler.setProxy(convertApiProxy(item.getProxy(), crawler)); // needs to go after agent as agent contains required location input
 		
 		// grab joblists
 		List<primemover.model.api.Queue> queues = item.getQueues();

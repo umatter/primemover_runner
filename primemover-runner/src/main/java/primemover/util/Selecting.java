@@ -1,6 +1,7 @@
 package primemover.util;
 
 import java.util.List;
+import java.util.Random;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -10,6 +11,8 @@ import primemover.model.DecisionType;
 import primemover.model.SelectorType;
 
 public class Selecting {
+	
+	private static Random rand = new Random();
 
 	public static List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
 		List<WebElement> elements;
@@ -80,7 +83,7 @@ public class Selecting {
 				selection = elements.get(elements.size() - 1);
 				break;
 			case RANDOM:
-				Long idx = Math.round(Math.random() * (elements.size() - 1));
+				Long idx = Math.round(rand.nextDouble() * (elements.size() - 1));
 				
 				selection = elements.get(idx.intValue());				
 				break;

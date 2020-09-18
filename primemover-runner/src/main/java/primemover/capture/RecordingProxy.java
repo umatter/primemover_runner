@@ -22,6 +22,7 @@ import net.lightbody.bmp.mitm.keys.ECKeyGenerator;
 import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
 import net.lightbody.bmp.proxy.CaptureType;
 import net.lightbody.bmp.proxy.auth.AuthType;
+import primemover.model.GeoSurfProxy;
 import primemover.model.IProxy;
 
 
@@ -96,6 +97,12 @@ public class RecordingProxy {
 			logger.debug("using chained proxy");
 			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
 			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
+			
+			if (targetProxy instanceof GeoSurfProxy) {
+				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
+				proxy.addHeader("loc", geoProxy.getLocation());
+				proxy.addHeader("X-session", geoProxy.getSessionId());
+			}	
 		}
 		
 		// enable more detailed HAR capture. Recording everything.

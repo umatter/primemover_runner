@@ -6,6 +6,7 @@ public class BasicAgent implements IAgent {
 	private AgentType type;
 	private String name;
 	private String description;
+	private String location;
 	
 	/* (non-Javadoc)
 	 * @see primemover.model.IAgent#getType()
@@ -58,16 +59,27 @@ public class BasicAgent implements IAgent {
 		this.description = description;
 	}
 
-	public BasicAgent(Long id, AgentType type, String name, String description) {
+	public BasicAgent(Long id, AgentType type, String name, String description, String location) {
 		super();
 		this.id = id;
 		this.type = type;
 		this.name = name;
 		this.description = description;
+		this.location = location;
 	}
 
 	public BasicAgent() {
 		super();
+	}
+
+	@Override
+	public void setLocation(String newLocation) {
+		this.location = newLocation;
+	}
+
+	@Override
+	public String getLocation() {
+		return this.location;
 	}
 	
 	

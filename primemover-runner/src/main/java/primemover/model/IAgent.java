@@ -16,4 +16,7 @@ public interface IAgent {
 
 	void setDescription(String description);
 
+	void setLocation(String newLocation);
+	String getLocation();
+	
 }

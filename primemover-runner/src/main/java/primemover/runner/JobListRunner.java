@@ -6,11 +6,20 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
+import primemover.model.JoblistState;
+import primemover.service.JobService;
 
+/** 
+ * Runs joblists on the specified crawler
+ * 
+ * @author dburkolter
+ *
+ */
 public class JobListRunner implements Callable<Boolean> {
 	private static Logger logger = LoggerFactory.getLogger(JobListRunner.class);
 	
@@ -21,6 +30,9 @@ public class JobListRunner implements Callable<Boolean> {
 	@Value("${runner.MaxRedoMinutes:15}")
 	private Long redoMinutes = 15l;
 
+	@Autowired
+	private JobService jobService;
+	
 	@Override
 	public Boolean call() {
 		// Check for max delay
@@ -28,6 +40,7 @@ public class JobListRunner implements Callable<Boolean> {
 		
 		if (diff > redoMinutes) {
 			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff, redoMinutes);
+			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null); // set execution time
 			return false;
 		}
 		
@@ -35,29 +48,53 @@ public class JobListRunner implements Callable<Boolean> {
 		Boolean res = false;
 		
 		try {
+			boolean setupRes = false;
+			boolean jobsRes = false;
+			
 			logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null); // set start time, ommit later
 			
 			// get Taskservice and setup
-			if (taskOperator.setup(crawler)) {
-				
+			setupRes = taskOperator.setup(crawler);
+			if (setupRes) {
+				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null);
 				logger.trace("running jobs for {} ({})", crawler.getId(), crawler.getName());
 				// run jobs
-				if (taskOperator.runJobList(jobs)) {
+				jobsRes = taskOperator.runJobList(jobs);
+				if (jobsRes) {
 					logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
+					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null);
 				} else {
 					logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
+
+					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null);
 				};
-			};
-			
-			logger.trace("done running jobs for {} ({})", crawler.getId(), crawler.getName());
+				
+				
+			} else {
+				logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
+				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null);
+			};			
 			
 			// release resources
 			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
 			taskOperator.tearDown();
 			
+			// set end-state and time
+			if (setupRes) {
+				if (jobsRes) {
+					jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now());
+				} else {
+					jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now());
+				}
+			} else {
+				jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now());
+			}
+			
 			res = true;
 		} catch (Exception e) {
 			logger.warn("uncaught error during execution of joblist for {} ({})", crawler.getId(), crawler.getName(), e);
+			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now());
 		}
 		
 

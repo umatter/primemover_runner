@@ -9,9 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import primemover.model.BasicAgent;
 import primemover.model.AgentType;
 import primemover.model.Crawler;
+import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
+import primemover.model.jobs.WaitJob;
 import primemover.model.HttpProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
@@ -30,21 +32,20 @@ class ProxyTestSuite {
 	
 	@BeforeEach
 	public void setupNewYork() {
-	
-		// Defined proxy for US and city of New York for test!
-		proxy = new HttpProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
+		
 		service = serviceFactory.getItem();
-		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome"); // Must run on Chrome as plain JSON is available. Firefox will display a table.
+		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "US-NY-NEW_YORK"); // Must run on Chrome as plain JSON is available. Firefox will display a table.
 		crawler = new Crawler();
 		crawler.setAgent(agent);
-		crawler.setProxy(proxy);
-		
-		service.setup(crawler);
 	}
 
 	
 	@Test
-	void checkNewYorkProxy() {
+	void checkStaticNewYorkProxy() {
+		// Defined proxy for US and city of New York for test!
+		proxy = new HttpProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");
+		crawler.setProxy(proxy);
+				
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
@@ -60,10 +61,50 @@ class ProxyTestSuite {
 		
 		// Verify city and country
 		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "New York");
-		jobs.appendJob(assertProxyJob);
+		jobs.appendJob(assertProxyJob);		
+		jobs.appendJob(new WaitJob(2l, "Wait", "", 10));
 		
+		service.setup(crawler);
 		service.runJobList(jobs);
 	}
+	
+	@Test
+	void checkDynamicNewYorkProxy() {
+		// Defined proxy for US and city of New York for test!
+		proxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", "US-NY-NEW_YORK");
+		crawler.setProxy(proxy);
+				
+		// Define jobs for google search
+		Joblist jobs = new Joblist();
+		
+		// Verify city and country
+		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "New York");
+		jobs.appendJob(assertProxyJob);
+		jobs.appendJob(new WaitJob(2l, "Wait", "", 10));
+		
+		service.setup(crawler);
+		service.runJobList(jobs);
+	}
+	
+	@Test
+	void checkDynamicFremontProxy() {
+		// Defined proxy for US and city of New York for test!
+		proxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", "US-CA-FREMONT");
+		crawler.setProxy(proxy);
+				
+		// Define jobs for google search
+		Joblist jobs = new Joblist();
+		
+		// Verify city and country
+		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "Fremont");
+		jobs.appendJob(assertProxyJob);
+		jobs.appendJob(new WaitJob(2l, "Wait", "", 10));
+		
+		service.setup(crawler);
+		service.runJobList(jobs);
+	}
+	
+	
 	
 	
 	@AfterEach

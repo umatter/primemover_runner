@@ -24,7 +24,7 @@ class AutocreationOfMultiloginProfiles {
 		// create a recording proxy
 		recorder = new RecordingProxy();
 		recorder.setup();
-		agent = new MultiLoginAgent(10000l, "Testing", "Testing", "");
+		agent = new MultiLoginAgent(10000l, "Testing", "Testing", "", "");
 		
 		crawler = new Crawler();
 		crawler.setAgent(agent);
