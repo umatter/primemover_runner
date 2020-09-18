@@ -63,11 +63,11 @@ public class JobService {
 	}
 	
 	
-	public Boolean updateJoblistState(Joblist jobs, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime) {
-		return updateJoblistState(jobs.getId(), state, startTime, endTime);
+	public Boolean updateJoblistState(Joblist jobs, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime, Boolean processed) {
+		return updateJoblistState(jobs.getId(), state, startTime, endTime, processed);
 	}
 	
-	public Boolean updateJoblistState(Long queueId, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime) {
+	public Boolean updateJoblistState(Long queueId, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime, Boolean processed) {
 		String url = calculateJobListUrl(queueId);
 
 		HttpHeaders headers = new HttpHeaders();
@@ -80,6 +80,9 @@ public class JobService {
 	    }
 	    if (!(endTime == null)) {
 	    	data.put("finished_at", dateFormater.format(endTime));
+	    }
+	    if (!(processed == null)) {
+	    	data.put("processed", processed);
 	    }
 	    
 	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);

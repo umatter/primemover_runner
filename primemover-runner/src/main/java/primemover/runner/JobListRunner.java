@@ -40,7 +40,7 @@ public class JobListRunner implements Callable<Boolean> {
 		
 		if (diff > redoMinutes) {
 			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff, redoMinutes);
-			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null); // set execution time
+			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null, true); // set execution time
 			return false;
 		}
 		
@@ -52,28 +52,28 @@ public class JobListRunner implements Callable<Boolean> {
 			boolean jobsRes = false;
 			
 			logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null); // set start time, ommit later
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null); // set start time, ommit later
 			
 			// get Taskservice and setup
 			setupRes = taskOperator.setup(crawler);
 			if (setupRes) {
-				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null);
+				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null, null);
 				logger.trace("running jobs for {} ({})", crawler.getId(), crawler.getName());
 				// run jobs
 				jobsRes = taskOperator.runJobList(jobs);
 				if (jobsRes) {
 					logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
-					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null);
+					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null);
 				} else {
 					logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
 
-					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null);
+					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null);
 				};
 				
 				
 			} else {
 				logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
-				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null);
+				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null);
 			};			
 			
 			// release resources
@@ -83,21 +83,20 @@ public class JobListRunner implements Callable<Boolean> {
 			// set end-state and time
 			if (setupRes) {
 				if (jobsRes) {
-					jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now());
+					jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), true);
 				} else {
-					jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now());
+					jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), true);
 				}
 			} else {
-				jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now());
+				jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), true);
 			}
 			
 			res = true;
 		} catch (Exception e) {
-			logger.warn("uncaught error during execution of joblist for {} ({})", crawler.getId(), crawler.getName(), e);
-			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now());
+			logger.warn("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
+			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), true);
 		}
 		
-
 		return res;
 	}
 
