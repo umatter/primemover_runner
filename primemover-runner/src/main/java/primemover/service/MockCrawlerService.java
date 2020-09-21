@@ -6,7 +6,11 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -19,11 +23,26 @@ import primemover.model.api.CrawlerResult;
 
 public class MockCrawlerService implements ICrawlerService {
 	
-	private ObjectMapper mapper = new ObjectMapper();
+	@Autowired
+	private RestTemplate restTemplate;
+
 	private String filePath;
 	private Boolean writeResult = true;
 	
 	public MockCrawlerService() {
+	}
+	
+	
+	private ObjectMapper getObjectMapper() {
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+		
+		for (Object converter : converters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
+				return jconverter.getObjectMapper();
+			}
+		}
+         return null; 
 	}
 	
 	public void setMockFile(String filePath) {
@@ -42,6 +61,8 @@ public class MockCrawlerService implements ICrawlerService {
 		}
 		
 		try {
+			ObjectMapper mapper = getObjectMapper();
+			
 			String json = new String(Files.readAllBytes(Paths.get(filePath)));
 			
 			CrawlerResult apiCrawler = mapper.readValue(json, CrawlerResult.class);
@@ -62,7 +83,9 @@ public class MockCrawlerService implements ICrawlerService {
 
 	@Override
 	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
-		return getCurrentTasks();
+		List<Pair<Crawler, Joblist>> res = getCurrentTasks();
+		res.removeIf(p -> p.getLeft().getId() != id);
+		return res;
 	}
 
 }

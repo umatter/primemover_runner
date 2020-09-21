@@ -223,7 +223,7 @@ public class MulitLoginBrowserProfile {
 		MultiLoginIBrowserType browser = MultiLoginIBrowserType.MIMIC;
 		
 		String jsonInput = "{" + 
-				" \"name\": \"" + agent.getName() + "\"," +
+				" \"name\": \"" + agent.getName() + "_AgentId " + agent.getId() + "\"," +
 				" \"os\": \"" + operatingSytem.getMultiLoginValue() + "\"," +
 				" \"browser\": \"" + browser.getMultiLoginValue()+ "\"," + 
 				" \"network\": {" + 

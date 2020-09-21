@@ -101,6 +101,7 @@ public class Config {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
 				ObjectMapper mapper = jconverter.getObjectMapper();
+				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
          return restTemplate; 

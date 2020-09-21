@@ -10,6 +10,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.JobListRunnerFactory;
@@ -74,7 +75,7 @@ public class TestConfig {
 				jconverter.getObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-         return restTemplate; 
+        return restTemplate; 
 	}
 	
 	

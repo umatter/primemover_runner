@@ -117,6 +117,24 @@ class LoadTasksFromServiceAndRunJobs {
 		}
 	}
 	
+	@Test
+	void LoadTasksAndWriteJobDataForCrawlerId98() {
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(98l);
+		
+		if (taskList == null) {
+			throw new IllegalStateException("Crawler not found");
+		}
+		// run the tasks
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = operatorFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	
 	
 	@Test
 	void LoadTasksAndRunWithJobManager() {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.openqa.selenium.InvalidArgumentException;
@@ -82,7 +81,10 @@ public class PrimemoverApiConverter {
 		String ident = item.getIdentification();
 		
 		if (StringUtils.isEmpty(ident)) {
-			throw new InvalidArgumentException("Identification is required");
+			ident = "multilogin";
+			
+			// TODO reimplement
+			// throw new InvalidArgumentException("Identification is required");
 		}
 		
 		ident = ident.toLowerCase();
@@ -91,7 +93,7 @@ public class PrimemoverApiConverter {
 			agent = new BasicAgent(new Long(item.getId()), AgentType.FIREFOX, item.getName(), item.getDescription(), item.getLocation());
 		} else if(ident.contains("chrome")) {
 			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription(), item.getLocation());
-		} else if(ident.contains("multilogin")) {
+		} else if(ident.contains("multilogin") || ident.contains("multlogin")) {
 			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getMultilogin_id(), item.getLocation());
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
@@ -148,7 +150,15 @@ public class PrimemoverApiConverter {
 		// optional fields
 		Boolean appendReturn = true;
 		if (behaviours.containsKey("appendReturn")) {
-			appendReturn = Boolean.valueOf(behaviours.get("appendReturn"));
+			String val = behaviours.get("appendReturn");
+			
+			if ("1".equals(val)) {
+				appendReturn = true;
+			} else if ("0".equals(val)) {
+				appendReturn = false;
+			} else {
+				appendReturn = Boolean.valueOf(val);	
+			}
 		}
 		
 		TypingModeType typingMode = TypingModeType.SIMULATED_NOTYPOS;
@@ -185,8 +195,15 @@ public class PrimemoverApiConverter {
 	private static ScrollByDurationJob convertApiScrollByDurationJob(Integer id, String name, String description, Map<String, String> behaviours) {
 		ScrollByDurationJob job = new ScrollByDurationJob();
 		setBaseFields(job, id, name, description);
-		job.setDuration(new Integer(behaviours.get("duration")));
-		job.setDirection(ScrollDirection.valueOf("scrollDirection"));
+		
+		if (behaviours.containsKey("scrollDuration")) {
+			job.setDuration(new Double(behaviours.get("scrollDuration")).intValue());
+		} else if (behaviours.containsKey("duration")) {
+			job.setDuration(new Double(behaviours.get("duration")).intValue());
+		} else {
+			throw new IllegalStateException("no duration or scrollDuration found");
+		}
+		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
 	
 		return job;
 	}
@@ -194,8 +211,8 @@ public class PrimemoverApiConverter {
 	private static ScrollByLengthJob convertApiScrollByLengthJob(Integer id, String name, String description, Map<String, String> behaviours) {
 		ScrollByLengthJob job = new ScrollByLengthJob();
 		setBaseFields(job, id, name, description);
-		job.setLength(new Integer(behaviours.get("duration")));
-		job.setDirection(ScrollDirection.valueOf("scrollDirection"));
+		job.setLength(new Integer(behaviours.get("length")));
+		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
 	
 		return job;
 	}

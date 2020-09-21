@@ -165,7 +165,7 @@ public class Typing {
 						}
 						
 						// erase again
-						for (int m = 0; m <= numLettersToType; m++) { // also delete first wrong letter!
+						for (int m = 0; m < numLettersToType; m++) { // also delete first wrong letter!
 							delayTyping();
 							element.sendKeys(Keys.BACK_SPACE);
 						}

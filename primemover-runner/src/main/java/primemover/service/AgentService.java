@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -53,8 +54,7 @@ public class AgentService {
 	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 	  	   
 	    try {
-	    	
-	    	ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+	    	ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 		    
 	    	 if (response.getStatusCode().is2xxSuccessful()) {
 	 	    	logger.info("updated multilogin-profile for agent {} with {} ", agent.getId(), newProfile);

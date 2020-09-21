@@ -1,10 +1,17 @@
 package hsg.bot.api;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
@@ -13,6 +20,7 @@ import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
+import primemover.service.MockCrawlerService;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -30,16 +38,35 @@ public class TestConfig {
 		return new JobService();
 	}
 	
+	
 	@Bean("CrawlerService")
-	ICrawlerService getCrawlerService() {
+	CrawlerService getCrawlerService() {
 		return new CrawlerService();
 	}
 	
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplateBuilder().build();
+	
+	@Bean("MockCrawlerService")
+	MockCrawlerService getMockCrawlerService() {
+		return new MockCrawlerService();
 	}
 	
+	
+	@Bean
+	public RestTemplate restTemplate() {
+		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		
+		RestTemplate restTemplate = new RestTemplateBuilder().build();
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
+		
+		for (Object converter : converters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
+				ObjectMapper mapper = jconverter.getObjectMapper();
+				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+			}
+		}
+         return restTemplate; 
+	}
 
 	@Bean(name="TaskServiceFactory")
 	TaskOperatorFactory getTaskServiceFactory() {

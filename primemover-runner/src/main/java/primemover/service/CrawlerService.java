@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,20 +134,38 @@ public class CrawlerService implements ICrawlerService {
 			appendFakeJob(res);
 		}
 		
+		/*
+		if (mode == StartupMode.PRODUCTION) {
+			res.removeIf(p -> p.getLeft().getId() < 95);
+		}
+		*/
+		
+		if (logger.isTraceEnabled()) {
+			for (Pair<Crawler, Joblist> item : res) {
+				logger.trace("crawler-ID {} joblist starting at {}", item.getLeft().getId(), item.getRight().getStartTime());
+			}
+		}
+		
 		return res;
 	}
 	
 	@Override
 	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
 		logger.debug("loading jobs");
-		CrawlerResult apiRes = restTemplate.getForObject(calculateCrawlerUrl(id), CrawlerResult.class);
-		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes);
-		
-		if (mode != StartupMode.PRODUCTION) {
-			adjustJobsToToday(res);
+		try {
+			CrawlerResult apiRes = restTemplate.getForObject(calculateCrawlerUrl(id), CrawlerResult.class);
+
+			List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes);
+			if (mode != StartupMode.PRODUCTION) {
+				adjustJobsToToday(res);
+			}
+			
+			return res;
+		} catch (RestClientException ex) {
+			logger.warn("Error getting crawler {}", id, ex);
 		}
 		
-		return res;
+		return null;
 	}
 	
 	
