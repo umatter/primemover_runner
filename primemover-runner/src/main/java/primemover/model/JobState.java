@@ -5,6 +5,7 @@ public enum JobState {
 	STORINGDATA("running", "storing data"),
 	FAILURE("failure", "error during execution"),
 	WARNING("success", "minor error encountered"),
+	WARNING_JOBDATA("success", "problems writing jobresult"),
 	SUCCESS("success", "successfully finished job"),
 	SKIPPED("skipped", "previous task was not executed");
 

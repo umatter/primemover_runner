@@ -87,43 +87,57 @@ public class StorageHelper {
 			String sessionStorage = datePrefix + "_page_sessionstorage_" + jobId + ".json";
 			String screenshot = datePrefix + "_page_screenshot_" + jobId + ".png";
 
+			ZipEntry zipEntry;
+			
 			// trafic data
-			ZipEntry zipEntry = new ZipEntry(traficData);
-			zipOut.putNextEntry(zipEntry);
-			// create temp stream as the json-library underlying the har-writing might close the stream
-			ByteArrayOutputStream tmpOs = new ByteArrayOutputStream(4048);
-			data.getHar().writeTo(tmpOs);
-			zipOut.write(tmpOs.toByteArray());
-			tmpOs.close();
-			tmpOs = null;
+			if (data.hasHar()) {
+				zipEntry = new ZipEntry(traficData);
+				zipOut.putNextEntry(zipEntry);
+				// create temp stream as the json-library underlying the har-writing might close the stream
+				ByteArrayOutputStream tmpOs = new ByteArrayOutputStream(4048);
+				data.getHar().writeTo(tmpOs);
+				zipOut.write(tmpOs.toByteArray());
+				tmpOs.close();
+				tmpOs = null;
+			}
 			
 			// Page Source
-			zipEntry = new ZipEntry(pageSourceData);
-			zipOut.putNextEntry(zipEntry);
-			byte[] tmpByte = data.getPageSource().getBytes(StandardCharsets.UTF_8);
-			zipOut.write(tmpByte);
-
+			if (data.hasPageSource()) {
+				zipEntry = new ZipEntry(pageSourceData);
+				zipOut.putNextEntry(zipEntry);
+				byte[] tmpByte = data.getPageSource().getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
+			}
+			
 			// Cookies
-			zipEntry = new ZipEntry(cookies);
-			zipOut.putNextEntry(zipEntry);
-			writeCookies(zipOut, data);
+			if (data.hasCookies()) {
+				zipEntry = new ZipEntry(cookies);
+				zipOut.putNextEntry(zipEntry);
+				writeCookies(zipOut, data);
+			}
 
 			// local Storage
-			zipEntry = new ZipEntry(localStorage);
-			zipOut.putNextEntry(zipEntry);
-			tmpByte = data.getLocalStorage().getBytes(StandardCharsets.UTF_8);
-			zipOut.write(tmpByte);
+			if (data.hasLocalStorage()) {
+				zipEntry = new ZipEntry(localStorage);
+				zipOut.putNextEntry(zipEntry);
+				byte[] tmpByte = data.getLocalStorage().getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
+			}
 
 			// session storage
-			zipEntry = new ZipEntry(sessionStorage);
-			zipOut.putNextEntry(zipEntry);
-			tmpByte = data.getSessionStorage().getBytes(StandardCharsets.UTF_8);
-			zipOut.write(tmpByte);
+			if (data.hasSessionStorage()) {
+				zipEntry = new ZipEntry(sessionStorage);
+				zipOut.putNextEntry(zipEntry);
+				byte[] tmpByte = data.getSessionStorage().getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
+			}
 			
 			// screenshot
-			zipEntry = new ZipEntry(screenshot);
-			zipOut.putNextEntry(zipEntry);
-			zipOut.write(data.getScreenshot());
+			if (data.hasScreenshot()) {
+				zipEntry = new ZipEntry(screenshot);
+				zipOut.putNextEntry(zipEntry);
+				zipOut.write(data.getScreenshot());
+			}
 			
 			// make sure everything is written
 			zipOut.finish();

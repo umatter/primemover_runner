@@ -44,6 +44,11 @@ public class TestConfig {
 		return new CrawlerService();
 	}
 	
+
+	@Bean(name="jsonMapper")
+	ObjectMapper getJsonMapper() {
+		return new ObjectMapper();
+	}
 	
 	@Bean("MockCrawlerService")
 	MockCrawlerService getMockCrawlerService() {

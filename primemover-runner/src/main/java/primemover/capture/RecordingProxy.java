@@ -2,6 +2,7 @@ package primemover.capture;
 
 import java.io.File;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
@@ -121,30 +122,28 @@ public class RecordingProxy {
 		logger.debug("applying proxy to capabilities");
 			
 		Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
+		
+		InetAddress adr; // proxy.getClientBindAddress();
 		try {
-		   String hostIp = Inet4Address.getLocalHost().getHostAddress();
-		   seleniumProxy.setHttpProxy(hostIp + ":" + proxy.getPort());
-		   seleniumProxy.setSslProxy(hostIp + ":" + proxy.getPort());
-		   
-		   cap.setCapability(CapabilityType.PROXY, seleniumProxy);
-		   
-		   return cap;
+			adr = Inet4Address.getLocalHost(); 
 		} catch (UnknownHostException e) {
-			// TODO add logging
-			
-			return null;
-		}
+			logger.warn("Could not resolve localhost", e);
+			throw new IllegalStateException("could not resolve localhost", e);
+		} 
+		
+		String hostIp = adr.getHostAddress();
+		seleniumProxy.setHttpProxy(hostIp + ":" + proxy.getPort());
+		seleniumProxy.setSslProxy(hostIp + ":" + proxy.getPort());
+	   
+		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
+		
+		logger.info("setting proxy to {}", adr);
+		
+		return cap;
 	}
 	
 	public String getIp() {
-		try {
-			return Inet4Address.getLocalHost().getHostAddress();
-			   
-			} catch (UnknownHostException e) {
-				// TODO add logging
-				
-				return "0.0.0.0";
-			}
+		return proxy.getClientBindAddress().getHostAddress();	 
 	}
 	
 	public Integer getPort() {

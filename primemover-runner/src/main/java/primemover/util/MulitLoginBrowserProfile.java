@@ -102,10 +102,13 @@ public class MulitLoginBrowserProfile {
 		try(OutputStream os = con.getOutputStream()) {
 		    byte[] input = jsonInputString.getBytes("utf-8");
 		    os.write(input, 0, input.length);			
+		} catch (Exception ex) {
+			logger.warn("Exception writing proxy data to profile {}", this.profileId, ex);
+			throw new IllegalStateException("Could not write proxy to MultiLogin - Service " + this.profileId, ex);
 		}
-		
-		
+				
 		if (con.getResponseCode() != 204) {
+			logger.warn("Could not update proxy on profile {}, MultiLogin response was {}: {}", this.profileId, con.getResponseCode(), con.getResponseMessage());
 			throw new IllegalStateException("Proxy was not properly set on MultiLogin profile " + this.profileId);
 		}	
 	}
@@ -216,7 +219,7 @@ public class MulitLoginBrowserProfile {
 	*/
 	
 	private static String createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) throws Exception{
-		String url = "http://127.0.0.1:35000/api/v2/profile";
+		String url = "http://127.0.0.1:35000/api/v2/profile";		
 		
 		// default
 		MultiLoginIOsType operatingSytem = MultiLoginIOsType.WINDOWS;

@@ -50,7 +50,7 @@ class GoogleTestSuite {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
 		jobs.appendJob(visitJob);
 		
 		// enter search term

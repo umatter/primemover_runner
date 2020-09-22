@@ -7,7 +7,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.model.Joblist;
 import primemover.model.Crawler;
@@ -17,6 +21,7 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.ICrawlerService;
 
 @SpringBootTest
+@AutoConfigureAfter(JacksonAutoConfiguration.class)
 class LoadTasksFromServiceAndRunJobs {
 	
 	@Autowired
@@ -24,6 +29,7 @@ class LoadTasksFromServiceAndRunJobs {
 	
 	@Autowired
 	private ICrawlerService crawlerService;
+	
 	
 	@Autowired
 	private MockJobManager jobManager;
@@ -120,7 +126,7 @@ class LoadTasksFromServiceAndRunJobs {
 	@Test
 	void LoadTasksAndWriteJobDataForCrawlerId98() {
 		// get the jobList for each Crawler
-		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(98l);
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getTasksForCrawler(112l);
 		
 		if (taskList == null) {
 			throw new IllegalStateException("Crawler not found");

@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import primemover.config.StartupMode;
 import primemover.model.MultiLoginAgent;
+import primemover.model.api.Agent;
 
 @Service
 public class AgentService {
@@ -66,6 +67,23 @@ public class AgentService {
 	    } catch (ResourceAccessException ex) {
 	    	logger.warn("failure updating multilogin-profile for agent {} ", agent.getId());
 	    	return false;
+	    }
+	}
+	
+	public String getMultiLoginIdFromServer(MultiLoginAgent agent) {
+		String url = calculateAgentUrl(agent.getId());
+	  	   
+	    try {
+	    	Agent response = restTemplate.getForObject(url, Agent.class);
+
+	    	if (response == null) {
+	    		return "";
+	    	} else {
+	    		return response.getMultilogin_id();
+	    	}
+	    } catch (ResourceAccessException ex) {
+	    	logger.warn("failure updating multilogin-profile for agent {} ", agent.getId());
+	    	return "";
 	    }
 	}
 }

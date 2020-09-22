@@ -114,8 +114,14 @@ public class TaskOperator implements ITaskOperator {
 		
 		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
 			try {
-				bp = new MulitLoginBrowserProfile(crawler, recorder);
-				agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
+				String verifiyId = agentService.getMultiLoginIdFromServer(typedAgent);
+				
+				if (StringUtils.isEmpty(verifiyId)) {
+					bp = new MulitLoginBrowserProfile(crawler, recorder);
+					agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
+				} else {
+					bp = new MulitLoginBrowserProfile(verifiyId);
+				}				
 			} catch (Exception ex) {
 				logger.warn("could not create MultiLoginProfile for agent {}", typedAgent.getId(), ex);
 				
@@ -194,23 +200,51 @@ public class TaskOperator implements ITaskOperator {
 			data.setHar(har);
 			
 			// capture page data
-			data.setPageSource(primemover.util.Page.getBodyeFromJavascript(context.getDriver()));
+			try {
+				data.setPageSource(primemover.util.Page.getBodyeFromJavascript(context.getDriver()));
+			} catch (Exception ex) {
+				logger.warn("Could not read page source for job {}", job.getId(), ex);
+				data.setPageSource(null);
+			}
+			
 			
 			// capture cookies, localstorage, etc.
-			data.setCookies(context.getDriver().manage().getCookies());
-			data.setLocalStorage(primemover.util.LocalStorage.getItems(context.getDriver()));
-			data.setSessionStorage(primemover.util.SessionStorage.getItems(context.getDriver()));
+			try {
+				data.setCookies(context.getDriver().manage().getCookies());
+			} catch (Exception ex) {
+				logger.warn("Could not read cookies for job {}", job.getId(), ex);
+				data.setCookies(null);
+			}
+			
+			try {
+				data.setLocalStorage(primemover.util.LocalStorage.getItems(context.getDriver()));
+			} catch (Exception ex) {
+				logger.warn("Could not read local storage for job {}", job.getId(), ex);
+				data.setLocalStorage(null);
+			}
+			
+			try {
+				data.setSessionStorage(primemover.util.SessionStorage.getItems(context.getDriver()));
+			} catch (Exception ex) {
+				logger.warn("Could not read session storage for job {}", job.getId(), ex);
+				data.setSessionStorage(null);
+			}		
 			
 			
 			// Writing data
+			boolean writeRes = true;
 			for (IStorageService storage : storages) {
-				storage.writeJobData(job, data);
+				writeRes = writeRes && storage.writeJobData(job, data);				
 			}		
 			
-			logger.info("Done running job {}", job.getId());
-			jobService.updateJobState(job, JobState.SUCCESS, null, ZonedDateTime.now()); // setting endtime
-			
-			
+			if (writeRes) {
+				logger.info("Done running job {}", job.getId());
+				jobService.updateJobState(job, JobState.SUCCESS, null, ZonedDateTime.now()); // setting endtime
+			} else {
+				logger.warn("Done running job with warning {}", job.getId());
+				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, ZonedDateTime.now()); // setting endtime
+			}
+
 			return true;
 			
 		} catch (Exception ex) {
