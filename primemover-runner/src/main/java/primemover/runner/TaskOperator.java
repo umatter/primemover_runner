@@ -32,9 +32,11 @@ import primemover.model.IJob;
 import primemover.model.IProxy;
 import primemover.model.JobState;
 import primemover.model.Joblist;
+import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
 import primemover.service.AgentService;
 import primemover.service.IStorageService;
+import primemover.service.IpService;
 import primemover.service.JobData;
 import primemover.service.JobService;
 import primemover.util.MulitLoginBrowserProfile;
@@ -61,7 +63,16 @@ public class TaskOperator implements ITaskOperator {
 	@Autowired
 	private RecordingProxyFactory recorderFactory;
 	
+	private IpService ipService;
+	
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
+	
+	
+	
+	private void setupIpService(RecordingProxy recorder) {
+		ipService = new IpService();
+		recorder.applyProxy(ipService);
+	}
 	
 	private void startupFirefox(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder) {
 		FirefoxContext ffContext = new FirefoxContext();
@@ -171,7 +182,7 @@ public class TaskOperator implements ITaskOperator {
 		}
 	}
 	
-	private Boolean runJob(IJob job) {
+	private Boolean runJob(IJob job, IpRecordingTiming ipRecording) {
 		logger.info("Starting job {}", job.getId());
 		
 		try {
@@ -179,7 +190,16 @@ public class TaskOperator implements ITaskOperator {
 			
 			// init data recording
 			JobData data = new JobData();
-			this.context.getRecorder().startCapturing(job.getDescription(), job.getName());
+			
+			// grab ip before running job
+			if (ipRecording == IpRecordingTiming.BEFORE_JOB) {
+				LocationInfo loc = ipService.getLocationInfo();
+				logger.debug("captured location info for job {}", job.getId(), loc);
+				data.setLocation(loc);
+			}
+			
+			// start MITM
+			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
 			
 			// running job
 			RunJobHandler.handle(context.getDriver(), job);
@@ -230,6 +250,12 @@ public class TaskOperator implements ITaskOperator {
 				data.setSessionStorage(null);
 			}		
 			
+			// grab ip before running job
+			if (ipRecording == IpRecordingTiming.AFTER_JOB) {
+				LocationInfo loc = ipService.getLocationInfo();
+				logger.debug("captured location info for job {}", job.getId(), loc);
+				data.setLocation(loc);
+			}
 			
 			// Writing data
 			boolean writeRes = true;
@@ -288,17 +314,28 @@ public class TaskOperator implements ITaskOperator {
 			throw new IllegalStateException("please setup service first");
 		}
 		
+		// run job list
 		try {
 			Boolean previousResult = true;
 			IJob previousJob = null;
-			for (IJob jobItem : jobs.getJobs()) {
+			List<IJob> jobList = jobs.getJobs();
+			
+			for (int i = 0; i < jobList.size(); i++) {
+				IJob item = jobList.get(i);
+				
 				if (previousResult) {
-					runJob(jobItem);
+					previousJob = item;
+					if (i == 0) {
+						runJob(item, IpRecordingTiming.BEFORE_JOB);
+					} else if (i == jobList.size() - 1) {
+						runJob(item, IpRecordingTiming.AFTER_JOB);
+					} else {
+						runJob(item, IpRecordingTiming.NONE);
+					}
 				} else {
-					logger.warn("skipping job ({}) due to error in previous job ({})", jobItem.getId(), previousJob == null ? -1 : previousJob.getId() );
-					jobService.updateJobState(jobItem, JobState.SKIPPED, ZonedDateTime.now(), null);
+					logger.warn("skipping job ({}) due to error in previous job ({})", item.getId(), previousJob == null ? -1 : previousJob.getId() );
+					jobService.updateJobState(item, JobState.SKIPPED, ZonedDateTime.now(), ZonedDateTime.now());
 				}		
-				previousJob = jobItem;
 			}
 			
 			res = true;
@@ -322,6 +359,9 @@ public class TaskOperator implements ITaskOperator {
 		RecordingProxy recorder = setupRecorder(crawler);
 		recorder.applyProxy(capabilities);
 
+		// setup IpService
+		setupIpService(recorder);
+		
 		// create driver
 		try {
 			switch (crawler.getAgent().getType()) {
@@ -352,7 +392,7 @@ public class TaskOperator implements ITaskOperator {
 	@Override
 	public void tearDown() {
 		isSetup.set(false);
-		
+		ipService = null;		
 		context.getDriver().quit();
 		context.getRecorder().tearDown();
 		context = null;

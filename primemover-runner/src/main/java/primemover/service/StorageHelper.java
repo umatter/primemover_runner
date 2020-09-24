@@ -12,6 +12,8 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.openqa.selenium.Cookie;
 
 import primemover.model.IJob;
@@ -72,6 +74,9 @@ public class StorageHelper {
 	public Boolean writeJobDataAsZip(OutputStream os, IJob job, JobData data) {
 		logger.info("writting jobdata as Zip");
 		
+		// json mapper
+		ObjectMapper mapper = new ObjectMapper();
+		
 		// create filename
 		String datePrefix = dateFormat.format(new Date());
 		String jobId = job.getId().toString();
@@ -80,7 +85,8 @@ public class StorageHelper {
 		try (ZipOutputStream zipOut = new ZipOutputStream(os)) {
 
 			// entries
-			String traficData = datePrefix + "_trafic_har" + jobId + ".json";
+			String locationData = datePrefix + "_proxy_location_" + jobId + ".json";
+			String traficData = datePrefix + "_trafic_har_" + jobId + ".json";
 			String pageSourceData = datePrefix + "_page_finalsource_" + jobId + ".html";
 			String cookies = datePrefix + "_page_cookies_" + jobId + ".json";
 			String localStorage = datePrefix + "_page_localstorage_" + jobId + ".json";
@@ -88,6 +94,15 @@ public class StorageHelper {
 			String screenshot = datePrefix + "_page_screenshot_" + jobId + ".png";
 
 			ZipEntry zipEntry;
+			
+			// location data
+			if (data.hasLocationInfo()) {
+				zipEntry = new ZipEntry(locationData);
+				zipOut.putNextEntry(zipEntry);
+				String json = mapper.writeValueAsString(data.getLocation());
+				byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+				zipOut.write(bytes);
+			}
 			
 			// trafic data
 			if (data.hasHar()) {

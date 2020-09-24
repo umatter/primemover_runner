@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Proxy.Type;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 import org.openqa.selenium.Proxy;
@@ -25,6 +27,7 @@ import net.lightbody.bmp.proxy.CaptureType;
 import net.lightbody.bmp.proxy.auth.AuthType;
 import primemover.model.GeoSurfProxy;
 import primemover.model.IProxy;
+import primemover.service.IpService;
 
 
 public class RecordingProxy {
@@ -118,11 +121,16 @@ public class RecordingProxy {
 		this.setup(null);
 	}
 	
-	public DesiredCapabilities applyProxy(DesiredCapabilities cap) {
-		logger.debug("applying proxy to capabilities");
-			
-		Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
+	public void applyProxy(IpService ipService) {
+		InetAddress adr = getInetAddress();
 		
+		SocketAddress addr = new InetSocketAddress(adr, proxy.getPort());
+		java.net.Proxy proxy = new java.net.Proxy(Type.HTTP, addr);
+				
+		ipService.setProxy(proxy);
+	}
+	
+	private InetAddress getInetAddress() {
 		InetAddress adr; // proxy.getClientBindAddress();
 		try {
 			adr = Inet4Address.getLocalHost(); 
@@ -130,6 +138,15 @@ public class RecordingProxy {
 			logger.warn("Could not resolve localhost", e);
 			throw new IllegalStateException("could not resolve localhost", e);
 		} 
+		return adr;
+	}
+	
+	public DesiredCapabilities applyProxy(DesiredCapabilities cap) {
+		logger.debug("applying proxy to capabilities");
+			
+		Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
+		
+		InetAddress adr = getInetAddress();
 		
 		String hostIp = adr.getHostAddress();
 		seleniumProxy.setHttpProxy(hostIp + ":" + proxy.getPort());

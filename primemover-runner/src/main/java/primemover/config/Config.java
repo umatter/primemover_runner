@@ -1,9 +1,6 @@
 package primemover.config;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +23,6 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
-import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
@@ -47,10 +43,12 @@ public class Config {
 		return new JobListRunnerFactory();
 	}
 	
+	/*
 	@Bean(name="fileStorageService")
 	IStorageService getFileStorageServices() {
 		return new FileStorageService();
 	}
+	*/
 	
 	@Bean(name="backendStorageService")
 	IStorageService getBackendStorageServices() {

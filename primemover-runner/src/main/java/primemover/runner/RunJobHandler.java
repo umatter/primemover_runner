@@ -24,6 +24,7 @@ import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertElementExistsJob;
 import primemover.model.jobs.AssertPageLoadedJob;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
+import primemover.model.jobs.AssertProxyByPrimemoverApiJob;
 import primemover.model.jobs.AssertScrolledMaxJob;
 import primemover.model.jobs.AssertTextInFieldJob;
 import primemover.model.jobs.EnterTextFieldJob;
@@ -268,6 +269,43 @@ public class RunJobHandler {
 		
 		logger.trace("creating AssertProxyByGeosurf-Handler");
 		dispatch.put(AssertProxyByGeosurfJob.class, new Handler() {
+			
+			private ObjectMapper mapper = new ObjectMapper();
+			
+			public void handle(WebDriver driver, IJob job) {
+				AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) job;
+				
+				// get IP-Info from geosurf
+				driver.get("https://geo.geosurf.io/");
+								
+				// JSON is displayed within a pre-Tag in Chrome...
+				String json = driver.findElement(By.tagName("pre")).getText();
+				
+				// map object
+				try {
+					IpInfo ipInfo = mapper.readValue(json, IpInfo.class);
+					
+					// verify
+					if (StringUtils.hasText(typedJob.getIp())) {
+						assertEquals(typedJob.getIp(), ipInfo.getIp());
+					}
+					if (StringUtils.hasText(typedJob.getCountry())) {
+						assertEquals(typedJob.getCountry(), ipInfo.getCountry());
+					}
+					if (StringUtils.hasText(typedJob.getCity())) {
+						assertEquals(typedJob.getCity(), ipInfo.getCity());
+					}
+					
+				} catch (JsonMappingException e) {
+					throw new AssertionError("Error mapping json", e);
+				} catch (JsonProcessingException e) {
+					throw new AssertionError("Error processing json", e);
+				}
+			}
+		});
+		
+		logger.trace("creating AssertProxyByPrimemoverApi-Handler");
+		dispatch.put(AssertProxyByPrimemoverApiJob.class, new Handler() {
 			
 			private ObjectMapper mapper = new ObjectMapper();
 			

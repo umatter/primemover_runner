@@ -17,12 +17,15 @@ import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
 import primemover.model.IProxy;
 import primemover.model.Joblist;
+import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
 import primemover.model.ScrollDirection;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.HttpProxy;
 import primemover.model.api.CrawlerResult;
+import primemover.model.api.IpResult;
+import primemover.model.api.IpResultData;
 import primemover.model.jobs.BaseJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.ScrollByDurationJob;
@@ -315,5 +318,23 @@ public class PrimemoverApiConverter {
 		return res;
 	}
 	
+	
+	public static LocationInfo convertFromApi(IpResult input) {
+		IpResultData data = input.getResult();
+		
+		LocationInfo res = new LocationInfo();
+		
+		res.setCity(data.getCity());
+		res.setCountryCode(data.getCountry_code());
+		res.setCountryName(data.getCountry_name());
+		res.setIp(data.getIp());
+		res.setLatitude(data.getLatitude());
+		res.setLongitude(data.getLongitude());
+		res.setRegionCode(data.getRegion_code());
+		res.setRegionName(data.getRegion_name());
+		res.setType(data.getType());
+		res.setZip(data.getZip());
+		return res;
+	}
 
 }

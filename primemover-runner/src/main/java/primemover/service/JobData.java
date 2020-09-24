@@ -6,6 +6,7 @@ import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
 
 import net.lightbody.bmp.core.har.Har;
+import primemover.model.LocationInfo;
 
 public class JobData {
 	
@@ -15,6 +16,7 @@ public class JobData {
 	private Set<Cookie> cookies;
 	private String sessionStorage;
 	private String localStorage;
+	private LocationInfo location;
 	
 	public Har getHar() {
 		return har;
@@ -87,5 +89,17 @@ public class JobData {
 	
 	public boolean hasScreenshot() {
 		return this.screenshot != null;
+	}
+
+	public LocationInfo getLocation() {
+		return location;
+	}
+
+	public void setLocation(LocationInfo location) {
+		this.location = location;
+	}
+	
+	public boolean hasLocationInfo() {
+		return this.location != null;
 	}
 }
