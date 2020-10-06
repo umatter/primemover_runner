@@ -13,8 +13,10 @@ public class Queue {
 	private String description;
 	private Integer order;
 	private Boolean active;
-	private Boolean success;
-	private Boolean failure;
+	private Boolean processed;
+	private Boolean reviewed;
+	private String status_code;
+	private String status_message;
 	private ZonedDateTime start_at;
 	private ZonedDateTime updated_at;
 	private ZonedDateTime created_at;
@@ -56,7 +58,7 @@ public class Queue {
 		this.order = order;
 	}
 
-	public Boolean getActive() {
+	public Boolean isActive() {
 		return active;
 	}
 
@@ -64,20 +66,20 @@ public class Queue {
 		this.active = active;
 	}
 
-	public Boolean getSuccess() {
-		return success;
+	public Boolean isProcessed() {
+		return processed;
 	}
 
-	public void setSuccess(Boolean success) {
-		this.success = success;
+	public void setProcessed(Boolean processed) {
+		this.processed = processed;
 	}
 
-	public Boolean getFailure() {
-		return failure;
+	public Boolean isReviewed() {
+		return reviewed;
 	}
 
-	public void setFailure(Boolean failure) {
-		this.failure = failure;
+	public void setReviewed(Boolean reviewed) {
+		this.reviewed = reviewed;
 	}
 	
 	public ZonedDateTime getStart_at() {
@@ -110,6 +112,22 @@ public class Queue {
 
 	public void setJobs(List<Job> jobs) {
 		this.jobs = jobs;
+	}
+
+	public String getStatusCode() {
+		return status_code;
+	}
+
+	public void setStatusCode(String status_code) {
+		this.status_code = status_code;
+	}
+
+	public String getStatusMessage() {
+		return status_message;
+	}
+
+	public void setStatusMessage(String status_message) {
+		this.status_message = status_message;
 	}
 
 	

@@ -10,6 +10,7 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
+import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -34,6 +35,10 @@ public class TestConfig {
 		return new RestTemplateBuilder().build();
 	}
 	
+	@Bean(name="MultiLoginBrowserProfileFactory")
+	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
+		return new MultiLoginBrowserProfileFactory();
+	}
 
 	@Bean(name="TaskServiceFactory")
 	TaskOperatorFactory getTaskServiceFactory() {

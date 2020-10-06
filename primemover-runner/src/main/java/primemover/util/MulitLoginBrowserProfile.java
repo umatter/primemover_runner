@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.openqa.selenium.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
@@ -19,10 +20,19 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * 
+ * @author dburkolter
+ *
+ *	Add a timeout for the request to MultiLogin. MultiLogin itself has no timeout for any request!
+ */
 public class MulitLoginBrowserProfile {
 	
 	private static Logger logger = LoggerFactory.getLogger(MulitLoginBrowserProfile.class);
 	
+	
+	@Value("${mulitlogin.ApiWaitSeconds:10}")
+	Long apiWaitSeconds = 10l;
 	
 	String profileId;
 	
@@ -72,6 +82,16 @@ public class MulitLoginBrowserProfile {
 		}
 	}
 
+	private void runApiWait() {
+		if (apiWaitSeconds > 0) {
+			try {
+				Thread.sleep(apiWaitSeconds * 1000);
+			} catch (InterruptedException e) {
+				// nothing to do
+			}
+		}
+	}
+	
 	public String getProfileId() {
 		return this.profileId;
 	}
@@ -81,6 +101,8 @@ public class MulitLoginBrowserProfile {
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(10000);
 
 		// setup method
 		con.setRequestMethod("POST");
@@ -110,15 +132,20 @@ public class MulitLoginBrowserProfile {
 		if (con.getResponseCode() != 204) {
 			logger.warn("Could not update proxy on profile {}, MultiLogin response was {}: {}", this.profileId, con.getResponseCode(), con.getResponseMessage());
 			throw new IllegalStateException("Proxy was not properly set on MultiLogin profile " + this.profileId);
-		}	
+		}
+		
+		runApiWait();
 	}
 	
 	public Boolean isActive() throws Exception {
+		// no API wait as this is requesting a state
 		String url = "http://127.0.0.1:35000/api/v1/profile/active?profileId=" + this.profileId;
 
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(10000);
 		con.setRequestMethod("GET");
 		
 		Integer responseCode = con.getResponseCode();
@@ -136,11 +163,14 @@ public class MulitLoginBrowserProfile {
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(60000);
 		con.setRequestMethod("GET");
 		
 		Integer responseCode = con.getResponseCode();
 
 		if (responseCode == HttpURLConnection.HTTP_OK) {
+			runApiWait();
 			return true;
 		} else {
 			return false;
@@ -160,6 +190,9 @@ public class MulitLoginBrowserProfile {
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(5000);
+		con.setReadTimeout(60000);
+		
 		con.setRequestMethod("GET");
 		
 		Integer responseCode = con.getResponseCode();
@@ -176,6 +209,7 @@ public class MulitLoginBrowserProfile {
 	
 			// Get JSON text from the response and return the value by key "value"
 			JSONObject jsonResponse = new JSONObject(response.toString());
+			runApiWait();
 			return jsonResponse.getString("value");
 		}
 		
@@ -188,11 +222,14 @@ public class MulitLoginBrowserProfile {
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(60000);
 		con.setRequestMethod("DELETE");
 		
 		Integer responseCode = con.getResponseCode();
 
 		if (responseCode == 204) {
+			runApiWait();
 			return true;
 		} else {
 			return false;
@@ -206,6 +243,8 @@ public class MulitLoginBrowserProfile {
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(60000);
 		con.setRequestMethod("GET");
 		
 		Integer responseCode = con.getResponseCode();
@@ -218,7 +257,7 @@ public class MulitLoginBrowserProfile {
 	}
 	*/
 	
-	private static String createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) throws Exception{
+	private String createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) throws Exception{
 		String url = "http://127.0.0.1:35000/api/v2/profile";		
 		
 		// default
@@ -244,6 +283,8 @@ public class MulitLoginBrowserProfile {
 		// setup method
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setConnectTimeout(10000);
+		con.setReadTimeout(60000);
 		con.setRequestMethod("POST");
 		con.setRequestProperty("Content-Type", "application/json; utf-8");
 		con.setDoOutput(true);
@@ -276,6 +317,8 @@ public class MulitLoginBrowserProfile {
 		if (StringUtils.isEmpty(newProfileId)) {
 			throw new IllegalStateException("no profile-id was created for agent " + agent.getId());
 		}
+		
+		runApiWait();
 		
 		return newProfileId;
 	}

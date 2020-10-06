@@ -78,5 +78,4 @@ class MultiLoginTestSuite {
         crawler = null;
         proxy = null;
     }
-
 }

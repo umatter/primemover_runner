@@ -27,7 +27,6 @@ class ConversionApiTestSuite {
 	
 	@BeforeEach
 	public void setup() {
-		crawlerService = new MockCrawlerService();
 	}
 
 	@Test
@@ -51,6 +50,23 @@ class ConversionApiTestSuite {
 	void runEnd2EndFromJsonFileProduction() {
 		// set input file
 		String filePath = "C:/Users/dburkolter/git/primemover_runner/primemover-runner/src/test/resources/api-json/MockEnd2End02.json";
+		crawlerService.setMockFile(filePath);
+				
+		// get the jobList for each Crawler
+		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
+		
+		for (Pair<Crawler, Joblist> task : taskList) {
+			ITaskOperator service = serviceFactory.getItem();
+			service.setup(task.getLeft());
+			service.runJobList(task.getValue());
+			service.tearDown();
+		}
+	}
+	
+	@Test
+	void runEnd2EndFromJsonFile3() {
+		// set input file
+		String filePath = "C:/Users/dburkolter/git/primemover_runner/primemover-runner/src/test/resources/api-json/MockEnd2End03.json";
 		crawlerService.setMockFile(filePath);
 				
 		// get the jobList for each Crawler

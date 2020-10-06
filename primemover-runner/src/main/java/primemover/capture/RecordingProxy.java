@@ -5,6 +5,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy.Type;
+import java.util.concurrent.TimeUnit;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
@@ -90,6 +91,8 @@ public class RecordingProxy {
 	    ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
 	            .rootCertificateSource(existingCertificateSource)
 	            .serverKeyGenerator(new ECKeyGenerator())
+	            .cacheConcurrencyLevel(16) // 8 is default
+	            .cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
 	            //.trustAllServers(true)
 	            .build();
 

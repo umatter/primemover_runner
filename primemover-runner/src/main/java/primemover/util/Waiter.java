@@ -40,7 +40,7 @@ public class Waiter {
 
         //Wait Javascript until it is Ready!
         if(!jsReady) {
-        	logger.trace("JS is not ready got to wait", timeout);
+        	logger.trace("JS is not ready -> wait for {} second(s)", timeout);
         	
         	for (int n = 0; n < numRetries; n++) {
         		logger.debug("trial {} of {}", n + 1, numRetries);

@@ -7,6 +7,8 @@ import java.util.List;
 public class Joblist {
 	private Long id;
 	private Boolean active;
+	private Boolean processed;
+	private Boolean reviewed;
 	private ZonedDateTime startTime;
 	private List<IJob> jobs;
 	
@@ -33,7 +35,7 @@ public class Joblist {
 		this.startTime = startTime;
 	}
 
-	public Boolean getActive() {
+	public Boolean isActive() {
 		return active;
 	}
 
@@ -47,6 +49,22 @@ public class Joblist {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Boolean isProcessed() {
+		return processed;
+	}
+
+	public void setProcessed(Boolean processed) {
+		this.processed = processed;
+	}
+
+	public Boolean isReviewed() {
+		return reviewed;
+	}
+
+	public void setReviewed(Boolean reviewed) {
+		this.reviewed = reviewed;
 	}
 	
 }

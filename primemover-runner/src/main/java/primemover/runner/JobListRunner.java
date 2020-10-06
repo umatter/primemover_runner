@@ -100,9 +100,9 @@ public class JobListRunner implements Callable<Boolean> {
 		return res;
 	}
 
-	public JobListRunner(ITaskOperator taskService, Crawler crawler, Joblist jobs) {
+	public JobListRunner(ITaskOperator taskOperator, Crawler crawler, Joblist jobs) {
 		super();
-		this.taskOperator = taskService;
+		this.taskOperator = taskOperator;
 		this.crawler = crawler;
 		this.jobs = jobs;
 	}

@@ -1,5 +1,6 @@
 package hsg.bot.e2e;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.boot.SpringBootConfiguration;
@@ -24,6 +25,7 @@ import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
+import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -47,6 +49,10 @@ public class TestConfig {
 		return new AgentService();
 	}
 	
+	@Bean(name="MultiLoginBrowserProfileFactory")
+	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
+		return new MultiLoginBrowserProfileFactory();
+	}
 	
 	@Bean(name="fileStorageService")
 	IStorageService getFileStorageServices() {
@@ -66,8 +72,10 @@ public class TestConfig {
 	@Bean
 	public RestTemplate restTemplate() {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		
-		RestTemplate restTemplate = new RestTemplateBuilder().build();
+		RestTemplate restTemplate = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofSeconds(10))
+				.setReadTimeout(Duration.ofSeconds(60))
+				.build();
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		
 		for (Object converter : converters) {

@@ -27,6 +27,7 @@ import primemover.model.jobs.AssertProxyByGeosurfJob;
 import primemover.model.jobs.AssertProxyByPrimemoverApiJob;
 import primemover.model.jobs.AssertScrolledMaxJob;
 import primemover.model.jobs.AssertTextInFieldJob;
+import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
@@ -62,7 +63,8 @@ public class RunJobHandler {
 		dispatch.put(VisitJob.class, new Handler() {
 			public void handle(WebDriver driver, IJob job) {
 				VisitJob typedJob = (VisitJob) job;
-				driver.get(typedJob.getUrl());
+				logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
+				driver.navigate().to(typedJob.getUrl());
 				
 				// wait with retry until loaded
 				primemover.util.Waiter.waitUntilJSReady(driver, 10, 12); // check every 10 seconds for 2 Minutes
@@ -214,6 +216,31 @@ public class RunJobHandler {
 					WebElement selectedElement = elements.get(0);
 					
 					selectedElement.click();
+				}
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// nothing to do
+				}
+			}
+		});
+		
+		logger.trace("creating TryClickJob-Handler");
+		dispatch.put(ClickJob.class, new Handler() {
+			public void handle(WebDriver driver, IJob job) {
+				ClickJob typedJob = (ClickJob) job;
+
+				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				if (elements.size() == 1) {
+					WebElement selectedElement = elements.get(0);
+					
+					selectedElement.click();
+				} else {
+					logger.warn("Found more than one element for job {}", typedJob.getId());
+					throw new IllegalStateException("More than one element found for job " + typedJob.getId());
 				}
 				
 				try {

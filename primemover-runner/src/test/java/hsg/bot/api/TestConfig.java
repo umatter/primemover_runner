@@ -15,12 +15,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
+import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
 import primemover.service.MockCrawlerService;
+import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -44,7 +46,11 @@ public class TestConfig {
 		return new CrawlerService();
 	}
 	
-
+	@Bean(name="MultiLoginBrowserProfileFactory")
+	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
+		return new MultiLoginBrowserProfileFactory();
+	}
+	
 	@Bean(name="jsonMapper")
 	ObjectMapper getJsonMapper() {
 		return new ObjectMapper();
@@ -55,8 +61,12 @@ public class TestConfig {
 		return new MockCrawlerService();
 	}
 	
+	@Bean(name="AgentService")
+	AgentService getAgentService() {
+		return new AgentService();
+	}
 	
-	@Bean
+	@Bean("rest Template")
 	public RestTemplate restTemplate() {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		

@@ -31,10 +31,10 @@ public class JobManager implements IJobManager {
 	private Integer maxThreads = 4; // maximum parallel executions of joblists
 	
 	@Value("${runner.UpdateInterval:5}")
-	private Integer updateInterval = 5; // Update Interval to grab planned jobs in minutes
+	private Integer updateInterval; // Update Interval to grab planned jobs in minutes
 	
-	@Value("${runner.MaxRedoMinutes:15}")
-	private Integer redoMinutes = 15; // Update Interval to grab planned jobs in minutes
+	@Value("${runner.MaxRedoMinutes:45}")
+	private Integer redoMinutes; // Update Interval to grab planned jobs in minutes
 	
 	private ZonedDateTime lastExecution = null; // last execution time of scheduler
 	private ZonedDateTime lastTimeAdded = ZonedDateTime.now(); // the max datetime of the jobs added during the last run
@@ -82,7 +82,7 @@ public class JobManager implements IJobManager {
 		// get the jobList for each Crawler
 		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
 		
-		// add scheduler tasks
+		// last time to add scheduler tasks
 		ZonedDateTime newLastTimeToAdd = curRun.plusMinutes(updateInterval);
 		
 		// consider redo-minutes after startup
@@ -97,13 +97,30 @@ public class JobManager implements IJobManager {
 		
 		// loop all available joblists
 		for (Pair<Crawler, Joblist> task : taskList) {
-		
 			Joblist jobs = task.getRight();
+			
+			// verifiy states and skip inactive or processed joblists
+			if (!jobs.isActive() ) {
+				continue;
+			}
+			
+			if (jobs.isProcessed() ) {
+				continue;
+			}
+			
+			if (jobs.isReviewed()) {
+				continue;
+			}
+			
+			
+			// verify timing
 			ZonedDateTime startTime = jobs.getStartTime();
 			
-			if (lastTimeAddedInclRedo.isBefore(startTime) && newLastTimeToAdd.isAfter(startTime)) {
+			// provide joblists starting before the window end to the runner
+			if (newLastTimeToAdd.isAfter(startTime)) {
 				// calculating execution delay (positive only)
 				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
+				delaySeconds = 0l;
 				
 				logger.info("Preparing execution of {} in {} seconds", task.getRight().getId(), delaySeconds);
 				
@@ -121,7 +138,7 @@ public class JobManager implements IJobManager {
 		            }
 		            
 		        }, delaySeconds, TimeUnit.SECONDS);
-			}
+			} 
 		}
 		
 		logger.info("Done initializing jobs");

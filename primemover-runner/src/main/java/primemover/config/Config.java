@@ -1,5 +1,6 @@
 package primemover.config;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
+import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
 public class Config {
@@ -88,11 +90,20 @@ public class Config {
 		return jobManager;		
 	}
 	
+	@Bean(name="MultiLoginBrowserProfileFactory")
+	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
+		return new MultiLoginBrowserProfileFactory();
+	}
+	
+	
 	@Bean
 	public RestTemplate restTemplate() {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
-		RestTemplate restTemplate = new RestTemplateBuilder().build();
+		RestTemplate restTemplate = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofSeconds(10))
+				.setReadTimeout(Duration.ofSeconds(60))
+				.build();
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		
 		for (Object converter : converters) {
@@ -102,6 +113,7 @@ public class Config {
 				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-         return restTemplate; 
+				
+        return restTemplate; 
 	}
 }

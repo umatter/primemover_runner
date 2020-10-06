@@ -27,6 +27,7 @@ import primemover.model.api.CrawlerResult;
 import primemover.model.api.IpResult;
 import primemover.model.api.IpResultData;
 import primemover.model.jobs.BaseJob;
+import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
@@ -184,6 +185,15 @@ public class PrimemoverApiConverter {
 		return job;
 	}
 	
+	private static ClickJob convertApiClickJob(Integer id, String name, String description, Map<String, String> behaviours) {
+		ClickJob job = new ClickJob();
+		setBaseFields(job, id, name, description);
+		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setSelector(behaviours.get("selector"));
+	
+		return job;
+	}
+	
 	
 	private static SingleSelectUrlJob convertApiSingleSelectUrlJob(Integer id, String name, String description, Map<String, String> behaviours) {
 		SingleSelectUrlJob job = new SingleSelectUrlJob();
@@ -242,6 +252,9 @@ public class PrimemoverApiConverter {
 		case "tryclickjob":
 			res = convertApiTryClickJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;
+		case "clickjob":
+			res = convertApiClickJob(job.getId(), job.getName(), job.getDescription(), behaviors);
+			break;
 		case "scrollbydurationjob":
 			res = convertApiScrollByDurationJob(job.getId(), job.getName(), job.getDescription(), behaviors);
 			break;
@@ -260,7 +273,9 @@ public class PrimemoverApiConverter {
 		Joblist jobList = new Joblist();
 		
 		jobList.setId(new Long(item.getId()));
-		jobList.setActive(item.getActive());
+		jobList.setActive(item.isActive());
+		jobList.setProcessed(item.isProcessed());
+		jobList.setReviewed(item.isReviewed());
 		jobList.setStartTime(item.getStart_at());
 		
 		List<primemover.model.api.Job> list = item.getJobs();

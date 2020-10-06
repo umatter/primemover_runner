@@ -93,5 +93,10 @@
     "name": "multilogin.StartupDelaySeconds",
     "type": "java.lang.String",
     "description": "A description for 'multilogin.StartupDelaySeconds'"
+  },
+  {
+    "name": "mulitlogin.ApiWaitSeconds",
+    "type": "java.lang.String",
+    "description": "Indication how long we should wait after an API-Call to MultiLogin to avoid collisions with suceeding calls."
   }
 ]}
