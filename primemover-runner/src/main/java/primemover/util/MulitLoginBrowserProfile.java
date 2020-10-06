@@ -84,6 +84,7 @@ public class MulitLoginBrowserProfile {
 
 	private void runApiWait() {
 		if (apiWaitSeconds > 0) {
+			logger.trace("make API wait of {} seconds", apiWaitSeconds);
 			try {
 				Thread.sleep(apiWaitSeconds * 1000);
 			} catch (InterruptedException e) {

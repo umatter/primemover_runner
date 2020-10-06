@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
@@ -149,27 +150,68 @@ public class RunJobHandler {
 			public void handle(WebDriver driver, IJob job) {
 				EnterTextFieldJob typedJob = (EnterTextFieldJob) job;
 
-				WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
-						typedJob.getSelector());
+				boolean done = false;
+				int retriesCount = 0;
 				
-				TypingModeType typingMode = typedJob.getTypingMode();
+				logger.debug("typing text ({}) to field ({} : {})", typedJob.getValue(), typedJob.getType(), typedJob.getSelector());
 				
-				switch (typingMode) {
-				case DIRECT:
-					Typing.typeTextDirect(element, typedJob.getValue(), typedJob.getAppendReturn());
-					break;
-				case SIMULATED_NOTYPOS:
-					Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), false, false);
-					break;
-				case SIMULATED_KEEPINGTYPOS:
-					Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, true);
-					break;
-				case SIMULATED_FIXINGTYPOS:
-					Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, false);
-					break;
-				default:
-					throw new UnsupportedOperationException("Not implemented yet (" + typingMode + ")");
+				while (!done && retriesCount < 5) {
+					try {
+						retriesCount++;
+						logger.debug("typing text. Trial {} of {}", retriesCount, 5);
+						
+						
+						WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
+								typedJob.getSelector());
+						
+						TypingModeType typingMode = typedJob.getTypingMode();
+						
+						//String textToType = typedJob.getValue();
+						
+						// check for already typed text (if in retry). 
+						if (retriesCount > 1) {
+							element.clear();
+							/* not working as we may have typos
+							String curText = element.getText();
+							if (StringUtils.hasLength(curText) && textToType.startsWith(curText)) {
+								textToType = textToType.substring(curText.length());
+							}
+							*/
+						}
+						
+						// typing text
+						switch (typingMode) {
+						case DIRECT:
+							Typing.typeTextDirect(element, typedJob.getValue(), typedJob.getAppendReturn());
+							break;
+						case SIMULATED_NOTYPOS:
+							Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), false, false);
+							break;
+						case SIMULATED_KEEPINGTYPOS:
+							Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, true);
+							break;
+						case SIMULATED_FIXINGTYPOS:
+							Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, false);
+							break;
+						default:
+							throw new UnsupportedOperationException("Not implemented yet (" + typingMode + ")");
+						}
+						logger.debug("done typing text");
+						done = true;
+					} catch (StaleElementReferenceException e) { 
+						done = false; // retry
+						logger.debug("retrying typing text in {} seconds", 3);
+						
+						// just wait
+						try {
+							Thread.sleep(3000);
+						} catch (InterruptedException e1) {
+							// nothing to do
+						}
+					}
+					
 				}
+				
 
 				try {
 					Thread.sleep(1000);
