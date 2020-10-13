@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.model.IJob;
+import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertElementExistsJob;
@@ -159,39 +161,28 @@ public class RunJobHandler {
 					try {
 						retriesCount++;
 						logger.debug("typing text. Trial {} of {}", retriesCount, 5);
+						SelectorType selectorType = typedJob.getType();
+						String selector = typedJob.getSelector();
 						
-						
-						WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
-								typedJob.getSelector());
+						// provide WebElement dynamic for below functions. Google search will stale the element with the search suggestions
+						Supplier<WebElement> elementSup = () -> Selecting.getElementByWebdriver(driver, selectorType,
+								selector);
 						
 						TypingModeType typingMode = typedJob.getTypingMode();
-						
-						//String textToType = typedJob.getValue();
-						
-						// check for already typed text (if in retry). 
-						if (retriesCount > 1) {
-							element.clear();
-							/* not working as we may have typos
-							String curText = element.getText();
-							if (StringUtils.hasLength(curText) && textToType.startsWith(curText)) {
-								textToType = textToType.substring(curText.length());
-							}
-							*/
-						}
 						
 						// typing text
 						switch (typingMode) {
 						case DIRECT:
-							Typing.typeTextDirect(element, typedJob.getValue(), typedJob.getAppendReturn());
+							Typing.typeTextDirect(elementSup, typedJob.getValue(), typedJob.getAppendReturn());
 							break;
 						case SIMULATED_NOTYPOS:
-							Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), false, false);
+							Typing.typeTextSimulated(elementSup, typedJob.getValue(), typedJob.getAppendReturn(), false, false);
 							break;
 						case SIMULATED_KEEPINGTYPOS:
-							Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, true);
+							Typing.typeTextSimulated(elementSup, typedJob.getValue(), typedJob.getAppendReturn(), true, true);
 							break;
 						case SIMULATED_FIXINGTYPOS:
-							Typing.typeTextSimulated(element, typedJob.getValue(), typedJob.getAppendReturn(), true, false);
+							Typing.typeTextSimulated(elementSup, typedJob.getValue(), typedJob.getAppendReturn(), true, false);
 							break;
 						default:
 							throw new UnsupportedOperationException("Not implemented yet (" + typingMode + ")");

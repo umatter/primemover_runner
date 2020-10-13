@@ -99,6 +99,10 @@ public class JobManager implements IJobManager {
 		for (Pair<Crawler, Joblist> task : taskList) {
 			Joblist jobs = task.getRight();
 			
+			if (jobs == null) {
+				continue;
+			}
+			
 			// verifiy states and skip inactive or processed joblists
 			if (!jobs.isActive() ) {
 				continue;

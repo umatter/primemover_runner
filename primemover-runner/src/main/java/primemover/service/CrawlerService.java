@@ -52,7 +52,7 @@ public class CrawlerService implements ICrawlerService {
 	private String calculateCrawlerUrl(Long id) {
 		String url;
 		if (mode == StartupMode.PRODUCTION || id != null) {
-			url = "https://siaw.primemover.example/api/v1/crawlers";
+			url = "https://siaw.primemover.example/api/v1/crawlers-unprocessed";
 		} else {
 			url = "https://siaw.primemover.example/api/v1/crawlers-testing";
 		}
@@ -95,6 +95,10 @@ public class CrawlerService implements ICrawlerService {
 		Joblist jobs = new Joblist();
 		jobs.setId(-1l);
 		jobs.setStartTime(ZonedDateTime.now().plusSeconds(30));
+
+		jobs.setActive(true);
+		jobs.setProcessed(false);
+		jobs.setReviewed(false);
 		
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");

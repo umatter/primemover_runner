@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import primemover.model.DecisionType;
 import primemover.model.SelectorType;
+import primemover.model.jobs.SelectorBaseJob;
 
 public class Selecting {
 
@@ -68,6 +69,13 @@ public class Selecting {
 		}
 
 		return element;
+	}
+	
+	public static WebElement getElementByWebdriver(WebDriver driver, SelectorBaseJob selectorJob) {
+		SelectorType type = selectorJob.getType();
+		String selector = selectorJob.getSelector();
+		
+		return getElementByWebdriver(driver, type, selector);
 	}
 
 	public static WebElement chooseElement(List<WebElement> elements, DecisionType type) {

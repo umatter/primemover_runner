@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Supplier;
 
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
@@ -17,6 +18,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Suppliers;
 
 
 public class Typing {
@@ -41,13 +43,18 @@ public class Typing {
 	 * @param addReturn
 	 * @return
 	 */
-	public static Boolean typeTextDirect(WebElement element, String value, Boolean addReturn) {
-		element.sendKeys(value);
+	public static Boolean typeTextDirect(Supplier<WebElement> element, String value, Boolean addReturn) {
 		if (addReturn) {
-			element.sendKeys(Keys.RETURN);
+			sendKeysAndRetryBeforeFail(element, value, Keys.RETURN); // send in one go
+		} else {
+			sendKeysAndRetryBeforeFail(element, value);
 		}
 		
 		return true;
+	}
+	
+	public static Boolean typeTextDirect(WebElement element, String value, Boolean addReturn) {
+		return typeTextDirect(Suppliers.ofInstance(element), value, addReturn);
 	}
 	
 	private static double getTypeDelay() {
@@ -111,17 +118,46 @@ public class Typing {
 		return neighbouringKeysUS;	
 	}
 	
+	
+	private static void sendKeysAndRetryBeforeFail(Supplier<WebElement> element, CharSequence... keys) {
+		int cnt = 0;
+		boolean done = false;
+		
+		while(!done && cnt < 5) {
+			cnt++;
+			
+			try {
+				element.get().sendKeys(keys);
+				done = true;
+			} catch (Exception e) {
+				
+				if (cnt > 5) {
+					logger.debug("failure sending keys", e);
+					throw e;
+				}
+				
+				logger.trace("failure sending keys. Going to retry.", e);
+				
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e1) {
+					// nothing to do
+				}
+			}
+		}	
+	}
+	
 	/**
-	 * Try to simulate human behaviour
+	 * Type text on a dynamic WebElement
 	 * 
 	 * @param element
 	 * @param text
 	 * @param addReturn
+	 * @param typosAllowed
+	 * @param keepTypos
 	 * @return
 	 */
-	public static Boolean typeTextSimulated(WebElement element, String text, Boolean addReturn, Boolean typosAllowed, Boolean keepTypos) {
-		
-
+	public static Boolean typeTextSimulated(Supplier<WebElement> element, String text, Boolean addReturn, Boolean typosAllowed, Boolean keepTypos) {
 		double keepErrorsProb = 0.22;
 		double mistakeProb = 0.03;
 		double maxCharsTypedBeforeErasure = 3;
@@ -161,35 +197,49 @@ public class Typing {
 						for (int m = n; m < (n + numLettersToType); m++) {
 							delayTyping();
 							c = text.charAt(m);
-							element.sendKeys(String.valueOf(c));
+							sendKeysAndRetryBeforeFail(element, String.valueOf(c));
 						}
 						
 						// erase again
 						for (int m = 0; m < numLettersToType; m++) { // also delete first wrong letter!
 							delayTyping();
-							element.sendKeys(Keys.BACK_SPACE);
+							sendKeysAndRetryBeforeFail(element, Keys.BACK_SPACE);
 						}
 						
 						// Type correctly
 						delayTyping();
 						c = text.charAt(n);
-						element.sendKeys(String.valueOf(c));
+						sendKeysAndRetryBeforeFail(element, String.valueOf(c));
 					}				
 				} else {
 					// no typo
-					element.sendKeys(String.valueOf(c));
+					sendKeysAndRetryBeforeFail(element, String.valueOf(c));
 				}
 			} else {
 				// no typos allowed
-				element.sendKeys(String.valueOf(c));
+				sendKeysAndRetryBeforeFail(element, String.valueOf(c));
 			}
 		}
 		
 		if (addReturn) {
-			element.sendKeys(Keys.RETURN);
+			sendKeysAndRetryBeforeFail(element, Keys.RETURN);
 		}
 		
-		return true;
+		return true;		
+	}
+		
+	
+	/**
+	 * Try to simulate human behaviour on a static WevElement
+	 * 
+	 * @param element
+	 * @param text
+	 * @param addReturn
+	 * @return
+	 */
+	public static Boolean typeTextSimulated(WebElement element, String text, Boolean addReturn, Boolean typosAllowed, Boolean keepTypos) {
+		Supplier<WebElement> elemSup = Suppliers.ofInstance(element);
+		return typeTextSimulated(elemSup, text, addReturn, typosAllowed, keepTypos);		
 	}
 
 }

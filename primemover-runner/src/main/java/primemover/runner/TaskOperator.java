@@ -47,9 +47,11 @@ public class TaskOperator implements ITaskOperator {
 	private static Logger logger = LoggerFactory.getLogger(TaskOperator.class);
 
 	@Value("${multilogin.StartupRetryCount:3}")
-	private Integer maxRetryCount;
+	private Integer maxRetryCountMultiLogin;
 	@Value("${multilogin.StartupDelaySeconds:30}")
-	private Integer retryDelay;
+	private Integer retryDelayMultiLogin;
+	@Value("${runner.StartupRetryCount:3}")
+	private Integer maxRetryCountInit;
 
 	private OperatorContext context;
 
@@ -146,17 +148,31 @@ public class TaskOperator implements ITaskOperator {
 			bp = browserProfileFactory.getItem(typedAgent.getMultiLoginId());
 		}
 
-		while (!done && retryCount < maxRetryCount) {
+		while (!done && retryCount < maxRetryCountMultiLogin) {
 			retryCount += 1;
 			if (retryCount > 1) {
 				logger.info("retry starting profile");
 			}
 
 			try {
+
+				// resetting GeoSurf-Session idendifier, hope for new IP
+				if (crawler.getProxy() instanceof GeoSurfProxy) {
+					GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
+
+					geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
+					logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
+							geoProxy.getSessionId());
+					mlContext.getRecorder().resetHeaders(geoProxy);
+
+				}
+
+				// apply proxy
 				logger.trace("updating proxy");
 				bp.updateProxy(recorder);
 				logger.trace("starting remote driver");
-				RemoteWebDriver driver = new RemoteWebDriver(new URL(bp.startProfile()), capabilities);
+				URL remoteUrl = new URL(bp.startProfile());
+				RemoteWebDriver driver = new RemoteWebDriver(remoteUrl, capabilities);
 				done = true;
 
 				mlContext.setProfile(bp);
@@ -173,8 +189,8 @@ public class TaskOperator implements ITaskOperator {
 
 			if (!done) {
 				try {
-					logger.debug("sleep for {} second(s) before retry", this.retryDelay);
-					Thread.sleep(this.retryDelay * 1000);
+					logger.debug("sleep for {} second(s) before retry", this.retryDelayMultiLogin);
+					Thread.sleep(this.retryDelayMultiLogin * 1000);
 				} catch (InterruptedException e) {
 					// nothing to do
 				}
@@ -288,7 +304,8 @@ public class TaskOperator implements ITaskOperator {
 
 	}
 
-	public RecordingProxy setupRecorder(Crawler crawler) {
+	private RecordingProxy setupRecorder(Crawler crawler) {
+				
 		// create a recording proxy. Check also for any additional proxy
 		RecordingProxy recorder = recorderFactory.createRecordingProxy();
 
@@ -355,47 +372,67 @@ public class TaskOperator implements ITaskOperator {
 
 	@Override
 	public Boolean setup(Crawler crawler) {
-		logger.info("starting up crawler {}", crawler.getId());
-		// Default capabilities for ssl handling
-		DesiredCapabilities capabilities = new DesiredCapabilities();
 
-		// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
-		capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
-		capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+		boolean done = false;
+		Integer curRetry = 0;
 
-		// start recorder
-		RecordingProxy recorder = setupRecorder(crawler);
-		recorder.applyProxy(capabilities);
+		while (!done && curRetry < maxRetryCountInit) {
 
-		// setup IpService
-		setupIpService(recorder);
+			curRetry++;
+			
+			// create driver
+			try {
+				logger.info("starting up crawler {}, round {} of {}", crawler.getId(), curRetry, maxRetryCountInit);
+				// Default capabilities for ssl handling
+				DesiredCapabilities capabilities = new DesiredCapabilities();
 
-		// create driver
-		try {
-			switch (crawler.getAgent().getType()) {
-			case CHROME:
-				startupChrome(crawler, capabilities, recorder);
+				// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
+				capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
+				capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 
-				break;
-			case FIREFOX:
-				startupFirefox(crawler, capabilities, recorder);
+				// stop recorder if in retry
+				RecordingProxy recorder = null;
+				if (context != null) {
+					recorder = context.getRecorder();
+					if (recorder != null) {
+						recorder.tearDown();
+					}				
+				}
+				
+				// start new recorder
+				recorder = setupRecorder(crawler);
+				recorder.applyProxy(capabilities);
 
-				break;
-			case MULTILOGIN:
-				startupMultilogin(crawler, capabilities, recorder);
-				break;
+				// setup IpService
+				setupIpService(recorder);
 
-			default:
-				logger.error("unsupported type {} for agent {}", crawler.getAgent().getType(),
-						crawler.getAgent().getId());
+				switch (crawler.getAgent().getType()) {
+				case CHROME:
+					startupChrome(crawler, capabilities, recorder);
+
+					break;
+				case FIREFOX:
+					startupFirefox(crawler, capabilities, recorder);
+
+					break;
+				case MULTILOGIN:
+					startupMultilogin(crawler, capabilities, recorder);
+					break;
+
+				default:
+					logger.error("unsupported type {} for agent {}", crawler.getAgent().getType(),
+							crawler.getAgent().getId());
+					throw new UnsupportedOperationException ("type not supported: " + crawler.getAgent().getType());
+				}
+
+				isSetup.set(true);
+				done = true;
+			} catch (Exception ex) {
+				logger.error("error during setup for crawler {}", crawler.getId(), ex);
 			}
-		} catch (Exception ex) {
-			logger.error("error during setup for crawler {}", crawler.getId(), ex);
-			return false;
 		}
 
-		isSetup.set(true);
-		return true;
+		return done;
 	}
 
 	@Override
@@ -406,7 +443,11 @@ public class TaskOperator implements ITaskOperator {
 		ipService = null;
 
 		// close webdriver
-		context.getDriver().quit();
+		try {
+			context.getDriver().quit();
+		} catch (Exception e) {
+			logger.warn("Exception quitting driver for crawler {}", context.getCrawler().getId());
+		}
 
 		// Multilogin needs a wait to finish of profile tear down and storage. Upload
 		// will run through proxy!
@@ -415,13 +456,18 @@ public class TaskOperator implements ITaskOperator {
 			MulitLoginBrowserProfile bp = typedContext.getProfile();
 
 			try {
-
 				int round = 0;
 				int delayMillis = 10000;
 				Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
 				while (round < 6 && bp.isActive()) {
+					logger.debug("MultiLogin Profile is still actice {}", bp.getProfileId());
 					Thread.sleep(delayMillis);
+					bp.stopProfile();
 					round++;
+				}
+
+				if (bp.isActive()) {
+					logger.warn("Could not stop MultiLogin profile {}", bp.getProfileId());
 				}
 			} catch (Exception e) {
 				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
@@ -429,7 +475,12 @@ public class TaskOperator implements ITaskOperator {
 			}
 		}
 
-		context.getRecorder().tearDown();
+		try {
+			context.getRecorder().tearDown();
+		} catch (Exception e) {
+			logger.warn("Exception quitting recorder for crawler {}", context.getCrawler().getId());
+		}
+
 		context = null;
 	}
 

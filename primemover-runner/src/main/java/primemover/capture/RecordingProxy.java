@@ -58,7 +58,22 @@ public class RecordingProxy {
 			proxy = null;
 		}
 	}
-
+	
+	/**
+	 * temporary hack to force new IP for dynamic geosurf proxy
+	 * 
+	 * @param targetProxy
+	 */
+	public void resetHeaders(IProxy targetProxy) {
+		if (!(proxy == null)) {
+			if (targetProxy instanceof GeoSurfProxy) {
+				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
+				proxy.addHeader("loc", geoProxy.getLocation());
+				proxy.addHeader("X-session", geoProxy.getSessionId());
+			}	
+		}
+	}
+	
 	public void setup(IProxy targetProxy) {
 		logger.debug("starting recorder");
 		/*
