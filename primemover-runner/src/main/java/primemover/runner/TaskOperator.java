@@ -73,7 +73,7 @@ public class TaskOperator implements ITaskOperator {
 	private IpService ipService;
 
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
-
+	
 	private void setupIpService(RecordingProxy recorder) {
 		ipService = new IpService();
 		recorder.applyProxy(ipService);
@@ -157,14 +157,17 @@ public class TaskOperator implements ITaskOperator {
 			try {
 
 				// resetting GeoSurf-Session idendifier, hope for new IP
-				if (crawler.getProxy() instanceof GeoSurfProxy) {
+				if (crawler.getProxy() instanceof GeoSurfProxy) {					
 					GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
 
 					geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
 					logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
 							geoProxy.getSessionId());
-					mlContext.getRecorder().resetHeaders(geoProxy);
+					
 
+					recorder.reset(geoProxy);
+					recorder.applyProxy(capabilities);
+					recorder.applyProxy(ipService);
 				}
 
 				// apply proxy
@@ -459,6 +462,7 @@ public class TaskOperator implements ITaskOperator {
 				int round = 0;
 				int delayMillis = 10000;
 				Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
+				
 				while (round < 6 && bp.isActive()) {
 					logger.debug("MultiLogin Profile is still actice {}", bp.getProfileId());
 					Thread.sleep(delayMillis);

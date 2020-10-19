@@ -105,7 +105,7 @@ public class CrawlerService implements ICrawlerService {
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		EnterTextFieldJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_KEEPINGTYPOS, true);
+		EnterTextFieldJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist doof", TypingModeType.SIMULATED_KEEPINGTYPOS, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish

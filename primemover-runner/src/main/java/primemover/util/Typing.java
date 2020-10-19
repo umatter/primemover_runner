@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -122,7 +123,7 @@ public class Typing {
 	private static void sendKeysAndRetryBeforeFail(Supplier<WebElement> element, CharSequence... keys) {
 		int cnt = 0;
 		boolean done = false;
-		
+				
 		while(!done && cnt < 5) {
 			cnt++;
 			

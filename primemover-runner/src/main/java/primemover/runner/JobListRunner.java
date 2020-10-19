@@ -40,7 +40,7 @@ public class JobListRunner implements Callable<Boolean> {
 		
 		if (diff > redoMinutes) {
 			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff, redoMinutes);
-			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null, true); // set execution time
+			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null, Boolean.TRUE); // set execution time
 			return false;
 		}
 		

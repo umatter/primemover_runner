@@ -152,7 +152,20 @@ public class MulitLoginBrowserProfile {
 		Integer responseCode = con.getResponseCode();
 
 		if (responseCode == HttpURLConnection.HTTP_OK) {
-			return true;
+			BufferedReader br = new BufferedReader(new InputStreamReader((con.getInputStream())));
+			StringBuilder sb = new StringBuilder();
+			String output;
+			while ((output = br.readLine()) != null) {
+			  sb.append(output);
+			}
+			logger.trace("isActive Response for {} is {}", this.profileId, sb.toString());
+			
+			
+			// Get JSON text from the response and return the value by key "value"
+			JSONObject jsonResponse = new JSONObject(sb.toString());
+			Boolean resp =  jsonResponse.getBoolean("value");
+			
+			return resp;
 		} else {
 			return false;
 		}
@@ -171,6 +184,18 @@ public class MulitLoginBrowserProfile {
 		Integer responseCode = con.getResponseCode();
 
 		if (responseCode == HttpURLConnection.HTTP_OK) {
+			BufferedReader br = new BufferedReader(new InputStreamReader((con.getInputStream())));
+			StringBuilder sb = new StringBuilder();
+			String output;
+			while ((output = br.readLine()) != null) {
+			  sb.append(output);
+			}
+			logger.trace("stopProfile Response for {} is {}", this.profileId, sb.toString());
+			
+			
+			// Get JSON text from the response and return the value by key "value"
+			// JSONObject jsonResponse = new JSONObject(sb.toString());
+			
 			runApiWait();
 			return true;
 		} else {

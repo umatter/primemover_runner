@@ -46,6 +46,18 @@ public class RecordingProxy {
 	@Value("${recorder.certificate.password}")
 	private  String certPassword;
 	
+	@Value("${recorder.gracefullTeardownSeconds:20}")
+	private Integer gracefullTeardownSeconds;
+	
+	@Value("${recorder.connectTimeoutSeconds:30}")
+	private Integer connectTimeoutSeconds;
+	
+	@Value("${recorder.iddleConnectionTimeoutSeconds:60}")
+	private Integer iddleConnectionTimeoutSeconds;
+	
+	@Value("${recorder.requestTimeoutSeconds:20}")
+	private Integer requestTimeoutSeconds;
+	
 
 	BrowserMobProxy proxy = null;
 
@@ -54,24 +66,20 @@ public class RecordingProxy {
 		logger.debug("tearing down recorder");
 		
 		if (proxy != null) {
-			proxy.stop();
+			proxy.waitForQuiescence(gracefullTeardownSeconds, gracefullTeardownSeconds, TimeUnit.SECONDS);
+			proxy.abort();
 			proxy = null;
 		}
 	}
 	
 	/**
-	 * temporary hack to force new IP for dynamic geosurf proxy
+	 * Will change the headers of the proxy
 	 * 
 	 * @param targetProxy
 	 */
-	public void resetHeaders(IProxy targetProxy) {
-		if (!(proxy == null)) {
-			if (targetProxy instanceof GeoSurfProxy) {
-				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
-				proxy.addHeader("loc", geoProxy.getLocation());
-				proxy.addHeader("X-session", geoProxy.getSessionId());
-			}	
-		}
+	public void reset(IProxy targetProxy) {
+		tearDown();
+		setup(targetProxy);
 	}
 	
 	public void setup(IProxy targetProxy) {
@@ -114,6 +122,12 @@ public class RecordingProxy {
 	    proxy = new BrowserMobProxyServer();
 		// proxy.setMitmDisabled(true);
 		proxy.setMitmManager(mitmManager);
+		
+		// set defaults
+		proxy.setConnectTimeout(connectTimeoutSeconds, TimeUnit.SECONDS);
+		proxy.setIdleConnectionTimeout(iddleConnectionTimeoutSeconds, TimeUnit.SECONDS);
+		proxy.setRequestTimeout(requestTimeoutSeconds, TimeUnit.SECONDS);
+		
 		
 		if (targetProxy != null) {
 			logger.debug("using chained proxy");

@@ -19,7 +19,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
+import primemover.model.JoblistState;
 import primemover.service.ICrawlerService;
+import primemover.service.JobService;
 
 public class JobManager implements IJobManager {
 	private static Logger logger = LoggerFactory.getLogger(JobManager.class);
@@ -49,6 +51,9 @@ public class JobManager implements IJobManager {
 	
 	@Autowired
 	JobListRunnerFactory jobListRunnerFactory;
+	
+	@Autowired
+	private JobService jobService;
 	
 	/* (non-Javadoc)
 	 * @see primemover.runner.IJobManager#setup()
@@ -99,20 +104,23 @@ public class JobManager implements IJobManager {
 		for (Pair<Crawler, Joblist> task : taskList) {
 			Joblist jobs = task.getRight();
 			
+			// has jobs to do?
 			if (jobs == null) {
 				continue;
 			}
 			
-			// verifiy states and skip inactive or processed joblists
-			if (!jobs.isActive() ) {
-				continue;
-			}
-			
+			// verifiy states and skip inactive or processed joblists. Make sure to mark jobs as processed!
 			if (jobs.isProcessed() ) {
 				continue;
 			}
 			
+			if (!jobs.isActive() ) {
+				jobService.updateJoblistState(jobs, JoblistState.SKIPPED_INACTIVE, ZonedDateTime.now(), null, Boolean.TRUE); // set execution time
+				continue;
+			}
+			
 			if (jobs.isReviewed()) {
+				jobService.updateJoblistState(jobs, JoblistState.SKIPPED_REVIEWED, ZonedDateTime.now(), null, Boolean.TRUE); // set execution time
 				continue;
 			}
 			

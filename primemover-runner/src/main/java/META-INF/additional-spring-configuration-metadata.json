@@ -103,5 +103,30 @@
     "name": "runner.StartupRetryCount",
     "type": "java.lang.String",
     "description": "A description for 'runner.StartupRetryCount'"
+  },
+  {
+    "name": "recorder.gracefullTeardownSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.gracefullTeardownSeconds'"
+  },
+  {
+    "name": "recorder.connectionTimeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectionTimeoutSeconds'"
+  },
+  {
+    "name": "recorder.connectTimeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectTimeoutSeconds'"
+  },
+  {
+    "name": "recorder.iddleConnectionTimeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.iddleConnectionTimeoutSeconds'"
+  },
+  {
+    "name": "recorder.requestTimeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.requestTimeoutSeconds'"
   }
 ]}

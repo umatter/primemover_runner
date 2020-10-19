@@ -2,6 +2,8 @@ package primemover.model;
 
 public enum JoblistState {
 	SKIPPED_TIMEDOUT("skipped", "timed out"),
+	SKIPPED_INACTIVE("skpped", "job inactive"),
+	SKIPPED_REVIEWED("skpped", "job already reviewed"),
 	RUNNING_INPROGRESS("running", "in progress"),
 	RUNNING_INITDONE("running", "initialisation done"),
 	DONE_INITFAILED("failure", "initialisation failed"),
