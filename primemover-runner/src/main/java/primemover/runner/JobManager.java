@@ -109,7 +109,11 @@ public class JobManager implements IJobManager {
 				continue;
 			}
 			
-			// verifiy states and skip inactive or processed joblists. Make sure to mark jobs as processed!
+			// verifiy states and skip inactive, processing or processed joblists. Make sure to mark jobs as processed!
+			if (jobs.isProcessing()) {
+				continue;
+			}
+			
 			if (jobs.isProcessed() ) {
 				continue;
 			}

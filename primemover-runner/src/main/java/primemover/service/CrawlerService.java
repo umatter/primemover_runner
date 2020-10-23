@@ -99,6 +99,7 @@ public class CrawlerService implements ICrawlerService {
 		jobs.setActive(true);
 		jobs.setProcessed(false);
 		jobs.setReviewed(false);
+		jobs.setProcessing(false);
 		
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");

@@ -15,6 +15,7 @@ public class Queue {
 	private Boolean active;
 	private Boolean processed;
 	private Boolean reviewed;
+	private Boolean processing;
 	private String status_code;
 	private String status_message;
 	private ZonedDateTime start_at;
@@ -76,6 +77,14 @@ public class Queue {
 
 	public Boolean isReviewed() {
 		return reviewed;
+	}
+
+	public Boolean isProcessing() {
+		return processing;
+	}
+
+	public void setProcessing(Boolean processing) {
+		this.processing = processing;
 	}
 
 	public void setReviewed(Boolean reviewed) {

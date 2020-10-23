@@ -277,6 +277,7 @@ public class PrimemoverApiConverter {
 		jobList.setProcessed(item.isProcessed());
 		jobList.setReviewed(item.isReviewed());
 		jobList.setStartTime(item.getStart_at());
+		jobList.setProcessing(item.isProcessing());
 		
 		List<primemover.model.api.Job> list = item.getJobs();
 		

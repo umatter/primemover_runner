@@ -9,6 +9,7 @@ public class Joblist {
 	private Boolean active;
 	private Boolean processed;
 	private Boolean reviewed;
+	private Boolean processing;
 	private ZonedDateTime startTime;
 	private List<IJob> jobs;
 	
@@ -65,6 +66,14 @@ public class Joblist {
 
 	public void setReviewed(Boolean reviewed) {
 		this.reviewed = reviewed;
+	}
+	
+	public Boolean isProcessing() {
+		return processing;
+	}
+
+	public void setProcessing(Boolean processing) {
+		this.processing = processing;
 	}
 	
 }
