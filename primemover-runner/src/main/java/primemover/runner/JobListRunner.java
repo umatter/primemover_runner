@@ -45,14 +45,13 @@ public class JobListRunner implements Callable<Boolean> {
 		}
 		
 		// running
-		Boolean res = false;
+		boolean setupRes = false;
+		boolean jobsRes = false;
 		
-		try {
-			boolean setupRes = false;
-			boolean jobsRes = false;
+		try {			
 			
 			logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null); // set start time, ommit later
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null); // set start time, commit later
 			
 			// get Taskservice and setup
 			setupRes = taskOperator.setup(crawler);
@@ -74,30 +73,37 @@ public class JobListRunner implements Callable<Boolean> {
 			} else {
 				logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
 				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null);
-			};			
+			};	
 			
-			// release resources
-			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
-			taskOperator.tearDown();
-			
-			// set end-state and time
-			if (setupRes) {
-				if (jobsRes) {
-					jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), true);
-				} else {
-					jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), true);
-				}
-			} else {
-				jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), true);
-			}
-			
-			res = true;
 		} catch (Exception e) {
 			logger.warn("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
 			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), true);
+			
+			// make sure to tear down!
+			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
+			taskOperator.tearDown();
+			
+			return false; // exit due to error
+		}
+			
+			
+			
+		// release resources
+		logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
+		taskOperator.tearDown();
+		
+		// set end-state and time
+		if (setupRes) {
+			if (jobsRes) {
+				jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), true);
+			} else {
+				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), true);
+			}
+		} else {
+			jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), true);
 		}
 		
-		return res;
+		return true; // sucessfull exit	
 	}
 
 	public JobListRunner(ITaskOperator taskOperator, Crawler crawler, Joblist jobs) {

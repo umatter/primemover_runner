@@ -36,6 +36,9 @@ public class Config {
 	@Value("${global.mode}")
 	private String mode;
 	
+	@Value("${service.requestTimeoutSeconds:60}")
+	private Long requestTimeoutSeconds;
+	
 	public String getMode() {
 		return mode;
 	}
@@ -96,13 +99,13 @@ public class Config {
 	}
 	
 	
-	@Bean
+	@Bean(name="ServiceRestTemplate")
 	public RestTemplate restTemplate() {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
 		RestTemplate restTemplate = new RestTemplateBuilder()
 				.setConnectTimeout(Duration.ofSeconds(10))
-				.setReadTimeout(Duration.ofSeconds(60))
+				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
 				.build();
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		

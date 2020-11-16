@@ -300,8 +300,12 @@ public class TaskOperator implements ITaskOperator {
 		} catch (Exception ex) {
 			logger.error("Exception executing job {}", job.getId(), ex);
 
-			jobService.updateJobState(job, JobState.FAILURE, null, ZonedDateTime.now()); // setting endtime
-
+			try {
+				jobService.updateJobState(job, JobState.FAILURE, null, ZonedDateTime.now()); // setting endtime
+			} catch (Exception e) {
+				logger.error("Could not write Job-State for {}", job.getId(), ex); // FATAL!!!
+			}
+			
 			return false;
 		}
 
@@ -463,7 +467,7 @@ public class TaskOperator implements ITaskOperator {
 				int delayMillis = 10000;
 				Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
 				
-				while (round < 6 && bp.isActive()) {
+				while (round < 10 && bp.isActive()) {
 					logger.debug("MultiLogin Profile is still actice {}", bp.getProfileId());
 					Thread.sleep(delayMillis);
 					bp.stopProfile();
