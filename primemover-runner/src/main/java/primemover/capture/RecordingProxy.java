@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy.Type;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.net.SocketAddress;
 import java.net.URL;
@@ -61,27 +62,41 @@ public class RecordingProxy {
 	
 	@Value("${recorder.requestTimeoutSeconds:300}")
 	private Integer requestTimeoutSeconds;
-	
-	
+		
 	@Value("${recorder.connectivityRetryCount:3}")
 	private Integer connectivityRetryCount;
 	
-	@Value("#{'${recorder.connectivityVerificationUrls:}'.split(',')}") // zero length string default!
+	@Value("${recorder.connectivityDelaySeconds:5}")
+	private Integer connectivityDelaySeconds;
+	
+	@Value("#{'${recorder.connectivityVerificationUrls:https://siaw.primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero length string default!
 	private List<String> connectivityVerificationUrls;
 
 	BrowserMobProxy proxy = null;
 
-	public void tearDown() {
+	
+	public void tearDown(boolean immediate) {
+		if (proxy == null) {
+			return; // nothing to do
+		}
 		
-		logger.debug("tearing down recorder");
-		
-		if (proxy != null) {
+		if (immediate) {
+			logger.debug("tearing down recorder immediately");
+			proxy.abort();
+			proxy = null;
+		} else {
+			logger.debug("tearing down recorder");
 			if (!proxy.waitForQuiescence(1, gracefullTeardownSeconds, TimeUnit.SECONDS)) {
 				logger.warn("Tearing down recorder with network trafic still running");
 			}
-			proxy.stop();
+			proxy.abort();
 			proxy = null;
 		}
+	}
+	
+	
+	public void tearDown() {
+		tearDown(false);
 	}
 	
 	/**
@@ -147,8 +162,11 @@ public class RecordingProxy {
 			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
 			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
 
+			// create session-identifier and set session-headers
 			if (targetProxy instanceof GeoSurfProxy) {
 				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
+				geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
+				
 				proxy.addHeader("loc", geoProxy.getLocation());
 				proxy.addHeader("X-session", geoProxy.getSessionId());
 			}	
@@ -175,12 +193,16 @@ public class RecordingProxy {
 		
 		for (String strUrl : connectivityVerificationUrls) {
 			try {
+				logger.debug("Start to verify {}", strUrl);
 		        URL url = new URL(strUrl);
 		        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection(javaProxy);
 		        urlConn.connect();
 		        if (urlConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+		        	urlConn.disconnect();
 		        	return false;
 		        }
+		        urlConn.disconnect();
+		        logger.debug("Successfully verified {}", strUrl);
 		    } catch (IOException e) {
 		        logger.warn("Error verifying HTTP connection with URL {}", strUrl, e);
 		        return false;
@@ -193,10 +215,10 @@ public class RecordingProxy {
 	public void setup(IProxy targetProxy) throws IllegalStateException {
 		logger.debug("starting recorder");
 		
-		int curRound = 0;
+		int curRound = 1;
 		
-		while (curRound < connectivityRetryCount) {
-			logger.debug("creating proxy ({} of {})", curRound + 1, connectivityRetryCount);
+		while (curRound <= connectivityRetryCount) {
+			logger.debug("creating proxy ({} of {})", curRound, connectivityRetryCount);
 			buildMitmProxy(targetProxy);	
 						
 			if (verifyMitmConnectivity()) {
@@ -204,10 +226,10 @@ public class RecordingProxy {
 				return;
 			}
 			
-			tearDown();
+			tearDown(true);
 			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(connectivityDelaySeconds*1000);
 			} catch (InterruptedException e) {
 				// nothing to do
 			}

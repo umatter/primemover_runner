@@ -127,6 +127,7 @@ public class TaskOperator implements ITaskOperator {
 
 		MultiLoginAgent typedAgent = (MultiLoginAgent) crawler.getAgent();
 
+		// ensure multilogin profile
 		MulitLoginBrowserProfile bp;
 
 		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
@@ -147,7 +148,9 @@ public class TaskOperator implements ITaskOperator {
 		} else {
 			bp = browserProfileFactory.getItem(typedAgent.getMultiLoginId());
 		}
-
+		
+		
+		// startup
 		while (!done && retryCount < maxRetryCountMultiLogin) {
 			retryCount += 1;
 			if (retryCount > 1) {
@@ -155,19 +158,11 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			try {
-
-				// resetting GeoSurf-Session idendifier, hope for new IP
+				// log session-identifier
 				if (crawler.getProxy() instanceof GeoSurfProxy) {					
 					GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
-
-					geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
 					logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
 							geoProxy.getSessionId());
-					
-
-					recorder.reset(geoProxy);
-					recorder.applyProxy(capabilities);
-					recorder.applyProxy(ipService);
 				}
 
 				// apply proxy

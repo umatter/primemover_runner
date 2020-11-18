@@ -143,5 +143,40 @@
     "name": "recorder.connectivityVerificationUrls",
     "type": "java.lang.String",
     "description": "A description for 'recorder.connectivityVerificationUrls'"
+  },
+  {
+    "name": "recorder.gracefullTeardownSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.gracefullTeardownSeconds'"
+  },
+  {
+    "name": "recorder.iddleConnectionTimeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.iddleConnectionTimeoutSeconds'"
+  },
+  {
+    "name": "recorder.connectivityRetryCount",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectivityRetryCount'"
+  },
+  {
+    "name": "recorder.connectivityVerificationUrls",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectivityVerificationUrls'"
+  },
+  {
+    "name": "geosurf.startupRetryCount",
+    "type": "java.lang.String",
+    "description": "A description for 'geosurf.startupRetryCount'"
+  },
+  {
+    "name": "geosurf.startupDelaySeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'geosurf.startupDelaySeconds'"
+  },
+  {
+    "name": "recorder.connectivityDelaySeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectivityDelaySeconds'"
   }
 ]}
