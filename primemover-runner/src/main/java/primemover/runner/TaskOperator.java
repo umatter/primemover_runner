@@ -464,11 +464,12 @@ public class TaskOperator implements ITaskOperator {
 
 			try {
 				int round = 0;
+				int maxRounds = 10;
 				int delayMillis = 10000;
 				Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
 				
-				while (round < 10 && bp.isActive()) {
-					logger.debug("MultiLogin Profile is still actice {}", bp.getProfileId());
+				while (round < maxRounds && bp.isActive()) {
+					logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1, maxRounds);
 					Thread.sleep(delayMillis);
 					bp.stopProfile();
 					round++;

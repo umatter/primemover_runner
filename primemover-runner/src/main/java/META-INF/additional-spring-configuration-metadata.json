@@ -133,5 +133,15 @@
     "name": "service.requestTimeoutSeconds",
     "type": "java.lang.String",
     "description": "A description for 'service.requestTimeoutSeconds'"
+  },
+  {
+    "name": "recorder.connectivityRetryCount",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectivityRetryCount'"
+  },
+  {
+    "name": "recorder.connectivityVerificationUrls",
+    "type": "java.lang.String",
+    "description": "A description for 'recorder.connectivityVerificationUrls'"
   }
 ]}

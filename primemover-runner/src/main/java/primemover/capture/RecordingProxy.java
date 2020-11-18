@@ -1,12 +1,16 @@
 package primemover.capture;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy.Type;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.openqa.selenium.Proxy;
@@ -55,9 +59,15 @@ public class RecordingProxy {
 	@Value("${recorder.iddleConnectionTimeoutSeconds:60}")
 	private Integer iddleConnectionTimeoutSeconds;
 	
-	@Value("${recorder.requestTimeoutSeconds:20}")
+	@Value("${recorder.requestTimeoutSeconds:300}")
 	private Integer requestTimeoutSeconds;
 	
+	
+	@Value("${recorder.connectivityRetryCount:3}")
+	private Integer connectivityRetryCount;
+	
+	@Value("#{'${recorder.connectivityVerificationUrls:}'.split(',')}") // zero length string default!
+	private List<String> connectivityVerificationUrls;
 
 	BrowserMobProxy proxy = null;
 
@@ -66,8 +76,10 @@ public class RecordingProxy {
 		logger.debug("tearing down recorder");
 		
 		if (proxy != null) {
-			proxy.waitForQuiescence(gracefullTeardownSeconds, gracefullTeardownSeconds, TimeUnit.SECONDS);
-			proxy.abort();
+			if (!proxy.waitForQuiescence(1, gracefullTeardownSeconds, TimeUnit.SECONDS)) {
+				logger.warn("Tearing down recorder with network trafic still running");
+			}
+			proxy.stop();
 			proxy = null;
 		}
 	}
@@ -80,6 +92,80 @@ public class RecordingProxy {
 	public void reset(IProxy targetProxy) {
 		tearDown();
 		setup(targetProxy);
+	}
+	
+	private void buildMitmProxy(IProxy targetProxy) {
+		logger.debug("buidling recorder");
+
+		CertificateAndKeySource existingCertificateSource = 
+				new KeyStoreFileCertificateSource(this.certType, new File(this.certPath), this.certAlias, this.certPassword);
+
+
+		// tell the ImpersonatingMitmManager to generate EC keys and to use the EC RootCertificateGenerator
+		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
+				.rootCertificateSource(existingCertificateSource)
+				.serverKeyGenerator(new ECKeyGenerator())
+				.cacheConcurrencyLevel(16) // 8 is default
+				.cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
+				//.trustAllServers(true)
+				.build();
+
+		proxy = new BrowserMobProxyServer();
+		// proxy.setMitmDisabled(true);
+		proxy.setMitmManager(mitmManager);
+
+		// set defaults
+		proxy.setConnectTimeout(connectTimeoutSeconds, TimeUnit.SECONDS);
+		proxy.setIdleConnectionTimeout(iddleConnectionTimeoutSeconds, TimeUnit.SECONDS);
+		proxy.setRequestTimeout(requestTimeoutSeconds, TimeUnit.SECONDS);
+
+
+		if (targetProxy != null) {
+			logger.debug("using chained proxy");
+			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
+			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
+
+			if (targetProxy instanceof GeoSurfProxy) {
+				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
+				proxy.addHeader("loc", geoProxy.getLocation());
+				proxy.addHeader("X-session", geoProxy.getSessionId());
+			}	
+		}
+
+		// enable more detailed HAR capture. Recording everything.
+		proxy.enableHarCaptureTypes(CaptureType.getRequestCaptureTypes());
+		proxy.enableHarCaptureTypes(CaptureType.getResponseCaptureTypes());
+
+		proxy.start();
+	}
+
+	private boolean verifyMitmConnectivity() {
+		
+		if (proxy == null) {
+			return false;
+		}
+		
+		if (connectivityVerificationUrls == null || connectivityVerificationUrls.size() == 0) {
+			return true;
+		}
+		
+		java.net.Proxy javaProxy = getProxy();
+		
+		for (String strUrl : connectivityVerificationUrls) {
+			try {
+		        URL url = new URL(strUrl);
+		        HttpURLConnection urlConn = (HttpURLConnection) url.openConnection(javaProxy);
+		        urlConn.connect();
+		        if (urlConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+		        	return false;
+		        }
+		    } catch (IOException e) {
+		        logger.warn("Error verifying HTTP connection", e);
+		        return false;
+		    }
+		}		
+		logger.debug("Success verifying HTTP connection");
+		return true;
 	}
 	
 	public void setup(IProxy targetProxy) {
@@ -106,60 +192,46 @@ public class RecordingProxy {
 	            
 	    */
 		
-	    CertificateAndKeySource existingCertificateSource = 
-	            new KeyStoreFileCertificateSource(this.certType, new File(this.certPath), this.certAlias, this.certPassword);
-	            
-	    
-	    // tell the ImpersonatingMitmManager to generate EC keys and to use the EC RootCertificateGenerator
-	    ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
-	            .rootCertificateSource(existingCertificateSource)
-	            .serverKeyGenerator(new ECKeyGenerator())
-	            .cacheConcurrencyLevel(16) // 8 is default
-	            .cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
-	            //.trustAllServers(true)
-	            .build();
-
-	    proxy = new BrowserMobProxyServer();
-		// proxy.setMitmDisabled(true);
-		proxy.setMitmManager(mitmManager);
+		int curRound = 0;
 		
-		// set defaults
-		proxy.setConnectTimeout(connectTimeoutSeconds, TimeUnit.SECONDS);
-		proxy.setIdleConnectionTimeout(iddleConnectionTimeoutSeconds, TimeUnit.SECONDS);
-		proxy.setRequestTimeout(requestTimeoutSeconds, TimeUnit.SECONDS);
-		
-		
-		if (targetProxy != null) {
-			logger.debug("using chained proxy");
-			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
-			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
+		while (curRound < connectivityRetryCount) {
+			logger.debug("creating proxy ({} of {})", curRound + 1, connectivityRetryCount);
+			buildMitmProxy(targetProxy);	
+						
+			if (verifyMitmConnectivity()) {
+				logger.debug("proxy started and connection verified");
+				return;
+			}
 			
-			if (targetProxy instanceof GeoSurfProxy) {
-				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
-				proxy.addHeader("loc", geoProxy.getLocation());
-				proxy.addHeader("X-session", geoProxy.getSessionId());
-			}	
+			tearDown();
+			
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				// nothing to do
+			}
+			curRound++;
 		}
 		
-		// enable more detailed HAR capture. Recording everything.
-		proxy.enableHarCaptureTypes(CaptureType.getRequestCaptureTypes());
-		proxy.enableHarCaptureTypes(CaptureType.getResponseCaptureTypes());
-
-		proxy.start();
-		logger.debug("proxy started");
+		logger.error("proxy was not started properly");
+		throw new IllegalStateException("Proxy was not started properly");
 	}
 	
 	public void setup() {
 		this.setup(null);
 	}
 	
-	public void applyProxy(IpService ipService) {
+	public java.net.Proxy getProxy() {
 		InetAddress adr = getInetAddress();
 		
 		SocketAddress addr = new InetSocketAddress(adr, proxy.getPort());
-		java.net.Proxy proxy = new java.net.Proxy(Type.HTTP, addr);
+		return new java.net.Proxy(Type.HTTP, addr);
+	}
+	
+	public void applyProxy(IpService ipService) {
+		java.net.Proxy javaProxy = getProxy();
 				
-		ipService.setProxy(proxy);
+		ipService.setProxy(javaProxy);
 	}
 	
 	private InetAddress getInetAddress() {
