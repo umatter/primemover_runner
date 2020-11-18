@@ -96,6 +96,28 @@ public class RecordingProxy {
 	
 	private void buildMitmProxy(IProxy targetProxy) {
 		logger.debug("buidling recorder");
+		
+		/*
+		// create a RootCertificateGenerator that generates EC Certificate Authorities; you may also load your
+	    // own EC certificate and private key using any other CertificateAndKeySource implementation 
+	    // (KeyStoreFileCertificateSource, PemFileCertificateSource, etc.).
+		RootCertificateGenerator rootCertificateGenerator = RootCertificateGenerator.builder()
+	            .keyGenerator(new ECKeyGenerator())
+	            .build();
+
+	    // save the newly-generated Root Certificate and Private Key -- the .cer file can be imported 
+	    // directly into a browser
+	    rootCertificateGenerator.saveRootCertificateAsPemFile(new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/certificate.cer"));
+	    rootCertificateGenerator.savePrivateKeyAsPemFile(new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/private-key.pem"), "CHANGEME-password");
+	    
+	    // or save the certificate and private key as a PKCS12 keystore, for later use
+	    rootCertificateGenerator.saveRootCertificateAndKey("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), 
+	            "primemover", "CHANGEME-password");
+
+	    CertificateAndKeySource existingCertificateSource = 
+	            new KeyStoreFileCertificateSource("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), "primemover", "CHANGEME-password");
+	            
+	    */
 
 		CertificateAndKeySource existingCertificateSource = 
 				new KeyStoreFileCertificateSource(this.certType, new File(this.certPath), this.certAlias, this.certPassword);
@@ -160,7 +182,7 @@ public class RecordingProxy {
 		        	return false;
 		        }
 		    } catch (IOException e) {
-		        logger.warn("Error verifying HTTP connection", e);
+		        logger.warn("Error verifying HTTP connection with URL {}", strUrl, e);
 		        return false;
 		    }
 		}		
@@ -168,29 +190,8 @@ public class RecordingProxy {
 		return true;
 	}
 	
-	public void setup(IProxy targetProxy) {
+	public void setup(IProxy targetProxy) throws IllegalStateException {
 		logger.debug("starting recorder");
-		/*
-		// create a RootCertificateGenerator that generates EC Certificate Authorities; you may also load your
-	    // own EC certificate and private key using any other CertificateAndKeySource implementation 
-	    // (KeyStoreFileCertificateSource, PemFileCertificateSource, etc.).
-		RootCertificateGenerator rootCertificateGenerator = RootCertificateGenerator.builder()
-	            .keyGenerator(new ECKeyGenerator())
-	            .build();
-
-	    // save the newly-generated Root Certificate and Private Key -- the .cer file can be imported 
-	    // directly into a browser
-	    rootCertificateGenerator.saveRootCertificateAsPemFile(new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/certificate.cer"));
-	    rootCertificateGenerator.savePrivateKeyAsPemFile(new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/private-key.pem"), "CHANGEME-password");
-	    
-	    // or save the certificate and private key as a PKCS12 keystore, for later use
-	    rootCertificateGenerator.saveRootCertificateAndKey("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), 
-	            "primemover", "CHANGEME-password");
-
-	    CertificateAndKeySource existingCertificateSource = 
-	            new KeyStoreFileCertificateSource("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), "primemover", "CHANGEME-password");
-	            
-	    */
 		
 		int curRound = 0;
 		
@@ -206,7 +207,7 @@ public class RecordingProxy {
 			tearDown();
 			
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// nothing to do
 			}

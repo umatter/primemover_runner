@@ -312,29 +312,47 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	private RecordingProxy setupRecorder(Crawler crawler) {
-				
-		// create a recording proxy. Check also for any additional proxy
-		RecordingProxy recorder = recorderFactory.createRecordingProxy();
-
 		IProxy crawlerProxy = crawler.getProxy();
+		Integer curRetry = 1;
+		
+		while (curRetry <= 3) {
+			try {
+				logger.debug("setting up recorder for {} ({} of {})", crawler.getId(),
+						curRetry, 3);
+				
+				// create a recording proxy. Check also for any additional proxy
+				RecordingProxy recorder = recorderFactory.createRecordingProxy();
+				
+				if (crawlerProxy != null) {
+					// setting GeoSurf-Session identifier
+					if (crawler.getProxy() instanceof GeoSurfProxy) {
+						GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
 
-		if (crawlerProxy != null) {
-
-			// setting GeoSurf-Session idendifier
-			if (crawler.getProxy() instanceof GeoSurfProxy) {
-				GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
-
-				geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
-				logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
-						geoProxy.getSessionId());
-			}
-
-			recorder.setup(crawlerProxy);
-		} else {
-			recorder.setup();
+						geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
+						logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
+								geoProxy.getSessionId());
+					}
+					
+					recorder.setup(crawlerProxy);
+				} else {
+					recorder.setup();
+				}
+				
+				return recorder;
+			} catch (IllegalStateException ex) {
+				if (curRetry < 3) {
+					logger.warn("setting up recorder for {} failed ({} of {})", crawler.getId(),
+							curRetry, 3);
+				} else {
+					logger.error("could not set up recorder for {}", crawler.getId(), ex);
+					throw ex;
+				}
+			}			
+			
+			curRetry++;
 		}
-
-		return recorder;
+		
+		throw new IllegalStateException("Could not establish a recording proxy");
 	}
 
 	@Override
