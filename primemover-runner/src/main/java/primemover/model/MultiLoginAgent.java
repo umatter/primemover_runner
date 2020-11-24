@@ -3,11 +3,13 @@ package primemover.model;
 public class MultiLoginAgent extends BasicAgent {
 	
 	private String multiLoginId;
+	private String multiLoginCreationJson;
 
-	public MultiLoginAgent(Long id, String name, String description, String multiLoginId, String location) {
+	public MultiLoginAgent(Long id, String name, String description, String location, String multiLoginId, String multiloginCreationJson) {
 		super(id, AgentType.MULTILOGIN, name, description, location);
 		
 		this.multiLoginId = multiLoginId;
+		this.multiLoginCreationJson = multiloginCreationJson;
 	}
 
 	public MultiLoginAgent() {
@@ -21,4 +23,15 @@ public class MultiLoginAgent extends BasicAgent {
 	public void setMultiLoginId(String multiLoginId) {
 		this.multiLoginId = multiLoginId;
 	}
+	
+
+	public String getMultiLoginCreationJson() {
+		return multiLoginCreationJson;
+	}
+
+	public void setMultiLoginCreationJson(String multiLoginCreationJson) {
+		this.multiLoginCreationJson = multiLoginCreationJson;
+	}
+
+	
 }

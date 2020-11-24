@@ -69,6 +69,9 @@ public class RecordingProxy {
 	@Value("${recorder.connectivityDelaySeconds:5}")
 	private Integer connectivityDelaySeconds;
 	
+	@Value("${verifyConnections:true}")
+	private Boolean verifyConnections;
+	
 	@Value("#{'${recorder.connectivityVerificationUrls:https://siaw.primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero length string default!
 	private List<String> connectivityVerificationUrls;
 
@@ -164,6 +167,7 @@ public class RecordingProxy {
 
 			// create session-identifier and set session-headers
 			if (targetProxy instanceof GeoSurfProxy) {
+				logger.debug("applying GeoSurf-Headers");
 				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
 				geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
 				
@@ -215,10 +219,17 @@ public class RecordingProxy {
 	public void setup(IProxy targetProxy) throws IllegalStateException {
 		logger.debug("starting recorder");
 		
-		int curRound = 1;
+		// proxy creation without connectivity verification
+		if (!verifyConnections) {
+			logger.debug("creating proxy without connectivity verification");
+			buildMitmProxy(targetProxy);
+			return;
+		}
 		
+		// proxy creation with connectivity verification
+		int curRound = 1;
 		while (curRound <= connectivityRetryCount) {
-			logger.debug("creating proxy ({} of {})", curRound, connectivityRetryCount);
+			logger.debug("creating proxy with connectivity verification ({} of {})", curRound, connectivityRetryCount);
 			buildMitmProxy(targetProxy);	
 						
 			if (verifyMitmConnectivity()) {
@@ -284,6 +295,18 @@ public class RecordingProxy {
 		logger.info("setting proxy to {}", adr);
 		
 		return cap;
+	}
+	
+	public String getType() {
+		return "HTTP";
+	}
+	
+	public String getUsername() {
+		return "";
+	}
+	
+	public String getPassword() {
+		return "";
 	}
 	
 	public String getIp() {

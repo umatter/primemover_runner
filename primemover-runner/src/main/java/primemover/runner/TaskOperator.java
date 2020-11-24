@@ -73,7 +73,7 @@ public class TaskOperator implements ITaskOperator {
 	private IpService ipService;
 
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
-	
+
 	private void setupIpService(RecordingProxy recorder) {
 		ipService = new IpService();
 		recorder.applyProxy(ipService);
@@ -148,8 +148,7 @@ public class TaskOperator implements ITaskOperator {
 		} else {
 			bp = browserProfileFactory.getItem(typedAgent.getMultiLoginId());
 		}
-		
-		
+
 		// startup
 		while (!done && retryCount < maxRetryCountMultiLogin) {
 			retryCount += 1;
@@ -159,7 +158,7 @@ public class TaskOperator implements ITaskOperator {
 
 			try {
 				// log session-identifier
-				if (crawler.getProxy() instanceof GeoSurfProxy) {					
+				if (crawler.getProxy() instanceof GeoSurfProxy) {
 					GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
 					logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
 							geoProxy.getSessionId());
@@ -300,7 +299,7 @@ public class TaskOperator implements ITaskOperator {
 			} catch (Exception e) {
 				logger.error("Could not write Job-State for {}", job.getId(), ex); // FATAL!!!
 			}
-			
+
 			return false;
 		}
 
@@ -309,15 +308,14 @@ public class TaskOperator implements ITaskOperator {
 	private RecordingProxy setupRecorder(Crawler crawler) {
 		IProxy crawlerProxy = crawler.getProxy();
 		Integer curRetry = 1;
-		
+
 		while (curRetry <= 3) {
 			try {
-				logger.debug("setting up recorder for {} ({} of {})", crawler.getId(),
-						curRetry, 3);
-				
+				logger.debug("setting up recorder for {} ({} of {})", crawler.getId(), curRetry, 3);
+
 				// create a recording proxy. Check also for any additional proxy
 				RecordingProxy recorder = recorderFactory.createRecordingProxy();
-				
+
 				if (crawlerProxy != null) {
 					// setting GeoSurf-Session identifier
 					if (crawler.getProxy() instanceof GeoSurfProxy) {
@@ -327,26 +325,25 @@ public class TaskOperator implements ITaskOperator {
 						logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
 								geoProxy.getSessionId());
 					}
-					
+
 					recorder.setup(crawlerProxy);
 				} else {
 					recorder.setup();
 				}
-				
+
 				return recorder;
 			} catch (IllegalStateException ex) {
 				if (curRetry < 3) {
-					logger.warn("setting up recorder for {} failed ({} of {})", crawler.getId(),
-							curRetry, 3);
+					logger.warn("setting up recorder for {} failed ({} of {})", crawler.getId(), curRetry, 3);
 				} else {
 					logger.error("could not set up recorder for {}", crawler.getId(), ex);
 					throw ex;
 				}
-			}			
-			
+			}
+
 			curRetry++;
 		}
-		
+
 		throw new IllegalStateException("Could not establish a recording proxy");
 	}
 
@@ -399,7 +396,7 @@ public class TaskOperator implements ITaskOperator {
 		while (!done && curRetry < maxRetryCountInit) {
 
 			curRetry++;
-			
+
 			// create driver
 			try {
 				logger.info("starting up crawler {}, round {} of {}", crawler.getId(), curRetry, maxRetryCountInit);
@@ -416,9 +413,9 @@ public class TaskOperator implements ITaskOperator {
 					recorder = context.getRecorder();
 					if (recorder != null) {
 						recorder.tearDown();
-					}				
+					}
 				}
-				
+
 				// start new recorder
 				recorder = setupRecorder(crawler);
 				recorder.applyProxy(capabilities);
@@ -442,7 +439,7 @@ public class TaskOperator implements ITaskOperator {
 				default:
 					logger.error("unsupported type {} for agent {}", crawler.getAgent().getType(),
 							crawler.getAgent().getId());
-					throw new UnsupportedOperationException ("type not supported: " + crawler.getAgent().getType());
+					throw new UnsupportedOperationException("type not supported: " + crawler.getAgent().getType());
 				}
 
 				isSetup.set(true);
@@ -478,18 +475,15 @@ public class TaskOperator implements ITaskOperator {
 			try {
 				int round = 0;
 				int maxRounds = 10;
-				int delayMillis = 10000;
+				int delayMillis = 25000;
 				Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
-				
+
 				while (round < maxRounds && bp.isActive()) {
-					logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1, maxRounds);
+					logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1,
+							maxRounds);
 					Thread.sleep(delayMillis);
 					bp.stopProfile();
 					round++;
-				}
-
-				if (bp.isActive()) {
-					logger.warn("Could not stop MultiLogin profile {}", bp.getProfileId());
 				}
 			} catch (Exception e) {
 				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),

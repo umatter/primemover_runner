@@ -27,8 +27,8 @@ public class JobListRunner implements Callable<Boolean> {
 	private Crawler crawler;
 	private Joblist jobs;
 	
-	@Value("${runner.MaxRedoMinutes:15}")
-	private Long redoMinutes = 15l;
+	@Value("${runner.MaxRedoMinutes:45}")
+	private Long redoMinutes = 45l;
 
 	@Autowired
 	private JobService jobService;
@@ -40,7 +40,7 @@ public class JobListRunner implements Callable<Boolean> {
 		
 		if (diff > redoMinutes) {
 			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff, redoMinutes);
-			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null, Boolean.TRUE); // set execution time
+			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null, Boolean.TRUE, null); // set execution time
 			return false;
 		}
 		
@@ -51,33 +51,33 @@ public class JobListRunner implements Callable<Boolean> {
 		try {			
 			
 			logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null); // set start time, commit later
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null, Boolean.TRUE); // set start time and processing, commit later
 			
 			// get Taskservice and setup
 			setupRes = taskOperator.setup(crawler);
 			if (setupRes) {
-				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null, null);
+				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null, null, null);
 				logger.trace("running jobs for {} ({})", crawler.getId(), crawler.getName());
 				// run jobs
 				jobsRes = taskOperator.runJobList(jobs);
 				if (jobsRes) {
 					logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
-					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null);
+					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null, null);
 				} else {
 					logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
 
-					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null);
+					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null, null);
 				};
 				
 				
 			} else {
 				logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
-				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null);
+				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null, null);
 			};	
 			
 		} catch (Exception e) {
 			logger.warn("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
-			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), true);
+			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 			
 			// make sure to tear down!
 			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
@@ -95,12 +95,12 @@ public class JobListRunner implements Callable<Boolean> {
 		// set end-state and time
 		if (setupRes) {
 			if (jobsRes) {
-				jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), true);
+				jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 			} else {
-				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), true);
+				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 			}
 		} else {
-			jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), true);
+			jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 		}
 		
 		return true; // sucessfull exit	

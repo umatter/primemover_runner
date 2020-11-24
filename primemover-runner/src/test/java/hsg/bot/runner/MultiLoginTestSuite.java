@@ -37,7 +37,7 @@ class MultiLoginTestSuite {
 		// Defined proxy for US and city of New York for test!
 		proxy = new HttpProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-296201", "CHANGEME-password");	
 		service = serviceFactory.getItem();
-		agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "bf4cd0e3-68b7-4cb6-a38f-6ed12ac2c666", "");
+		agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", "bf4cd0e3-68b7-4cb6-a38f-6ed12ac2c666", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		crawler.setProxy(proxy);

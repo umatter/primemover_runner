@@ -119,12 +119,12 @@ public class JobManager implements IJobManager {
 			}
 			
 			if (!jobs.isActive() ) {
-				jobService.updateJoblistState(jobs, JoblistState.SKIPPED_INACTIVE, ZonedDateTime.now(), null, Boolean.TRUE); // set execution time
+				jobService.updateJoblistState(jobs, JoblistState.SKIPPED_INACTIVE, ZonedDateTime.now(), null, Boolean.TRUE, null); // set execution time
 				continue;
 			}
 			
 			if (jobs.isReviewed()) {
-				jobService.updateJoblistState(jobs, JoblistState.SKIPPED_REVIEWED, ZonedDateTime.now(), null, Boolean.TRUE); // set execution time
+				jobService.updateJoblistState(jobs, JoblistState.SKIPPED_REVIEWED, ZonedDateTime.now(), null, Boolean.TRUE, null); // set execution time
 				continue;
 			}
 			

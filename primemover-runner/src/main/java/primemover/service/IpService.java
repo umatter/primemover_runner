@@ -54,8 +54,11 @@ public class IpService {
 		logger.debug("grabbing location info");
 		try {
 			IpResult apiRes = restTemplate.getForObject(url, IpResult.class);
+			LocationInfo res = PrimemoverApiConverter.convertFromApi(apiRes);
 			
-			return PrimemoverApiConverter.convertFromApi(apiRes);
+			logger.debug("location info retrieved {}", res.toString());
+			
+			return res;
 		} catch (RestClientException ex) {
 			logger.warn("Error getting location info", ex);
 		}

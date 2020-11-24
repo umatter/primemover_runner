@@ -28,6 +28,7 @@ import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
 import primemover.util.MultiLoginBrowserProfileFactory;
+import primemover.util.MultiLoginDefaultTemplateLoader;
 
 @SpringBootConfiguration
 public class Config {
@@ -91,6 +92,11 @@ public class Config {
 	
 		// jobManager will be called with spring's scheduler
 		return jobManager;		
+	}
+	
+	@Bean(name="MultiLoginDefaultTemplateLoader", initMethod="init")
+	MultiLoginDefaultTemplateLoader getMultiLoginDefaultTemplateLoader() {
+		return MultiLoginDefaultTemplateLoader.getInstance();
 	}
 	
 	@Bean(name="MultiLoginBrowserProfileFactory")

@@ -98,7 +98,7 @@ public class PrimemoverApiConverter {
 		} else if(ident.contains("chrome")) {
 			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription(), item.getLocation());
 		} else if(ident.contains("multilogin") || ident.contains("multlogin")) {
-			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getMultilogin_id(), item.getLocation());
+			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getLocation(), item.getMultilogin_id(), item.getMultilogin_creationJson());
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
 		}

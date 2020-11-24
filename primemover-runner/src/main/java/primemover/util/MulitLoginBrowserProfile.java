@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.openqa.selenium.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.capture.RecordingProxy;
@@ -19,6 +20,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -32,9 +37,12 @@ public class MulitLoginBrowserProfile {
 	
 	
 	@Value("${mulitlogin.ApiWaitSeconds:10}")
-	Long apiWaitSeconds = 10l;
+	private Long apiWaitSeconds = 10l;
 	
-	String profileId;
+	@Autowired()
+	private MultiLoginDefaultTemplateLoader defaultTemplateLoader;
+	
+	private String profileId;
 	
 	
 	/**
@@ -55,31 +63,9 @@ public class MulitLoginBrowserProfile {
 	 * @param crawler
 	 * @throws Exception 
 	 */
-	public MulitLoginBrowserProfile(Crawler crawler, RecordingProxy proxy) {
+	public MulitLoginBrowserProfile() {
 		super();
-
-		IAgent agent = crawler.getAgent();
-		
-		if (!(agent instanceof MultiLoginAgent)) {
-			throw new InvalidArgumentException("Only multilogin-agents are supported");
-		}
-		
-		MultiLoginAgent typedAgent = (MultiLoginAgent) agent;
-		String id = typedAgent.getMultiLoginId();
-		
-		if (!StringUtils.isEmpty(id)) {
-			this.profileId = id;
-			return; // done
-		}
-		
-		// create a new profile
-		try {
-			this.profileId = createNewProfile(typedAgent, proxy);
-		} catch (Exception ex) {
-			logger.error("Error creating new profile id for agent " + typedAgent.getId(), ex);
-			
-			throw new IllegalStateException("profile was not created", ex);
-		}
+		this.profileId = "";
 	}
 
 	private void runApiWait() {
@@ -283,70 +269,97 @@ public class MulitLoginBrowserProfile {
 	}
 	*/
 	
-	private String createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) throws Exception{
-		String url = "http://127.0.0.1:35000/api/v2/profile";		
-		
-		// default
+	private String replaceTemplatePlaceholders(MultiLoginAgent agent, RecordingProxy proxy, String template) {
+		// default values
 		MultiLoginIOsType operatingSytem = MultiLoginIOsType.WINDOWS;
 		MultiLoginIBrowserType browser = MultiLoginIBrowserType.MIMIC;
+		String agentId = agent.getName() + "_AgentId " + agent.getId();
 		
-		String jsonInput = "{" + 
-				" \"name\": \"" + agent.getName() + "_AgentId " + agent.getId() + "\"," +
-				" \"os\": \"" + operatingSytem.getMultiLoginValue() + "\"," +
-				" \"browser\": \"" + browser.getMultiLoginValue()+ "\"," + 
-				" \"network\": {" + 
-						"    \"proxy\": {" + 
-						"      \"type\": \"HTTP\"," + 
-						"      \"host\": \"" + proxy.getIp() + "\"," + 
-						"      \"port\": \"" + proxy.getPort() + "\"," + 
-						"      \"username\": \"\"," + 
-						"      \"password\": \"\"" + 
-						"    }," +
-						" \"dns\": []" +
-						"}" +
-				"}";
-
-		// setup method
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setConnectTimeout(10000);
-		con.setReadTimeout(60000);
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Content-Type", "application/json; utf-8");
-		con.setDoOutput(true);
-				
-		try(OutputStream os = con.getOutputStream()) {
-		    byte[] input = jsonInput.getBytes("utf-8");
-		    os.write(input, 0, input.length);			
-		}		
+		// replacement values
+		Map<String, String> tokens = new HashMap<String, String>();
+		tokens.put("%%AGENTID%%", agentId);
+		tokens.put("%%OS%%", operatingSytem.getMultiLoginValue());
+		tokens.put("%%BROWSER%%", browser.getMultiLoginValue());
+		tokens.put("%%PROXYTYPE%%", proxy.getType());
+		tokens.put("%%PROXYHOST%%", proxy.getIp());
+		tokens.put("%%PROXYPORT%%", proxy.getPort().toString());
+		tokens.put("%%PROXYUSERNAME%%", proxy.getUsername());
+		tokens.put("%%PROXYPASSWORD%%", proxy.getPassword());
 		
-		if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-			throw new IllegalStateException("Could not create browser profile for agent " + agent.getId());
+		return defaultTemplateLoader.replaceTokens(template, tokens);
+	}
+	
+	
+	private String getTemplate(MultiLoginAgent agent) {
+		logger.debug("getting creation tempalte");
+		String template = agent.getMultiLoginCreationJson();
+		
+		if (StringUtils.isEmpty(template)) {
+			logger.debug("falling back to default template");
+			template = defaultTemplateLoader.getTemplate();
 		}
 		
-		
-		// read in id of the profile
-		String newProfileId = "";
-		try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));){
-			String inputLine;
-			StringBuffer response = new StringBuffer();
-
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
+		logger.debug("using the following template: {}", template);
+		return template;
+	}
+	
+	public void createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) {
+		try {
+			// setup method
+			logger.debug("creating profile for agent {}", agent.getId());
+			String url = "http://127.0.0.1:35000/api/v2/profile";		
+			
+			String template = getTemplate(agent);
+			String jsonInput = replaceTemplatePlaceholders(agent, proxy, template);
+			
+			URL obj = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+			con.setConnectTimeout(10000);
+			con.setReadTimeout(60000);
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Content-Type", "application/json; utf-8");
+			con.setDoOutput(true);
+					
+			try(OutputStream os = con.getOutputStream()) {
+			    byte[] input = jsonInput.getBytes("utf-8");
+			    os.write(input, 0, input.length);			
+			}		
+			
+			if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
+				logger.error("error creating profile for agent {}", agent.getId());
+				throw new IllegalStateException("Could not create browser profile for agent " + agent.getId());
 			}
 			
-			// Get JSON text from the response and return the value by key "value"
-			JSONObject jsonResponse = new JSONObject(response.toString());
-			newProfileId =  jsonResponse.getString("uuid");
-		}	
-		
-		if (StringUtils.isEmpty(newProfileId)) {
-			throw new IllegalStateException("no profile-id was created for agent " + agent.getId());
+			// read in id of the profile
+			String newProfileId = "";
+			try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));){
+				String inputLine;
+				StringBuffer response = new StringBuffer();
+
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				
+				// Get JSON text from the response and return the value by key "value"
+				JSONObject jsonResponse = new JSONObject(response.toString());
+				newProfileId =  jsonResponse.getString("uuid");
+			}	
+			
+			if (StringUtils.isEmpty(newProfileId)) {
+				logger.error("error reading in profile id for agent {}", agent.getId());
+				throw new IllegalStateException("no profile-id was created for agent " + agent.getId());
+			}
+			logger.debug("successfully created profile {} for agent {}", newProfileId, agent.getId());
+			
+			runApiWait();
+			
+			this.profileId = newProfileId;
+		} catch (IllegalStateException ex) {
+			throw ex;
 		}
-		
-		runApiWait();
-		
-		return newProfileId;
+		catch (Exception ex) {
+			throw new IllegalStateException("Could not create a a profile for agent " + agent.getId(), ex);
+		}
 	}
 
 }

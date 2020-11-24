@@ -6,11 +6,13 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
 import primemover.util.MultiLoginBrowserProfileFactory;
+import primemover.util.MultiLoginDefaultTemplateLoader;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -18,12 +20,10 @@ public class TestConfig {
 	@Value("${global.mode}")
 	private String mode;
 	
-
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
 	}
-	
 	
 	@Bean("CrawlerService")
 	ICrawlerService getCrawlerService() {
@@ -33,6 +33,16 @@ public class TestConfig {
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplateBuilder().build();
+	}
+	
+	@Bean(name="RecordingProxyFactory")
+	RecordingProxyFactory getRecorderFactory() {
+		return new RecordingProxyFactory();
+	}	
+	
+	@Bean(name="MultiLoginDefaultTemplateLoader", initMethod="init")
+	MultiLoginDefaultTemplateLoader getMultiLoginDefaultTemplateLoader() {
+		return MultiLoginDefaultTemplateLoader.getInstance();
 	}
 	
 	@Bean(name="MultiLoginBrowserProfileFactory")

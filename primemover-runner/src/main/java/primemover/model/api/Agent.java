@@ -11,6 +11,7 @@ public class Agent {
 	private String description;
 	private String identification;
 	private String multilogin_id;
+	private String multilogin_creationJson;
 	private Boolean active;
 	private Date updated_at;
 	private Date created_at;
@@ -49,6 +50,14 @@ public class Agent {
 
 	public void setMultilogin_id(String multilogin_id) {
 		this.multilogin_id = multilogin_id;
+	}
+
+	public String getMultilogin_creationJson() {
+		return multilogin_creationJson;
+	}
+
+	public void setMultilogin_creationJson(String multilogin_creationJson) {
+		this.multilogin_creationJson = multilogin_creationJson;
 	}
 
 	public Boolean getActive() {

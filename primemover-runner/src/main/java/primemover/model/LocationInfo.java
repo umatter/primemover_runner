@@ -15,6 +15,13 @@ public class LocationInfo {
 	
 	public LocationInfo() {
 	}
+	
+	@Override
+	public String toString() {
+		return "LocationInfo [ip=" + ip + ", type=" + type + ", countryCode=" + countryCode + ", countryName="
+				+ countryName + ", regionCode=" + regionCode + ", regionName=" + regionName + ", city=" + city
+				+ ", zip=" + zip + ", latitude=" + latitude + ", longitude=" + longitude + "]";
+	}
 
 	public String getIp() {
 		return ip;

@@ -1,5 +1,7 @@
 package primemover.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.InvalidArgumentException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -8,6 +10,8 @@ import org.springframework.context.ApplicationContextAware;
 import primemover.capture.RecordingProxy;
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
+import primemover.model.IAgent;
+import primemover.model.MultiLoginAgent;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperator;
 
@@ -25,9 +29,26 @@ public class MultiLoginBrowserProfileFactory implements ApplicationContextAware 
 	}
 	
 	public MulitLoginBrowserProfile getItem(Crawler crawler, RecordingProxy proxy) {
-		MulitLoginBrowserProfile ret = new MulitLoginBrowserProfile(crawler, proxy);
+		// verification and casting
+		IAgent agent = crawler.getAgent();
+		if (!(agent instanceof MultiLoginAgent)) {
+			throw new InvalidArgumentException("Only multilogin-agents are supported");
+		}
 		
+		MultiLoginAgent typedAgent = (MultiLoginAgent) agent;
+		String profileId = typedAgent.getMultiLoginId();
+		
+		if (!StringUtils.isEmpty(profileId)) {
+			return this.getItem(profileId);
+		}
+		
+		// starting up helper class
+		MulitLoginBrowserProfile ret = new MulitLoginBrowserProfile();
+		
+		// need to wire before doing any further!
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
+		
+		ret.createNewProfile(typedAgent, proxy);
 		
 		return ret;
 	}
