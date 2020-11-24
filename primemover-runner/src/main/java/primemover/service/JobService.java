@@ -29,6 +29,12 @@ public class JobService {
 	
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
+	
+	@Value("#{'${backend.endpoint}' +'queues'}")
+	private String endpointPathQueues;
+	
+	@Value("#{'${backend.endpoint}' +'jobs'}")
+	private String endpointPathJobs;
 
 	private static Logger logger = LoggerFactory.getLogger(JobService.class);
 	
@@ -43,7 +49,7 @@ public class JobService {
 	
 	
 	private String calculateJobListUrl(Long id) {
-		String url = "https://siaw.primemover.example/api/v1/queues";
+		String url = endpointPathQueues;
 		
 		if (id != null) {
 			url = url + '/' + id.toString();
@@ -53,7 +59,7 @@ public class JobService {
 	}
 	
 	private String calculateJobUrl(Long id) {
-		String url = "https://siaw.primemover.example/api/v1/jobs";
+		String url = endpointPathJobs;
 		
 		if (id != null) {
 			url = url + '/' + id.toString();

@@ -38,6 +38,16 @@ public class CrawlerService implements ICrawlerService {
 	
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
+	
+	@Value("#{'${backend.endpoint}' +'crawlers-unprocessed'}")
+	private String endpointPathUnprocessed;
+	
+	@Value("#{'${backend.endpoint}' +'crawlers-testing'}")
+	private String endpointPathTesting;
+	
+	@Value("#{'${backend.endpoint}' +'reports'}")
+	private String endpointPathReports;
+	
 
 	private static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 	
@@ -52,9 +62,9 @@ public class CrawlerService implements ICrawlerService {
 	private String calculateCrawlerUrl(Long id) {
 		String url;
 		if (mode == StartupMode.PRODUCTION || id != null) {
-			url = "https://siaw.primemover.example/api/v1/crawlers-unprocessed";
+			url = endpointPathUnprocessed;
 		} else {
-			url = "https://siaw.primemover.example/api/v1/crawlers-testing";
+			url = endpointPathTesting;
 		}
 		
 		if (id != null) {
@@ -188,7 +198,7 @@ public class CrawlerService implements ICrawlerService {
 	  	   
 	    try {
 	    	
-	    	ResponseEntity<String> response = restTemplate.postForEntity("https://siaw.primemover.example/api/v1/reports", request, String.class);
+	    	ResponseEntity<String> response = restTemplate.postForEntity(endpointPathReports, request, String.class);
 		    
 	    	 if (response.getStatusCode().is2xxSuccessful()) {
 	 	    	logger.info("stored data to server for job " + jobId);

@@ -37,7 +37,7 @@ public class Config {
 	@Value("${global.mode}")
 	private String mode;
 	
-	@Value("${service.requestTimeoutSeconds:60}")
+	@Value("${backend.requestTimeoutSeconds:60}")
 	private Long requestTimeoutSeconds;
 	
 	public String getMode() {

@@ -24,6 +24,9 @@ public class AgentService {
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
 
+	@Value("#{'${backend.endpoint}' +'agents'}")
+	private String endpointPath;
+
 	private static Logger logger = LoggerFactory.getLogger(AgentService.class);
 	
 	public AgentService() {
@@ -35,7 +38,7 @@ public class AgentService {
 	
 	
 	private String calculateAgentUrl(Long id) {
-		String url = "https://siaw.primemover.example/api/v1/agents";
+		String url = endpointPath;
 		
 		if (id != null) {
 			url = url + '/' + id.toString();
