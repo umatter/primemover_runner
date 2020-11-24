@@ -140,8 +140,9 @@ public class CrawlerService implements ICrawlerService {
 	 */
 	@Override
 	public List<Pair<Crawler, Joblist>> getCurrentTasks() {		
-		logger.debug("loading jobs");
-		CrawlerResult apiRes = restTemplate.getForObject(calculateCrawlerUrl(null), CrawlerResult.class);		
+		String url = calculateCrawlerUrl(null);
+		logger.debug("loading jobs from {}", url);
+		CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);		
 		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes);
 		
 		if (mode != StartupMode.PRODUCTION) {
@@ -166,9 +167,10 @@ public class CrawlerService implements ICrawlerService {
 	
 	@Override
 	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
-		logger.debug("loading jobs");
 		try {
-			CrawlerResult apiRes = restTemplate.getForObject(calculateCrawlerUrl(id), CrawlerResult.class);
+			String url = calculateCrawlerUrl(id);
+			logger.debug("loading jobs from {}", url);
+			CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);
 
 			List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes);
 			if (mode != StartupMode.PRODUCTION) {
@@ -197,7 +199,7 @@ public class CrawlerService implements ICrawlerService {
 	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 	  	   
 	    try {
-	    	
+	    	logger.debug("writing report to {}", endpointPathReports);	    	
 	    	ResponseEntity<String> response = restTemplate.postForEntity(endpointPathReports, request, String.class);
 		    
 	    	 if (response.getStatusCode().is2xxSuccessful()) {
