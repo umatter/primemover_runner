@@ -77,6 +77,17 @@ public class Selecting {
 		
 		return getElementByWebdriver(driver, type, selector);
 	}
+	
+	
+	private static WebElement chooseCalculatedElement(List<WebElement> elements, DecisionType type) {
+		WebElement selection = null;
+		
+		
+		
+		
+		return selection;
+	}
+	
 
 	public static WebElement chooseElement(List<WebElement> elements, DecisionType type) {
 

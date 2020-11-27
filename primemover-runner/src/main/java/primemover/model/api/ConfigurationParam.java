@@ -1,8 +1,7 @@
 package primemover.model.api;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConfigurationParam {
@@ -13,8 +12,10 @@ public class ConfigurationParam {
 	private String tau;
 	private String beta;
 	private String alpha;
-	private List<String> search_terms;
-	private List<String> media_outlet_urls;
+	@JsonDeserialize(using = SearchTermsDeserializer.class)
+	private SearchTerms search_terms;
+	@JsonDeserialize(using = MediaOutletUrlsDeserializer.class)
+	private MediaOutletUrls media_outlet_urls;
 	
 	public ConfigurationParam() {
 	}
@@ -80,22 +81,22 @@ public class ConfigurationParam {
 	}
 
 
-	public List<String> getSearch_terms() {
+	public SearchTerms getSearch_terms() {
 		return search_terms;
 	}
 
 
-	public void setSearch_terms(List<String> search_terms) {
+	public void setSearch_terms(SearchTerms search_terms) {
 		this.search_terms = search_terms;
 	}
 
 
-	public List<String> getMedia_outlet_urls() {
+	public MediaOutletUrls getMedia_outlet_urls() {
 		return media_outlet_urls;
 	}
 
 
-	public void setMedia_outlet_urls(List<String> media_outlet_urls) {
+	public void setMedia_outlet_urls(MediaOutletUrls media_outlet_urls) {
 		this.media_outlet_urls = media_outlet_urls;
 	}
 

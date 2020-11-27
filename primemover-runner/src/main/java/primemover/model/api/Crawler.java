@@ -16,7 +16,9 @@ public class Crawler {
 	private Date created_at;
 	private Proxy proxy;	
 	private Agent agent;
+	private Configuration configuration;
 	private List<Queue> queues;
+	
 
 	public Crawler() {
 		// nothing to do
@@ -92,6 +94,14 @@ public class Crawler {
 
 	public void setQueues(List<Queue> queues) {
 		this.queues = queues;
+	}
+
+	public Configuration getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
 	}
 	
 }

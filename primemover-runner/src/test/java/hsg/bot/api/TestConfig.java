@@ -18,7 +18,6 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
-import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
 import primemover.service.MockCrawlerService;
