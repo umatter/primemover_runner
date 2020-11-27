@@ -18,6 +18,8 @@ import primemover.service.AgentService;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
+import primemover.service.OutletService;
+import primemover.service.TermsService;
 import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
@@ -34,6 +36,16 @@ public class TestConfig {
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
+	}
+	
+	@Bean("OutletService")
+	OutletService getOutletService() {
+		return new OutletService();
+	}
+	
+	@Bean("TermsService")
+	TermsService getTermsService() {
+		return new TermsService();
 	}
 	
 	@Bean(name="MultiLoginBrowserProfileFactory")

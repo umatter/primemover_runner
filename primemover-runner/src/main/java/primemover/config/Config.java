@@ -27,6 +27,8 @@ import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
+import primemover.service.OutletService;
+import primemover.service.TermsService;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.MultiLoginDefaultTemplateLoader;
 
@@ -74,6 +76,16 @@ public class Config {
 	@Bean("CrawlerService")
 	ICrawlerService getCrawlerService() {
 		return new CrawlerService();
+	}
+	
+	@Bean("OutletService")
+	OutletService getOutletService() {
+		return new OutletService();
+	}
+	
+	@Bean("TermsService")
+	TermsService getTermsService() {
+		return new TermsService();
 	}
 
 	@Bean(name="TaskOperatorFactory")

@@ -19,13 +19,17 @@ import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
+import primemover.model.Outlet;
 import primemover.model.ScrollDirection;
 import primemover.model.SelectorType;
+import primemover.model.Term;
 import primemover.model.TypingModeType;
 import primemover.model.HttpProxy;
 import primemover.model.api.CrawlerResult;
 import primemover.model.api.IpResult;
 import primemover.model.api.IpResultData;
+import primemover.model.api.OutletResult;
+import primemover.model.api.TermResult;
 import primemover.model.jobs.BaseJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
@@ -98,7 +102,7 @@ public class PrimemoverApiConverter {
 		} else if(ident.contains("chrome")) {
 			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription(), item.getLocation());
 		} else if(ident.contains("multilogin") || ident.contains("multlogin")) {
-			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getLocation(), item.getMultilogin_id(), item.getMultilogin_creationJson());
+			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getLocation(), item.getMultilogin_id(), item.getMultilogin_profile());
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
 		}
@@ -350,6 +354,52 @@ public class PrimemoverApiConverter {
 		res.setRegionName(data.getRegion_name());
 		res.setType(data.getType());
 		res.setZip(data.getZip());
+		return res;
+	}
+
+	public static List<Term> convertFromApi(TermResult apiRes) {
+
+		List<primemover.model.api.Term> inItems = apiRes.getData();
+		ArrayList<Term> res = new ArrayList<Term>(inItems.size());
+		
+		for (primemover.model.api.Term inItem : inItems) {
+			Term outItem = new Term();
+			outItem.setBigram(inItem.getBigram());
+			outItem.setBigramStem(inItem.getBigram_stem());
+			outItem.setId(inItem.getId());
+			outItem.setRefTerm(inItem.getRefterm());
+			outItem.setSearchTerm(inItem.getSearch_term());
+			
+			res.add(outItem);
+			
+		}
+		
+		return res;
+	}
+	
+	public static List<Outlet> convertFromApi(OutletResult apiRes) {
+
+		List<primemover.model.api.Outlet> inItems = apiRes.getData();
+		ArrayList<Outlet> res = new ArrayList<Outlet>(inItems.size());
+		
+		for (primemover.model.api.Outlet inItem : inItems) {
+			Outlet outItem = new Outlet();
+			
+			outItem.setCreatedAt(inItem.getCreated_at());
+			outItem.setDomain(inItem.getDomain());
+			outItem.setId(inItem.getId());
+			outItem.setOutlet(inItem.getOutlet());
+			outItem.setPi(inItem.getPi());
+			outItem.setRedirectUrl(inItem.getRedirect_url());
+			outItem.setTitle(inItem.getTitle());
+			outItem.setUpdatedAt(inItem.getUpdated_at());
+			outItem.setUrl(inItem.getUrl());
+			outItem.setYhat_n(inItem.getYhat_n());
+			
+			res.add(outItem);
+			
+		}
+		
 		return res;
 	}
 

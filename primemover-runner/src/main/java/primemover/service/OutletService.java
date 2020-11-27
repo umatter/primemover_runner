@@ -1,0 +1,35 @@
+package primemover.service;
+
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
+
+import primemover.converter.PrimemoverApiConverter;
+import primemover.model.Outlet;
+import primemover.model.api.OutletResult;
+
+public class OutletService {
+	
+	@Value("#{'${backend.endpoint}' +'outlets'}")
+	private String endpointPath;
+	
+	@Autowired
+	private RestTemplate restTemplate;
+
+	private static Logger logger = LoggerFactory.getLogger(OutletService.class);
+
+	public OutletService() {
+	}
+
+	public List<Outlet> getOutlets() {
+		logger.debug("loading jobs from {}", endpointPath);
+		OutletResult apiRes = restTemplate.getForObject(endpointPath, OutletResult.class);		
+		List<Outlet> res = PrimemoverApiConverter.convertFromApi(apiRes);
+		
+		return res;
+	}
+}

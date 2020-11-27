@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 
 import org.openqa.selenium.Proxy;
+import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
@@ -287,6 +288,7 @@ public class RecordingProxy {
 		InetAddress adr = getInetAddress();
 		
 		String hostIp = adr.getHostAddress();
+		seleniumProxy.setProxyType(ProxyType.MANUAL);
 		seleniumProxy.setHttpProxy(hostIp + ":" + proxy.getPort());
 		seleniumProxy.setSslProxy(hostIp + ":" + proxy.getPort());
 	   

@@ -22,6 +22,8 @@ import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
 import primemover.service.MockCrawlerService;
+import primemover.service.OutletService;
+import primemover.service.TermsService;
 import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
@@ -44,6 +46,16 @@ public class TestConfig {
 	@Bean("CrawlerService")
 	CrawlerService getCrawlerService() {
 		return new CrawlerService();
+	}
+	
+	@Bean("OutletService")
+	OutletService getOutletService() {
+		return new OutletService();
+	}
+	
+	@Bean("TermsService")
+	TermsService getTermsService() {
+		return new TermsService();
 	}
 	
 	@Bean(name="MultiLoginBrowserProfileFactory")
