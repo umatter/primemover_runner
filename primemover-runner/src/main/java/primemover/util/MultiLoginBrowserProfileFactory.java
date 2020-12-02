@@ -3,17 +3,13 @@ package primemover.util;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.InvalidArgumentException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import primemover.capture.RecordingProxy;
-import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.MultiLoginAgent;
-import primemover.runner.ITaskOperator;
-import primemover.runner.TaskOperator;
 
 public class MultiLoginBrowserProfileFactory implements ApplicationContextAware {
 	

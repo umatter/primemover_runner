@@ -2,15 +2,12 @@ package primemover.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.openqa.selenium.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.capture.RecordingProxy;
-import primemover.model.Crawler;
-import primemover.model.IAgent;
 import primemover.model.MultiLoginAgent;
 import primemover.model.MultiLoginIBrowserType;
 import primemover.model.MultiLoginIOsType;
@@ -20,8 +17,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 
 import primemover.model.AgentType;
 import primemover.model.BasicAgent;
+import primemover.model.Configuration;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.GeoSurfProxy;
@@ -21,13 +22,16 @@ import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
 import primemover.model.Outlet;
 import primemover.model.ScrollDirection;
+import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.Term;
 import primemover.model.TypingModeType;
 import primemover.model.HttpProxy;
+import primemover.model.api.ConfigurationParam;
 import primemover.model.api.CrawlerResult;
 import primemover.model.api.IpResult;
 import primemover.model.api.IpResultData;
+import primemover.model.api.MediaOutletUrls;
 import primemover.model.api.OutletResult;
 import primemover.model.api.TermResult;
 import primemover.model.jobs.BaseJob;
@@ -273,6 +277,40 @@ public class PrimemoverApiConverter {
 	}
 
 	
+	private static Configuration convertApiConfiguration(primemover.model.api.Configuration item) {
+		Configuration config = new Configuration();
+		config.setId(item.getId());
+		config.setName(item.getName());
+		config.setDescription(item.getDescription());
+		
+		if (item.getParams().size() > 0) {
+			ConfigurationParam param = item.getParams().get(0);
+			
+			SelectionConfiguration selectConfig = new SelectionConfiguration();
+			
+			selectConfig.setAlpha(param.getAlpha());
+			selectConfig.setBeta(param.getBeta());
+			selectConfig.setId(param.getId());
+			selectConfig.setKappa(param.getKappa());
+			selectConfig.setPi(param.getPi());
+			selectConfig.setPsi(param.getPsi());
+			selectConfig.setTau(param.getTau());
+			
+			HashMap<String, String> outlets = new HashMap<>();
+			MediaOutletUrls outletUrls = param.getMedia_outlet_urls();
+			if (outletUrls != null && outletUrls.getOutlets() != null) {
+				outlets.putAll(param.getMedia_outlet_urls().getOutlets());
+			}
+			selectConfig.setOutlets(outlets);
+			
+			config.setSelectionConfiguration(selectConfig);
+		} else {
+			config.setSelectionConfiguration(null);
+		}
+			
+		return config;
+	}
+
 	private static Joblist convertApiQueue(primemover.model.api.Queue item) {
 		Joblist jobList = new Joblist();
 		
@@ -311,6 +349,7 @@ public class PrimemoverApiConverter {
 		crawler.setDescription(item.getDescription());
 		crawler.setAgent(convertApiAgent(item.getAgent()));
 		crawler.setProxy(convertApiProxy(item.getProxy(), crawler)); // needs to go after agent as agent contains required location input
+		crawler.setConfig(convertApiConfiguration(item.getConfiguration()));
 		
 		// grab joblists
 		List<primemover.model.api.Queue> queues = item.getQueues();
@@ -395,6 +434,8 @@ public class PrimemoverApiConverter {
 			outItem.setUpdatedAt(inItem.getUpdated_at());
 			outItem.setUrl(inItem.getUrl());
 			outItem.setYhat_n(inItem.getYhat_n());
+			outItem.setAvgReachPermillion(inItem.getAvg_reach_permillion());
+			outItem.setAvgReachRank(inItem.getAvg_reach_rank());
 			
 			res.add(outItem);
 			

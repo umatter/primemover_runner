@@ -18,7 +18,7 @@ import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
 @SpringBootTest
-class EditionCnnCom {
+class EditionCnnComTest {
 	
 	@Autowired
 	private TaskOperatorFactory operatorFactory;

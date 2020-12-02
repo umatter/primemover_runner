@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import net.lightbody.bmp.core.har.Har;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
-import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.GeoSurfProxy;
 import primemover.model.IJob;
@@ -53,6 +52,7 @@ public class TaskOperator implements ITaskOperator {
 	@Value("${runner.StartupRetryCount:3}")
 	private Integer maxRetryCountInit;
 
+
 	private OperatorContext context;
 
 	@Autowired
@@ -70,6 +70,9 @@ public class TaskOperator implements ITaskOperator {
 	@Autowired
 	private MultiLoginBrowserProfileFactory browserProfileFactory;
 
+	@Autowired
+	private RunJobHandler runJobHandler;
+	
 	private IpService ipService;
 
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
@@ -221,7 +224,7 @@ public class TaskOperator implements ITaskOperator {
 			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
 
 			// running job
-			RunJobHandler.handle(context.getDriver(), job);
+			runJobHandler.handle(context.getDriver(), context.getCrawler(), job);
 
 			jobService.updateJobState(job, JobState.STORINGDATA, null, null);
 
@@ -278,7 +281,7 @@ public class TaskOperator implements ITaskOperator {
 			// Writing data
 			boolean writeRes = true;
 			for (IStorageService storage : storages) {
-				writeRes = writeRes && storage.writeJobData(job, data);
+				writeRes = writeRes && storage.writeFixedJobData(job, data);
 			}
 
 			if (writeRes) {

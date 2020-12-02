@@ -13,6 +13,8 @@ public class Outlet {
 	private double pi;
 	private Date updatedAt;
 	private Date createdAt;
+	private double avgReachRank;
+	private double avgReachPermillion;
 
 	public Outlet() {
 	}
@@ -95,5 +97,21 @@ public class Outlet {
 
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public double getAvgReachRank() {
+		return avgReachRank;
+	}
+
+	public void setAvgReachRank(double avgReachRank) {
+		this.avgReachRank = avgReachRank;
+	}
+
+	public double getAvgReachPermillion() {
+		return avgReachPermillion;
+	}
+
+	public void setAvgReachPermillion(double avgReachPermillion) {
+		this.avgReachPermillion = avgReachPermillion;
 	}
 }

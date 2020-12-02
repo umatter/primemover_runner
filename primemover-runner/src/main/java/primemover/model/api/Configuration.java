@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Configuration {
-	
+	private long id;
+	private boolean active;
 	private String name;
 	private String description;
 	private List<ConfigurationParam> params;
@@ -36,6 +37,22 @@ public class Configuration {
 
 	public void setParams(List<ConfigurationParam> params) {
 		this.params = params;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
 	

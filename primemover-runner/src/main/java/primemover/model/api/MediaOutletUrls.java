@@ -16,4 +16,14 @@ public class MediaOutletUrls {
     void setOutlet(String key, String value) {
 		outlets.put(key, value);
     }
+
+	public Map<String, String> getOutlets() {
+		return outlets;
+	}
+
+	public void setOutlets(Map<String, String> outlets) {
+		this.outlets = outlets;
+	}
+	
+	
 }

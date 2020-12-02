@@ -11,32 +11,27 @@
   },
   {
     "name": "runner.MaxParallelExecution",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "Number of max parallel running job-lists"
   },
   {
     "name": "multilogin.StartupRetryCount",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'multilogin.StartupRetryCount'"
   },
   {
     "name": "export.isEnabled",
-    "type": "java.lang.String",
-    "description": "A description for 'export.isEnabled'"
-  },
-  {
-    "name": "export.isEnabled",
-    "type": "java.lang.String",
+    "type": "java.lang.Boolean",
     "description": "A description for 'export.isEnabled'"
   },
   {
     "name": "multilogin.StartupRetryCount",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'multilogin.StartupRetryCount'"
   },
   {
     "name": "runner.UpdateInterval",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'runner.UpdateInterval'"
   },
   {
@@ -71,72 +66,72 @@
   },
   {
     "name": "recorder.timeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.timeoutSeconds'"
   },
   {
     "name": "runner.RedoMinutes",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'runner.RedoMinutes'"
   },
   {
     "name": "runner.MaxRedoMinutes",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'runner.MaxRedoMinutes'"
   },
   {
     "name": "runner.UpdateInterval",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'runner.UpdateInterval'"
   },
   {
     "name": "multilogin.StartupDelaySeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'multilogin.StartupDelaySeconds'"
   },
   {
     "name": "mulitlogin.ApiWaitSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "Indication how long we should wait after an API-Call to MultiLogin to avoid collisions with suceeding calls."
   },
   {
     "name": "runner.StartupRetryCount",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'runner.StartupRetryCount'"
   },
   {
     "name": "recorder.gracefullTeardownSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.gracefullTeardownSeconds'"
   },
   {
     "name": "recorder.connectionTimeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.connectionTimeoutSeconds'"
   },
   {
     "name": "recorder.connectTimeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.connectTimeoutSeconds'"
   },
   {
     "name": "recorder.iddleConnectionTimeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.iddleConnectionTimeoutSeconds'"
   },
   {
     "name": "recorder.requestTimeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.requestTimeoutSeconds'"
   },
   {
     "name": "backend.requestTimeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'service.requestTimeoutSeconds'"
   },
   {
     "name": "recorder.connectivityRetryCount",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.connectivityRetryCount'"
   },
   {
@@ -146,17 +141,17 @@
   },
   {
     "name": "recorder.gracefullTeardownSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.gracefullTeardownSeconds'"
   },
   {
     "name": "recorder.iddleConnectionTimeoutSeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.iddleConnectionTimeoutSeconds'"
   },
   {
     "name": "recorder.connectivityRetryCount",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.connectivityRetryCount'"
   },
   {
@@ -166,22 +161,22 @@
   },
   {
     "name": "geosurf.startupRetryCount",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'geosurf.startupRetryCount'"
   },
   {
     "name": "geosurf.startupDelaySeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'geosurf.startupDelaySeconds'"
   },
   {
     "name": "recorder.connectivityDelaySeconds",
-    "type": "java.lang.String",
+    "type": "java.lang.Integer",
     "description": "A description for 'recorder.connectivityDelaySeconds'"
   },
   {
     "name": "recorder.verifyConnections",
-    "type": "java.lang.String",
+    "type": "java.lang.Boolean",
     "description": "A description for 'recorder.verifyConnections'"
   },
   {
@@ -190,13 +185,18 @@
     "description": "A description for 'multilogin.DefaultProfileJsonPath'"
   },
   {
-    "name": "api.endpoint",
+    "name": "backend.endpoint",
     "type": "java.lang.String",
     "description": "A description for 'api.endpoint'"
   },
   {
-    "name": "backend.endpoint",
+    "name": "outlets.refreshIntervalMinutes",
     "type": "java.lang.String",
-    "description": "A description for 'backend.endpoint'"
+    "description": "A description for 'outlets.refreshIntervalMinutes'"
+  },
+  {
+    "name": "global.mode",
+    "type": "java.lang.String",
+    "description": "A description for 'global.mode'"
   }
 ]}

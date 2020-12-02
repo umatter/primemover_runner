@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import primemover.config.StartupMode;
-import primemover.service.IpService;
 
 public class RecordingProxyFactory implements ApplicationContextAware {
 	

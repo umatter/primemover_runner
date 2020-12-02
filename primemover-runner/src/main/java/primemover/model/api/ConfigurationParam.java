@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConfigurationParam {
-	
-	private String pi;
-	private String psi;
-	private String kappa;
-	private String tau;
-	private String beta;
-	private String alpha;
+	private long id;
+	private int pi;
+	private int psi;
+	private int kappa;
+	private int tau;
+	private double beta;
+	private int alpha;
 	@JsonDeserialize(using = SearchTermsDeserializer.class)
 	private SearchTerms search_terms;
 	@JsonDeserialize(using = MediaOutletUrlsDeserializer.class)
@@ -21,62 +21,62 @@ public class ConfigurationParam {
 	}
 
 
-	public String getPi() {
+	public int getPi() {
 		return pi;
 	}
 
 
-	public void setPi(String pi) {
+	public void setPi(int pi) {
 		this.pi = pi;
 	}
 
 
-	public String getPsi() {
+	public int getPsi() {
 		return psi;
 	}
 
 
-	public void setPsi(String psi) {
+	public void setPsi(int psi) {
 		this.psi = psi;
 	}
 
 
-	public String getKappa() {
+	public int getKappa() {
 		return kappa;
 	}
 
 
-	public void setKappa(String kappa) {
+	public void setKappa(int kappa) {
 		this.kappa = kappa;
 	}
 
 
-	public String getTau() {
+	public int getTau() {
 		return tau;
 	}
 
 
-	public void setTau(String tau) {
+	public void setTau(int tau) {
 		this.tau = tau;
 	}
 
 
-	public String getBeta() {
+	public double getBeta() {
 		return beta;
 	}
 
 
-	public void setBeta(String beta) {
+	public void setBeta(double beta) {
 		this.beta = beta;
 	}
 
 
-	public String getAlpha() {
+	public int getAlpha() {
 		return alpha;
 	}
 
 
-	public void setAlpha(String alpha) {
+	public void setAlpha(int alpha) {
 		this.alpha = alpha;
 	}
 
@@ -98,6 +98,16 @@ public class ConfigurationParam {
 
 	public void setMedia_outlet_urls(MediaOutletUrls media_outlet_urls) {
 		this.media_outlet_urls = media_outlet_urls;
+	}
+
+
+	public long getId() {
+		return id;
+	}
+
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	

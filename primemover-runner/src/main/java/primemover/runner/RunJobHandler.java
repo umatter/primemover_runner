@@ -1,7 +1,6 @@
 package primemover.runner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,12 +13,16 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.config.StartupMode;
+import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
@@ -40,7 +43,7 @@ import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.util.Page;
 import primemover.util.Scrolling;
-import primemover.util.Selecting;
+import primemover.util.SelectingHelper;
 import primemover.util.Typing;
 import primemover.util.Waiter;
 
@@ -48,23 +51,28 @@ public class RunJobHandler {
 
 	private static Logger logger = LoggerFactory.getLogger(RunJobHandler.class);
 	
+	@Autowired
+	private SelectingHelper selectingHelper;
+	
+	@Value("${global.mode}")
+	private StartupMode mode;
 	
 	
 	// Interface for our IJob-Handlers
 	private interface Handler {
-		void handle(WebDriver driver, IJob job);
+		void handle(WebDriver driver, Crawler crawler, IJob job);
 	}
 
 	// Handler registration
 	@SuppressWarnings("rawtypes")
-	private static final Map<Class, Handler> dispatch = new HashMap<Class, Handler>();
+	private final Map<Class, Handler> dispatch = new HashMap<Class, Handler>();
 
 	// Populate handlers
-	static {
+	public RunJobHandler() {
 		logger.trace("populating handlers");
 		logger.trace("creating VisitJob-Handler");
 		dispatch.put(VisitJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				VisitJob typedJob = (VisitJob) job;
 				logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
 				driver.navigate().to(typedJob.getUrl());
@@ -76,7 +84,7 @@ public class RunJobHandler {
 
 		logger.trace("creating WaitJob-Handler");
 		dispatch.put(WaitJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				WaitJob typedJob = (WaitJob) job;
 
 				try {
@@ -90,7 +98,7 @@ public class RunJobHandler {
 
 		logger.trace("creating ScrollByLengthJob-Handler");
 		dispatch.put(ScrollByLengthJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				ScrollByLengthJob typedJob = (ScrollByLengthJob) job;
 
 				switch (typedJob.getDirection()) {
@@ -112,7 +120,7 @@ public class RunJobHandler {
 
 		logger.trace("creating ScrollByDurationJob-Handler");
 		dispatch.put(ScrollByDurationJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				ScrollByDurationJob typedJob = (ScrollByDurationJob) job;
 
 				switch (typedJob.getDirection()) {
@@ -132,24 +140,9 @@ public class RunJobHandler {
 		});
 		
 		
-		
-		logger.trace("creating AssertTextInFieldJob-Handler");
-		dispatch.put(AssertTextInFieldJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
-				AssertTextInFieldJob typedJob = (AssertTextInFieldJob) job;
-
-				WebElement element = Selecting.getElementByWebdriver(driver, typedJob.getType(),
-						typedJob.getSelector());
-				
-				String textFound = element.getAttribute("innerText");
-				assertEquals(textFound, typedJob.getValue());	
-			}
-		});
-		
-
 		logger.trace("creating EnterTextFieldJob-Handler");
 		dispatch.put(EnterTextFieldJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				EnterTextFieldJob typedJob = (EnterTextFieldJob) job;
 
 				boolean done = false;
@@ -165,7 +158,7 @@ public class RunJobHandler {
 						String selector = typedJob.getSelector();
 						
 						// provide WebElement dynamic for below functions. Google search will stale the element with the search suggestions
-						Supplier<WebElement> elementSup = () -> Selecting.getElementByWebdriver(driver, selectorType,
+						Supplier<WebElement> elementSup = () -> selectingHelper.getElementByWebdriver(driver, selectorType,
 								selector);
 						
 						TypingModeType typingMode = typedJob.getTypingMode();
@@ -216,12 +209,12 @@ public class RunJobHandler {
 
 		logger.trace("creating SingleSelectUrlJob-Handler");
 		dispatch.put(SingleSelectUrlJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				SingleSelectUrlJob typedJob = (SingleSelectUrlJob) job;
 
-				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
-				WebElement selectedElement = Selecting.chooseElement(elements, typedJob.getDecisionType());
+				WebElement selectedElement = selectingHelper.chooseElement(crawler, elements, typedJob.getDecisionType());
 
 				if (selectedElement != null) {
 					selectedElement.click();
@@ -239,10 +232,10 @@ public class RunJobHandler {
 		
 		logger.trace("creating TryClickJob-Handler");
 		dispatch.put(TryClickJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				TryClickJob typedJob = (TryClickJob) job;
 
-				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
@@ -261,10 +254,10 @@ public class RunJobHandler {
 		
 		logger.trace("creating TryClickJob-Handler");
 		dispatch.put(ClickJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				ClickJob typedJob = (ClickJob) job;
 
-				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
@@ -284,30 +277,48 @@ public class RunJobHandler {
 			}
 		});
 		
+		logger.trace("creating AssertTextInFieldJob-Handler");
+		dispatch.put(AssertTextInFieldJob.class, new Handler() {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
+				AssertTextInFieldJob typedJob = (AssertTextInFieldJob) job;
+
+				WebElement element = selectingHelper.getElementByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				String textFound = element.getAttribute("innerText");
+				assertEquals(textFound, typedJob.getValue());	
+			}
+		});
+		
+		// add assert-jobs only for develop and integration
+		if (!(mode == StartupMode.DEVELOP || mode == StartupMode.INTEGRATION)) {
+			return;
+		}
+		
 		logger.trace("creating AssertPageLoadedJob-Handler");
 		dispatch.put(AssertPageLoadedJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				// AssertPageLoadedJob typedJob = (AssertPageLoadedJob) job;
 
 				Boolean isReady = Page.isPageReady(driver);
-				assertTrue("page is not ready", isReady);
+				assertTrue(isReady, "page is not ready");
 			}
 		});
 		
 		logger.trace("creating AssertScrolledMaxJob-Handler");
 		dispatch.put(AssertScrolledMaxJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) job;
 				Boolean res;
 				
 				switch (typedJob.getDirection()) {
 				case DOWN:
 					res = Scrolling.isScrolledToBootom(driver);
-					assertTrue("page is not scrolled to bottom", res);
+					assertTrue(res, "page is not scrolled to bottom");
 					break;
 				case UP:
 					res = Scrolling.isScrolledToTop(driver);
-					assertTrue("page is not scrolled to Top", res);
+					assertTrue(res, "page is not scrolled to Top");
 					break;
 				default:
 					throw new UnsupportedOperationException("Not implemented yet");
@@ -317,13 +328,13 @@ public class RunJobHandler {
 		
 		logger.trace("creating AssertElementExistsJob-Handler");
 		dispatch.put(AssertElementExistsJob.class, new Handler() {
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				AssertElementExistsJob typedJob = (AssertElementExistsJob) job;
 				
-				List<WebElement> elements = Selecting.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
-				assertTrue("element(s) not found", elements.size() > 0);
+				assertTrue(elements.size() > 0, "element(s) not found");
 			}
 		});
 		
@@ -332,7 +343,7 @@ public class RunJobHandler {
 			
 			private ObjectMapper mapper = new ObjectMapper();
 			
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) job;
 				
 				// get IP-Info from geosurf
@@ -369,7 +380,7 @@ public class RunJobHandler {
 			
 			private ObjectMapper mapper = new ObjectMapper();
 			
-			public void handle(WebDriver driver, IJob job) {
+			public void handle(WebDriver driver, Crawler crawler, IJob job) {
 				AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) job;
 				
 				// get IP-Info from geosurf
@@ -403,11 +414,11 @@ public class RunJobHandler {
 	}
 
 	// Call the job specific handler
-	public static void handle(WebDriver driver, IJob job) {
+	public void handle(WebDriver driver, Crawler crawler, IJob job) {
 		Handler h = dispatch.get(job.getClass());
 		if (h == null) {
 			throw new UnsupportedOperationException("This type is not yet supported");
 		}
-		h.handle(driver, job); // <<== Here is the magic
+		h.handle(driver, crawler, job); // <<== Here is the magic
 	}
 }

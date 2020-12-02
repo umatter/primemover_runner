@@ -3,20 +3,22 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.0.RELEASE</version>
+		<version>2.4.0</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>primemover.runner</groupId>
 	<artifactId>primemover-runner</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>Runner</name>
 	<description>Runner for the Botnet</description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>1.8</java.version>
 	</properties>
 
 	<dependencies>
@@ -33,7 +35,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -67,47 +68,33 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
+			<!-- Can't reduce to text-scope as there are assert-functions in RunJobHandler -->
 		</dependency>
 	</dependencies>
 
 	<build>
+	
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<excludes>
+					<exclude>*.properties</exclude>
+					<exclude>*.json</exclude>
+					<exclude>*.xml</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+		</testResources>
+		
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-			    <artifactId>maven-resources-plugin</artifactId>
-			    <configuration>
-				    <outputDirectory>config</outputDirectory>
-				    <resources>
-				        <resource>
-				            <directory>cert</directory>
-				            <excludes>
-				                <exclude>*.cer</exclude>
-				                <exclude>*.pem</exclude>
-				                <exclude>installCertOnUbuntu</exclude>
-				            </excludes>
-				            <filtering>true</filtering>
-				        </resource>
-				    </resources>
-				</configuration>
-			</plugin>
-			<plugin>
-			    <artifactId>maven-resources-plugin</artifactId>
-			    <configuration>
-				    <outputDirectory>config</outputDirectory>
-				    <resources>
-				        <resource>
-				            <directory>src/main/resources</directory>
-				            <includes>
-				                <include>*.properties</include>
-				            </includes>
-				            <filtering>true</filtering>
-				        </resource>
-				    </resources>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

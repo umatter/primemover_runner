@@ -4,6 +4,6 @@ import primemover.model.IJob;
 
 public interface IStorageService {
 
-	Boolean writeJobData(IJob job, JobData data);
+	Boolean writeFixedJobData(IJob job, JobData data);
 
 }

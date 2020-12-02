@@ -1,17 +1,16 @@
 package primemover.model;
 
-import java.util.HashMap;
 
 public class Configuration {
-	private int id;
+	private long id;
 	private String name;
 	private String description;
-	private HashMap<String, String> properties;
+	private SelectionConfiguration selectionConfiguration;
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 	
@@ -30,15 +29,11 @@ public class Configuration {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
-	public HashMap<String, String> getProperties() {
-		return properties;
+	public SelectionConfiguration getSelectionConfiguration() {
+		return selectionConfiguration;
 	}
-	
-	public void setProperties(HashMap<String, String> properties) {
-		this.properties = properties;
+	public void setSelectionConfiguration(SelectionConfiguration selectionConfiguration) {
+		this.selectionConfiguration = selectionConfiguration;
 	}
-	
-	
-	
+		
 }

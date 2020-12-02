@@ -36,7 +36,7 @@ import primemover.model.jobs.WaitJob;
 @Service
 public class CrawlerService implements ICrawlerService {
 	
-	@Value("${global.mode:PRODUCTION}")
+	@Value("${global.mode}")
 	private StartupMode mode;
 	
 	@Value("#{'${backend.endpoint}' +'crawlers-unprocessed'}")

@@ -20,6 +20,7 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.runner.IJobManager;
 import primemover.runner.JobListRunnerFactory;
 import primemover.runner.JobManager;
+import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.BackendStorageService;
@@ -31,20 +32,15 @@ import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.MultiLoginDefaultTemplateLoader;
+import primemover.util.OutletsProvider;
+import primemover.util.SelectingHelper;
 
 @SpringBootConfiguration
 public class Config {
 	private static Logger logger = LoggerFactory.getLogger(JobManager.class);
 	
-	@Value("${global.mode}")
-	private String mode;
-	
 	@Value("${backend.requestTimeoutSeconds:60}")
 	private Long requestTimeoutSeconds;
-	
-	public String getMode() {
-		return mode;
-	}
 	
 	@Bean(name="jobListRunnerFactory")
 	JobListRunnerFactory getJobListRunnerFactory() {
@@ -81,6 +77,11 @@ public class Config {
 	@Bean("OutletService")
 	OutletService getOutletService() {
 		return new OutletService();
+	}
+	
+	@Bean(name="OutletsProvider", initMethod = "refresh")
+	OutletsProvider getOutletsProvider() {
+		return new OutletsProvider();
 	}
 	
 	@Bean("TermsService")
@@ -120,7 +121,7 @@ public class Config {
 	@Bean(name="ServiceRestTemplate")
 	public RestTemplate restTemplate() {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		
+		logger.debug("setting RestTemplate - Defaults");
 		RestTemplate restTemplate = new RestTemplateBuilder()
 				.setConnectTimeout(Duration.ofSeconds(10))
 				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
@@ -136,5 +137,15 @@ public class Config {
 		}
 				
         return restTemplate; 
+	}
+	
+	@Bean(name="SelectingHelper")
+	public SelectingHelper getSelectingHelper() {
+		return new SelectingHelper();
+	}
+	
+	@Bean(name="RunJobHandler")
+	public RunJobHandler getRunJobHandler() {
+		return new RunJobHandler();
 	}
 }

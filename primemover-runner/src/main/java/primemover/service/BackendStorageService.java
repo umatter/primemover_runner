@@ -28,7 +28,7 @@ public class BackendStorageService implements IStorageService {
 	 * primemover.model.JobData)
 	 */
 	@Override
-	public Boolean writeJobData(IJob job, JobData data) {
+	public Boolean writeFixedJobData(IJob job, JobData data) {
 		
 		StorageHelper helper = new StorageHelper();
 		

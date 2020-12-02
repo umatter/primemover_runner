@@ -21,7 +21,7 @@ import primemover.model.IJob;
 public class StorageHelper {
 	private static Logger logger = LoggerFactory.getLogger(StorageHelper.class);
 
-	public static void writeCookies(OutputStream os, JobData data) throws IOException {
+	private void writeCookies(OutputStream os, JobData data) throws IOException {
 		logger.debug("writting cookeis");
 		
 		Integer cnt = 0;
@@ -68,7 +68,7 @@ public class StorageHelper {
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss_");
 
 	public String getFilenameAsZip(IJob job) {
-		return dateFormat.format(new Date()) + "_jobdata_" + job.getId().toString() + ".zip";
+		return dateFormat.format(new Date()) + "_static_jobdata_" + job.getId().toString() + ".zip";
 	}
 	
 	public Boolean writeJobDataAsZip(OutputStream os, IJob job, JobData data) {
