@@ -204,6 +204,20 @@ public class TaskOperator implements ITaskOperator {
 		}
 	}
 
+	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming ipRecording, JobData data, IJob job) {
+		if (currentTiming == IpRecordingTiming.NONE) {
+			logger.warn("Found {} as current ip-recording timing", currentTiming);
+			return;
+		}
+		
+		// grab ip before running job
+		if (ipRecording == IpRecordingTiming.BEFORE_JOB) {
+			LocationInfo loc = ipService.getLocationInfo();
+			logger.debug("captured location info for job {}", job.getId(), loc);
+			data.setLocation(loc);
+		}
+	}
+	
 	private Boolean runJob(IJob job, IpRecordingTiming ipRecording) {
 		logger.info("Starting job {}", job.getId());
 
@@ -213,12 +227,8 @@ public class TaskOperator implements ITaskOperator {
 			// init data recording
 			JobData data = new JobData();
 
-			// grab ip before running job
-			if (ipRecording == IpRecordingTiming.BEFORE_JOB) {
-				LocationInfo loc = ipService.getLocationInfo();
-				logger.debug("captured location info for job {}", job.getId(), loc);
-				data.setLocation(loc);
-			}
+			// IP-Checking
+			checkIpRecording(IpRecordingTiming.BEFORE_JOB, ipRecording, data, job);
 
 			// start MITM
 			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
@@ -271,12 +281,8 @@ public class TaskOperator implements ITaskOperator {
 				data.setSessionStorage(null);
 			}
 
-			// grab ip before running job
-			if (ipRecording == IpRecordingTiming.AFTER_JOB) {
-				LocationInfo loc = ipService.getLocationInfo();
-				logger.debug("captured location info for job {}", job.getId(), loc);
-				data.setLocation(loc);
-			}
+			// IP-Checking
+			checkIpRecording(IpRecordingTiming.AFTER_JOB, ipRecording, data, job);
 
 			// Writing data
 			boolean writeRes = true;
