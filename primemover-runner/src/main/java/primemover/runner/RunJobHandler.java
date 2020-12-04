@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -214,10 +217,29 @@ public class RunJobHandler {
 
 				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
+				
+				if (elements == null || elements.isEmpty()) {
+					logger.warn("no element found");
+					
+					throw new IllegalStateException("no elements found");
+				}
+				
 				WebElement selectedElement = selectingHelper.chooseElement(crawler, elements, typedJob.getDecisionType());
 
 				if (selectedElement != null) {
-					selectedElement.click();
+					try {
+						selectedElement.click();
+					} catch (ElementNotInteractableException e) {
+						// Fallback hack for google-elements TODO: optimize with recursive try and error
+						//List<WebElement> subSelements = selectedElement.findElements(By.xpath("./child::*"));
+						List<WebElement> subSelements = selectedElement.findElements(By.tagName("div"));
+						
+						if (subSelements.size() > 0) {
+							subSelements.get(0).click();
+						} else {
+							throw new IllegalStateException("no clickable elements found", e);
+						}	
+					}					
 				}
 
 				try {

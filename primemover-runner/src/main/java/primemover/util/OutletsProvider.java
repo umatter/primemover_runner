@@ -42,9 +42,13 @@ public class OutletsProvider {
 			logger.trace("acquiring lock");
 			rwLock.writeLock().lock();
 			
+			ZonedDateTime now = ZonedDateTime.now();
+			
 			// is a refresh required?
-			if (!force || (lastRefresh != null && ChronoUnit.MINUTES.between(lastRefresh, ZonedDateTime.now()) < refreshIntevalMinuts)) {
-				return;
+			if (!force && lastRefresh != null) {
+				if (ChronoUnit.MINUTES.between(lastRefresh, now) < refreshIntevalMinuts) {
+					return;
+				}
 			}
 			
 			logger.debug("updating outlets");
@@ -58,6 +62,7 @@ public class OutletsProvider {
 			}		
 			
 			outletsMapByDomain = outletsMap;  // replace existing map
+			lastRefresh = now;
 		} finally {
 			logger.trace("releasing lock");
 			rwLock.writeLock().unlock();

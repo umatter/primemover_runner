@@ -57,7 +57,7 @@ class MulitLoginConnectivity {
 	
 	@AfterEach
     public void tearDown() {
-        service.tearDown();
+        service.tearDown(true);
         service = null;
         agent = null;
         crawler = null;

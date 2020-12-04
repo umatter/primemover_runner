@@ -140,7 +140,7 @@ ideologically distant news
 		for (SelectingCalculationItem item : items) {
 			if (!item.isSkiped()) {
 				lowerEnd = upperEnd;
-				upperEnd = upperEnd + item.getExp_u();
+				upperEnd = upperEnd + item.getProbability();
 				
 				item.setChoice(choice);
 				item.setProb_LowerEnd(lowerEnd);

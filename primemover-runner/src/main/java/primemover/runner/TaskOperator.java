@@ -455,8 +455,9 @@ public class TaskOperator implements ITaskOperator {
 		return done;
 	}
 
+
 	@Override
-	public void tearDown() {
+	public void tearDown(boolean immediate) {
 		logger.info("Tearing down crawler {}", context.getCrawler().getId());
 
 		isSetup.set(false);
@@ -503,4 +504,7 @@ public class TaskOperator implements ITaskOperator {
 		context = null;
 	}
 
+	public void tearDown() {
+		tearDown(false);
+	}
 }

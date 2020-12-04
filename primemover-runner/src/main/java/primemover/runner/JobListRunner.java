@@ -81,7 +81,7 @@ public class JobListRunner implements Callable<Boolean> {
 			
 			// make sure to tear down!
 			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
-			taskOperator.tearDown();
+			taskOperator.tearDown(false);
 			
 			return false; // exit due to error
 		}
@@ -90,7 +90,7 @@ public class JobListRunner implements Callable<Boolean> {
 			
 		// release resources
 		logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
-		taskOperator.tearDown();
+		taskOperator.tearDown(false);
 		
 		// set end-state and time
 		if (setupRes) {

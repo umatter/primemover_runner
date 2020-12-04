@@ -47,7 +47,7 @@ class LoadTasksFromServiceAndRunJobs {
 			ITaskOperator service = operatorFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	
@@ -61,7 +61,7 @@ class LoadTasksFromServiceAndRunJobs {
 			ITaskOperator service = operatorFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	
@@ -75,7 +75,7 @@ class LoadTasksFromServiceAndRunJobs {
 			ITaskOperator service = operatorFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	
@@ -89,7 +89,7 @@ class LoadTasksFromServiceAndRunJobs {
 			ITaskOperator service = operatorFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	
@@ -103,7 +103,7 @@ class LoadTasksFromServiceAndRunJobs {
 			ITaskOperator service = operatorFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	
@@ -117,7 +117,7 @@ class LoadTasksFromServiceAndRunJobs {
 			ITaskOperator service = operatorFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	

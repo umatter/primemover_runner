@@ -108,7 +108,7 @@ class Typing {
 	
 	@AfterEach
     public void tearDown() {
-        operator.tearDown();
+        operator.tearDown(true);
         operator = null;
         agent = null;
         crawler = null;

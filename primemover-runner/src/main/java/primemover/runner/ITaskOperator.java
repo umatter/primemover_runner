@@ -15,7 +15,7 @@ public interface ITaskOperator {
 	 * Tears down the TaskService
 	 * 
 	 */
-	void tearDown();
+	void tearDown(boolean immediate);
 	
 	/**
 	 * This will run a job

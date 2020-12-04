@@ -39,10 +39,10 @@ class ConversionApiTestSuite {
 		List<Pair<Crawler, Joblist>> taskList = crawlerService.getCurrentTasks();
 		
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = serviceFactory.getItem();
-			service.setup(task.getLeft());
-			service.runJobList(task.getValue());
-			service.tearDown();
+			ITaskOperator operator = serviceFactory.getItem();
+			operator.setup(task.getLeft());
+			operator.runJobList(task.getValue());
+			operator.tearDown(true);
 		}
 	}
 	
@@ -59,7 +59,7 @@ class ConversionApiTestSuite {
 			ITaskOperator service = serviceFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	
@@ -76,7 +76,7 @@ class ConversionApiTestSuite {
 			ITaskOperator service = serviceFactory.getItem();
 			service.setup(task.getLeft());
 			service.runJobList(task.getValue());
-			service.tearDown();
+			service.tearDown(true);
 		}
 	}
 	

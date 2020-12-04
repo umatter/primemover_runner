@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import primemover.capture.RecordingProxyFactory;
+import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.FileStorageService;
@@ -21,6 +22,8 @@ import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.util.MultiLoginBrowserProfileFactory;
+import primemover.util.OutletsProvider;
+import primemover.util.SelectingHelper;
 
 @SpringBootConfiguration
 public class TestConfig {
@@ -36,11 +39,6 @@ public class TestConfig {
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
-	}
-	
-	@Bean("OutletService")
-	OutletService getOutletService() {
-		return new OutletService();
 	}
 	
 	@Bean("TermsService")
@@ -77,6 +75,26 @@ public class TestConfig {
 		return jobManager;		
 	}
 	*/
+	@Bean("OutletService")
+	OutletService getOutletService() {
+		return new OutletService();
+	}
+	
+	@Bean(name="OutletsProvider", initMethod = "refresh")
+	OutletsProvider getOutletsProvider() {
+		return new OutletsProvider();
+	}
+	
+	@Bean(name="SelectingHelper")
+	public SelectingHelper getSelectingHelper() {
+		return new SelectingHelper();
+	}
+	
+
+	@Bean(name="RunJobHandler")
+	public RunJobHandler getRunJobHandler() {
+		return new RunJobHandler();
+	}
 	
 	@Bean
 	public RestTemplate restTemplate() {
