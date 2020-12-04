@@ -224,7 +224,7 @@ public class TaskOperator implements ITaskOperator {
 			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
 
 			// running job
-			runJobHandler.handle(context.getDriver(), context.getCrawler(), job);
+			runJobHandler.handle(context, job);
 
 			jobService.updateJobState(job, JobState.STORINGDATA, null, null);
 
