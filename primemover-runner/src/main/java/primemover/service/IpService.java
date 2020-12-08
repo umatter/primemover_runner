@@ -22,7 +22,6 @@ import primemover.model.api.IpResult;
 public class IpService {
 
 	private static Logger logger = LoggerFactory.getLogger(IpService.class);
-
 	private RestTemplate restTemplate;
 	private AtomicBoolean isInit = new AtomicBoolean(false);
 	

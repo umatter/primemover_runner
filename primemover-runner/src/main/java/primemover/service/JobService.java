@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -44,6 +45,7 @@ public class JobService {
 	
 	private static DateTimeFormatter dateFormater =  DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
+	@Qualifier("ServiceRestTemplate")
 	@Autowired
 	private RestTemplate restTemplate;
 	

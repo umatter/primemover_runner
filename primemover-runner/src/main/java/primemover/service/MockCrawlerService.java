@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -23,6 +24,7 @@ import primemover.model.api.CrawlerResult;
 
 public class MockCrawlerService implements ICrawlerService {
 	
+	@Qualifier("ServiceRestTemplate")
 	@Autowired
 	private RestTemplate restTemplate;
 

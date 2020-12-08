@@ -1,6 +1,7 @@
 package primemover.config;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -9,8 +10,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -30,6 +33,8 @@ import primemover.service.IStorageService;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
+import primemover.service.TokenGenerator;
+import primemover.service.TokenRequestInterceptor;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.MultiLoginDefaultTemplateLoader;
 import primemover.util.OutletsProvider;
@@ -37,14 +42,55 @@ import primemover.util.SelectingHelper;
 
 @SpringBootConfiguration
 public class Config {
-	private static Logger logger = LoggerFactory.getLogger(JobManager.class);
+	private static Logger logger = LoggerFactory.getLogger(Config.class);
 	
 	@Value("${backend.requestTimeoutSeconds:60}")
 	private Long requestTimeoutSeconds;
 	
+	@Value("${backend.connectionTimeoutSeconds:10}")
+	private Long connectionTimeoutSeconds;
+		
 	@Bean(name="jobListRunnerFactory")
 	JobListRunnerFactory getJobListRunnerFactory() {
 		return new JobListRunnerFactory();
+	}
+	
+	@Bean(name="tokenGenerator")
+	TokenGenerator getTokenGenerator() {
+		return new TokenGenerator();
+	}
+	
+	@Bean(name="TokenRequestInterceptor")	
+	TokenRequestInterceptor requestInterceptor() {
+		return new TokenRequestInterceptor();
+	}
+	
+	@Bean(name="ServiceRestTemplate")
+	public RestTemplate restServiceTemplate(TokenRequestInterceptor requestInterceptor) {
+		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		logger.debug("setting up ServiceRestTemplate - Defaults");
+		RestTemplate restTemplate = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
+				.build();
+		
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();		
+		for (Object converter : converters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
+				ObjectMapper mapper = jconverter.getObjectMapper();
+				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+			}
+		}
+		
+		List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+		if (CollectionUtils.isEmpty(interceptors)) {
+		    interceptors = new ArrayList<>();
+		}
+		interceptors.add(requestInterceptor);
+		restTemplate.setInterceptors(interceptors);
+		
+        return restTemplate; 
 	}
 	
 	/*
@@ -115,28 +161,6 @@ public class Config {
 	@Bean(name="MultiLoginBrowserProfileFactory")
 	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
 		return new MultiLoginBrowserProfileFactory();
-	}
-	
-	
-	@Bean(name="ServiceRestTemplate")
-	public RestTemplate restTemplate() {
-		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		logger.debug("setting RestTemplate - Defaults");
-		RestTemplate restTemplate = new RestTemplateBuilder()
-				.setConnectTimeout(Duration.ofSeconds(10))
-				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
-				.build();
-		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-		
-		for (Object converter : converters) {
-			if (converter instanceof MappingJackson2HttpMessageConverter) {
-				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
-				ObjectMapper mapper = jconverter.getObjectMapper();
-				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-			}
-		}
-				
-        return restTemplate; 
 	}
 	
 	@Bean(name="SelectingHelper")

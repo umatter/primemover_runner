@@ -204,16 +204,23 @@ public class TaskOperator implements ITaskOperator {
 		}
 	}
 
-	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming ipRecording, JobData data, IJob job) {
+	/**
+	 * 
+	 * @param currentTiming: current timing to compare against
+	 * @param comparee: compare currentTiming to this value
+	 * @param data: JobData to store captured location info
+	 * @param job: current job
+	 */
+	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, JobData data, IJob job) {
 		if (currentTiming == IpRecordingTiming.NONE) {
-			logger.warn("Found {} as current ip-recording timing", currentTiming);
+			logger.debug("Found {} as current ip-recording timing", currentTiming);
 			return;
 		}
 		
-		// grab ip before running job
-		if (ipRecording == IpRecordingTiming.BEFORE_JOB) {
+		// grab ip-location if matching above
+		if (currentTiming == comparee || currentTiming == IpRecordingTiming.ALWAYS) {
 			LocationInfo loc = ipService.getLocationInfo();
-			logger.debug("captured location info for job {}", job.getId(), loc);
+			logger.debug("captured location info for job {} for timing {} is {}", job.getId(), currentTiming, loc);
 			data.setLocation(loc);
 		}
 	}
@@ -228,7 +235,12 @@ public class TaskOperator implements ITaskOperator {
 			JobData data = new JobData();
 
 			// IP-Checking
-			checkIpRecording(IpRecordingTiming.BEFORE_JOB, ipRecording, data, job);
+			try {
+				checkIpRecording(ipRecording, IpRecordingTiming.BEFORE_JOB, data, job);
+			} catch (Exception e) {
+				logger.warn("IP-Checking (before job) was unsuccessfull for job {}", job.getId());
+			}
+			
 
 			// start MITM
 			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
@@ -282,7 +294,11 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			// IP-Checking
-			checkIpRecording(IpRecordingTiming.AFTER_JOB, ipRecording, data, job);
+			try {
+				checkIpRecording(ipRecording, IpRecordingTiming.AFTER_JOB, data, job);
+			} catch (Exception e) {
+				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId());
+			}
 
 			// Writing data
 			boolean writeRes = true;

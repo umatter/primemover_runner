@@ -198,5 +198,10 @@
     "name": "global.mode",
     "type": "java.lang.String",
     "description": "A description for 'global.mode'"
+  },
+  {
+    "name": "backend.connectionTimeoutSeconds",
+    "type": "java.lang.String",
+    "description": "A description for 'backend.connectionTimeoutSeconds'"
   }
 ]}

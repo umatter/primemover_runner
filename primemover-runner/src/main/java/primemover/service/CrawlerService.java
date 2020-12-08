@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +56,7 @@ public class CrawlerService implements ICrawlerService {
 		// nothing to do
 	}
 
+	@Qualifier("ServiceRestTemplate")
 	@Autowired
 	private RestTemplate restTemplate;
 	
