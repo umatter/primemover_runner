@@ -21,11 +21,13 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.model.GeoSurfProxy;
 import primemover.model.LocationInfo;
 import primemover.service.IpService;
+import primemover.service.IpServiceFactory;
 
 @SpringBootTest
 class GeosurfIpVerificationTest {
 	
 	private static Logger logger = LoggerFactory.getLogger(GeosurfIpVerificationTest.class);
+	
 	
 	
 	@Autowired
@@ -56,6 +58,9 @@ class GeosurfIpVerificationTest {
 			"US-CA-STOCKTON",
 			"US-MA-BOSTON");
 	
+	@Autowired
+	IpServiceFactory ipServiceFactory;
+	
 	/**
 	 * 
 	 * @param city: target according to GeoSurf API e.g. "US-TX-HOUSTON"
@@ -64,12 +69,11 @@ class GeosurfIpVerificationTest {
 		int numRuns = 20;
 		
 		String failIP = "(fail)";
-		RecordingProxy rec = recFac.createRecordingProxy();
-		IpService ipService = new IpService();
-		
 		GeoSurfProxy targetProxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", city);		
+		RecordingProxy rec = recFac.createRecordingProxy();
 		rec.setup(targetProxy);
-		rec.applyProxy(ipService);
+		
+		IpService ipService = ipServiceFactory.getInstance(rec);
 		
 		List<String> ipInfo = new ArrayList<String>(20);
 		

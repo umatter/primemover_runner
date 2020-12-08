@@ -37,6 +37,7 @@ import primemover.model.MultiLoginAgent;
 import primemover.service.AgentService;
 import primemover.service.IStorageService;
 import primemover.service.IpService;
+import primemover.service.IpServiceFactory;
 import primemover.service.JobData;
 import primemover.service.JobService;
 import primemover.util.MulitLoginBrowserProfile;
@@ -73,13 +74,15 @@ public class TaskOperator implements ITaskOperator {
 	@Autowired
 	private RunJobHandler runJobHandler;
 	
+	@Autowired
+	IpServiceFactory ipServiceFactory;
+	
 	private IpService ipService;
 
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
 
 	private void setupIpService(RecordingProxy recorder) {
-		ipService = new IpService();
-		recorder.applyProxy(ipService);
+		ipService = ipServiceFactory.getInstance(recorder);
 	}
 
 	private void startupFirefox(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder) {

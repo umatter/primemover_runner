@@ -27,6 +27,5 @@ public class RecordingProxyFactory implements ApplicationContextAware {
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
 		
 		return ret;
-	}
-	
+	}	
 }

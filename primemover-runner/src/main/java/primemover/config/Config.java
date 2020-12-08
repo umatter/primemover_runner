@@ -30,6 +30,7 @@ import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
+import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
@@ -91,6 +92,11 @@ public class Config {
 		restTemplate.setInterceptors(interceptors);
 		
         return restTemplate; 
+	}
+	
+	@Bean(name="IpServiceFactory")
+	public IpServiceFactory getIpServiceFactory() {
+		return new IpServiceFactory();
 	}
 	
 	/*
