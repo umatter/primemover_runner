@@ -2,11 +2,11 @@ package primemover.service.writer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public abstract class JsonJobDataWriter<OutType> extends ZipJobDataWriter {
+public abstract class JsonAsZipJobDataWriter<OutType> extends SingleZipEntryJobDataWriter {
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 	
-	public JsonJobDataWriter() {
+	public JsonAsZipJobDataWriter() {
 	}
 
 	protected abstract OutType getObject();

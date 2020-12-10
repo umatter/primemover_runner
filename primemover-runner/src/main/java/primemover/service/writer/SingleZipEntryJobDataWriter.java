@@ -8,10 +8,10 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class ZipJobDataWriter implements IJobDataWriter {
-	private static final Logger logger = LoggerFactory.getLogger(ZipJobDataWriter.class);
+public abstract class SingleZipEntryJobDataWriter implements IJobDataWriter {
+	private static final Logger logger = LoggerFactory.getLogger(SingleZipEntryJobDataWriter.class);
 
-	public ZipJobDataWriter() {
+	public SingleZipEntryJobDataWriter() {
 	}
 
 	protected abstract String getData() throws Exception;

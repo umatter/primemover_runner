@@ -6,7 +6,7 @@ import java.util.Date;
 import primemover.model.IJob;
 import primemover.util.Selection;
 
-public class SelectionJobDataWriter extends JsonJobDataWriter<Selection> {
+public class SelectionJobDataWriter extends JsonAsZipJobDataWriter<Selection> {
 
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 	private String baseName;
@@ -18,7 +18,6 @@ public class SelectionJobDataWriter extends JsonJobDataWriter<Selection> {
 		this.baseName = datePrefix + "_dynamic_jobdata_" + job.getId(); 
 		this.data = data;
 	}
-
 
 	@Override
 	protected Selection getObject() {
