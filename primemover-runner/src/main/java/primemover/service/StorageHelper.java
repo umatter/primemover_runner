@@ -65,7 +65,7 @@ public class StorageHelper {
 		os.write(tmp.toString().getBytes(StandardCharsets.UTF_8));
 	}
 	
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss_");
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
 	public String getFilenameAsZip(IJob job) {
 		return dateFormat.format(new Date()) + "_static_jobdata_" + job.getId().toString() + ".zip";

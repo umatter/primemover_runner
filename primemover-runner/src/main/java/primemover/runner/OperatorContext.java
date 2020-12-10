@@ -4,8 +4,9 @@ import org.openqa.selenium.WebDriver;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
+import primemover.service.JobData;
 
-public class OperatorContext {
+public abstract class OperatorContext {
 	
 	private RecordingProxy recorder;
 	private WebDriver driver;
@@ -37,6 +38,4 @@ public class OperatorContext {
 	public void setCrawler(Crawler crawler) {
 		this.crawler = crawler;
 	}
-
-	
 }

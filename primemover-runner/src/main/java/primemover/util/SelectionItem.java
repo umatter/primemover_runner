@@ -2,12 +2,17 @@ package primemover.util;
 
 import org.openqa.selenium.WebElement;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import primemover.model.Outlet;
 
-public class SelectingCalculationItem {
+public class SelectionItem {
 	private int rank;
 	private boolean skiped = false;
-	private WebElement element;
+	
+	@JsonIgnore
+	private WebElement element; // can't serialize this
+	
 	private String url;
 	private String normalizedUrl;
 	private boolean isKnown;
@@ -21,13 +26,12 @@ public class SelectingCalculationItem {
 	private double probability;
 	private double e;
 	
-	private double choice;
 	private double prob_LowerEnd;
 	private double prob_UpperEnd;
 	
 	private boolean selected = false;
 
-	public SelectingCalculationItem() {
+	public SelectionItem() {
 	}
 
 	public int getRank() {
@@ -171,13 +175,5 @@ public class SelectingCalculationItem {
 
 	public void setSelected(boolean selected) {
 		this.selected = selected;
-	}
-
-	public double getChoice() {
-		return choice;
-	}
-
-	public void setChoice(double choice) {
-		this.choice = choice;
 	}
 }

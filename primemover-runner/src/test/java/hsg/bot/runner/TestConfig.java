@@ -1,16 +1,20 @@
 package hsg.bot.runner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.RunJobHandler;
@@ -18,9 +22,12 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
+import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
+import primemover.service.TokenGenerator;
+import primemover.service.TokenRequestInterceptor;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.OutletsProvider;
 import primemover.util.SelectingHelper;
@@ -34,6 +41,11 @@ public class TestConfig {
 	@Bean(name="JobService")
 	JobService getJobService() {
 		return new JobService();
+	}
+
+	@Bean(name="IpServiceFactory")
+	public IpServiceFactory getIpServiceFactory() {
+		return new IpServiceFactory();
 	}
 	
 	@Bean(name="AgentService")
@@ -95,9 +107,18 @@ public class TestConfig {
 	public RunJobHandler getRunJobHandler() {
 		return new RunJobHandler();
 	}
+
+	@Bean(name="tokenGenerator")
+	TokenGenerator getTokenGenerator() {
+		return new TokenGenerator();
+	}
 	
-	@Bean
-	public RestTemplate restTemplate() {
+	@Bean(name="TokenRequestInterceptor")	
+	TokenRequestInterceptor requestInterceptor() {
+		return new TokenRequestInterceptor();
+	}
+	@Bean("ServiceRestTemplate")
+	public RestTemplate restTemplate(TokenRequestInterceptor requestInterceptor) {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
 		RestTemplate restTemplate = new RestTemplateBuilder().build();
@@ -106,9 +127,18 @@ public class TestConfig {
 		for (Object converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
-				jconverter.getObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+				ObjectMapper mapper = jconverter.getObjectMapper();
+				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-         return restTemplate; 
+		
+		List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+		if (CollectionUtils.isEmpty(interceptors)) {
+		    interceptors = new ArrayList<>();
+		}
+		interceptors.add(requestInterceptor);
+		restTemplate.setInterceptors(interceptors);
+		
+        return restTemplate; 
 	}
 }

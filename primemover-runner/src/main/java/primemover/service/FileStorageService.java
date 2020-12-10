@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Value;
 import primemover.model.IJob;
+import primemover.service.writer.IJobDataWriter;
 
 public class FileStorageService implements IStorageService {
 	private static Logger logger = LoggerFactory.getLogger(FileStorageService.class);
@@ -67,6 +68,36 @@ public class FileStorageService implements IStorageService {
 			}
 		
 		logger.warn("Error writing data");
+		return false;
+	}
+
+
+	@Override
+	public Boolean writeData(IJob job, IJobDataWriter writer) {
+		//create a folder for the job
+		Path jobFolder = Paths.get(targetFolder + "/" + job.getId().toString() + "/");
+		jobFolder = localDir.resolve(jobFolder);
+		jobFolder.toFile().mkdirs();
+		
+		// write traffic data
+		Path filepath = jobFolder.resolve(writer.getFileName());
+		
+		try (OutputStream os = new FileOutputStream(filepath.toFile())) {
+			logger.trace("Start writing data for job {}", job.getId());
+			if (writer.writeData(os) ) {
+				// done writing
+				os.flush();
+				
+				logger.trace("Done writing data for job {}", job.getId());
+				return true;
+			}
+			
+			} catch (IOException e) {
+				logger.warn("Error writing data for job {}", job.getId(), e);
+				return false;
+			}
+		
+		logger.warn("Error writing data for job {}", job.getId());
 		return false;
 	}
 }

@@ -17,10 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
+import primemover.model.IJob;
 import primemover.model.Outlet;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.jobs.SelectorBaseJob;
+import primemover.service.IStorageService;
+import primemover.service.writer.SelectionJobDataWriter;
 
 public class SelectingHelper {
 
@@ -28,6 +31,9 @@ public class SelectingHelper {
 	
 	@Autowired
 	OutletsProvider outletsProvider;
+	
+	@Autowired(required = false)
+	List<IStorageService> storages = new ArrayList<IStorageService>();
 	
 	private Random rand = new Random();
 
@@ -130,36 +136,36 @@ ideologically distant news
 		return result_utility_w_i_j_t(r_j, 0, 0, 0, 1, 1, 0.1);
 	}
 	
-	private WebElement selectItem (List<SelectingCalculationItem> items) {
-		WebElement selection = null;
+	private WebElement selectItem (Selection selection) {
+		WebElement selectedItem = null;
 		
 		double choice = rand.nextDouble();
+		selection.setChoice(choice);
 		
 		double lowerEnd;
 		double upperEnd = 0.0d;
-		for (SelectingCalculationItem item : items) {
+		for (SelectionItem item : selection.getItems()) {
 			if (!item.isSkiped()) {
 				lowerEnd = upperEnd;
 				upperEnd = upperEnd + item.getProbability();
 				
-				item.setChoice(choice);
 				item.setProb_LowerEnd(lowerEnd);
 				item.setProb_UpperEnd(upperEnd);
 				
 				if (lowerEnd < choice && choice <= upperEnd) {
 					item.setSelected(true);
-					selection = item.getElement();
+					selectedItem = item.getElement();
 				}
 			}
 		}
 		
-		return selection;
+		return selectedItem;
 	}
 	
-	private void calculateProbabilities(List<SelectingCalculationItem> calcItems) {
+	private void calculateProbabilities(List<SelectionItem> calcItems) {
 		
 		double total_exp_u = 0.0d;
-		for (SelectingCalculationItem item : calcItems) {
+		for (SelectionItem item : calcItems) {
 			if (!item.isSkiped()) {
 				double exp_u = Math.exp(item.getU_final());
 				total_exp_u += exp_u;
@@ -167,25 +173,26 @@ ideologically distant news
 			}
 		}
 		
-		for (SelectingCalculationItem item : calcItems) {
+		for (SelectionItem item : calcItems) {
 			if (!item.isSkiped()) {
 				item.setProbability(item.getExp_u() / total_exp_u);
 			}
 		}
 	}
 	
-	private WebElement chooseCalculatedElement(Crawler crawler, List<WebElement> elements) {
+	private WebElement chooseCalculatedElement(Crawler crawler, IJob job, List<WebElement> elements) {
 		SelectionConfiguration config = crawler.getConfig().getSelectionConfiguration();
 		
 		Map<String, Outlet> outletsMapByDomain = outletsProvider.getOutletsMapByDomain();
 		
-		WebElement selection = null;		
-		List<SelectingCalculationItem> calcItems = new ArrayList<>(elements.size());
+		WebElement selectedElement = null;		
+		Selection selection = new Selection();
+		List<SelectionItem> calcItems = new ArrayList<>(elements.size());
 		
 		
 		for (int i = 0; i < elements.size(); i++) {
 			WebElement webElement = elements.get(i);
-			SelectingCalculationItem calcItem = new SelectingCalculationItem();
+			SelectionItem calcItem = new SelectionItem();
 			String urlString = webElement.getAttribute("href");
 			
 			calcItem.setRank(i+1);
@@ -232,13 +239,21 @@ ideologically distant news
 		
 		calculateProbabilities(calcItems);
 		
-		selection = selectItem(calcItems); 
+		selection.setItems(calcItems);
 		
-		return selection;
+		selectedElement = selectItem(selection);
+		
+		// Writing data
+		boolean writeRes = true;
+		for (IStorageService storage : storages) {
+			writeRes = writeRes && storage.writeData(job, new SelectionJobDataWriter(job, selection));
+		}
+				
+		return selectedElement;
 	}
 	
 
-	public WebElement chooseElement(Crawler crawler, List<WebElement> elements, DecisionType type) {
+	public WebElement chooseElement(Crawler crawler, IJob job, List<WebElement> elements, DecisionType type) {
 
 		WebElement selection = null;
 
@@ -247,7 +262,7 @@ ideologically distant news
 			case CALCULATED:
 				logger.debug("making randomized choice out of known outlets");
 				
-				return chooseCalculatedElement(crawler, elements);
+				return chooseCalculatedElement(crawler, job, elements);
 				//throw new UnsupportedOperationException("Not implemented yet");
 				// break;
 			case FIRST:

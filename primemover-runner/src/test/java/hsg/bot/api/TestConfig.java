@@ -1,13 +1,16 @@
 package hsg.bot.api;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -23,6 +26,8 @@ import primemover.service.JobService;
 import primemover.service.MockCrawlerService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
+import primemover.service.TokenGenerator;
+import primemover.service.TokenRequestInterceptor;
 import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
@@ -77,8 +82,18 @@ public class TestConfig {
 		return new AgentService();
 	}
 	
-	@Bean("rest Template")
-	public RestTemplate restTemplate() {
+
+	@Bean(name="tokenGenerator")
+	TokenGenerator getTokenGenerator() {
+		return new TokenGenerator();
+	}
+	
+	@Bean(name="TokenRequestInterceptor")	
+	TokenRequestInterceptor requestInterceptor() {
+		return new TokenRequestInterceptor();
+	}
+	@Bean("ServiceRestTemplate")
+	public RestTemplate restTemplate(TokenRequestInterceptor requestInterceptor) {
 		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
 		RestTemplate restTemplate = new RestTemplateBuilder().build();
@@ -91,7 +106,15 @@ public class TestConfig {
 				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-         return restTemplate; 
+		
+		List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+		if (CollectionUtils.isEmpty(interceptors)) {
+		    interceptors = new ArrayList<>();
+		}
+		interceptors.add(requestInterceptor);
+		restTemplate.setInterceptors(interceptors);
+		
+        return restTemplate; 
 	}
 
 	@Bean(name="TaskServiceFactory")

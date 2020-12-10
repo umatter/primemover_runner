@@ -229,7 +229,7 @@ public class RunJobHandler {
 					throw new IllegalStateException("no elements found");
 				}
 				
-				WebElement selectedElement = selectingHelper.chooseElement(crawler, elements, typedJob.getDecisionType());
+				WebElement selectedElement = selectingHelper.chooseElement(crawler, job, elements, typedJob.getDecisionType());
 
 				if (selectedElement != null) {
 					try {
