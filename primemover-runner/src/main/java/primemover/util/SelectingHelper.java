@@ -23,7 +23,7 @@ import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.service.IStorageService;
-import primemover.service.writer.SelectionJobDataWriter;
+import primemover.service.jobdatawriter.SelectionJobDataWriter;
 
 public class SelectingHelper {
 

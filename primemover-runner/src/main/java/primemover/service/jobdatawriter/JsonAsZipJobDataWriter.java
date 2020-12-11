@@ -1,4 +1,4 @@
-package primemover.service.writer;
+package primemover.service.jobdatawriter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

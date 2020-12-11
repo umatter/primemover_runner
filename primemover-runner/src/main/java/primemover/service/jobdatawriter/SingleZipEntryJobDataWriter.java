@@ -1,4 +1,4 @@
-package primemover.service.writer;
+package primemover.service.jobdatawriter;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ public abstract class SingleZipEntryJobDataWriter implements IJobDataWriter {
 	
 	@Override
 	public boolean writeData(OutputStream os) {
-		logger.info("writting jobdata as zipped String");
+		logger.info("writting jobdata zipped");
 		
 		// prepare streams
 		try (ZipOutputStream zipOut = new ZipOutputStream(os)) {

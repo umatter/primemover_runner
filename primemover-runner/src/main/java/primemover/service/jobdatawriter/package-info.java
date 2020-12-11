@@ -5,4 +5,4 @@
  * @author dburkolter
  *
  */
-package primemover.service.writer;
+package primemover.service.jobdatawriter;

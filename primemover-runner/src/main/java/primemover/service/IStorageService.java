@@ -1,7 +1,7 @@
 package primemover.service;
 
 import primemover.model.IJob;
-import primemover.service.writer.IJobDataWriter;
+import primemover.service.jobdatawriter.IJobDataWriter;
 
 public interface IStorageService {
 

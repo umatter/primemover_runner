@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Value;
 import primemover.model.IJob;
-import primemover.service.writer.IJobDataWriter;
+import primemover.service.jobdatawriter.IJobDataWriter;
+import primemover.service.jobdatawriter.StorageHelper;
 
 public class FileStorageService implements IStorageService {
 	private static Logger logger = LoggerFactory.getLogger(FileStorageService.class);

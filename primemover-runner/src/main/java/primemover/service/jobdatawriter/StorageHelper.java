@@ -1,4 +1,4 @@
-package primemover.service;
+package primemover.service.jobdatawriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,10 +17,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openqa.selenium.Cookie;
 
 import primemover.model.IJob;
+import primemover.service.JobData;
 
 public class StorageHelper {
 	private static Logger logger = LoggerFactory.getLogger(StorageHelper.class);
 
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+	public static String formatDateForFilePrefix(Date date) {
+		return dateFormat.format(date);
+	}
+	
 	private void writeCookies(OutputStream os, JobData data) throws IOException {
 		logger.debug("writting cookeis");
 		
@@ -65,8 +72,7 @@ public class StorageHelper {
 		os.write(tmp.toString().getBytes(StandardCharsets.UTF_8));
 	}
 	
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
+	
 	public String getFilenameAsZip(IJob job) {
 		return dateFormat.format(new Date()) + "_static_jobdata_" + job.getId().toString() + ".zip";
 	}

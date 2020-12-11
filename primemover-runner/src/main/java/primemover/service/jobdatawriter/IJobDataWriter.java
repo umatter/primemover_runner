@@ -1,4 +1,4 @@
-package primemover.service.writer;
+package primemover.service.jobdatawriter;
 
 import java.io.OutputStream;
 
