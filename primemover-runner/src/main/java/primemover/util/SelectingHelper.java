@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.distribution.GumbelDistribution;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -122,18 +123,16 @@ ideologically distant news
 :return: float utility of selecting result
 """
 	 */
-	private double result_utility_w_i_j_t(double r_j, double known, double d_tilde_i_j_t, double rho_j, double alpha_tilde, double tau_tilde, double beta_i) {
-	return  (1 - beta_i * (
-				r_j - 1)) + known * (
-				 alpha_tilde - tau_tilde * d_tilde_i_j_t + rho_j);
+	private double result_utility_w_i_j_t(double r_j, double known, double d_tilde_i_j_t, double alpha_tilde, double tau_tilde, double beta_i) {
+	return  (1 - beta_i * (r_j - 1)) + known * (alpha_tilde - tau_tilde * d_tilde_i_j_t * d_tilde_i_j_t);
 	}
 	
-	private double result_utility_w_i_j_t(double r_j, double known, double d_tilde_i_j_t, double rho_j) {
-		return result_utility_w_i_j_t(r_j, known, d_tilde_i_j_t, rho_j, 1, 1, 0.1);
+	private double result_utility_w_i_j_t(double r_j, double known, double d_tilde_i_j_t) {
+		return result_utility_w_i_j_t(r_j, known, d_tilde_i_j_t, 1, 1, 0.1);
 	}
 	
 	private double result_utility_w_i_j_t(double r_j) {
-		return result_utility_w_i_j_t(r_j, 0, 0, 0, 1, 1, 0.1);
+		return result_utility_w_i_j_t(r_j, 0, 0, 0, 1, 1);
 	}
 	
 	private WebElement selectItem (Selection selection) {
@@ -183,6 +182,8 @@ ideologically distant news
 	private WebElement chooseCalculatedElement(Crawler crawler, IJob job, List<WebElement> elements) {
 		SelectionConfiguration config = crawler.getConfig().getSelectionConfiguration();
 		
+		GumbelDistribution gumbel = new GumbelDistribution(-0.4557735, 0.793006);
+		
 		Map<String, Outlet> outletsMapByDomain = outletsProvider.getOutletsMapByDomain();
 		
 		WebElement selectedElement = null;		
@@ -212,20 +213,16 @@ ideologically distant news
 					Outlet outlet = outletsMapByDomain.get(normalizedUrl);
 					
 					double d_tilde_i_j_t = Math.abs(Math.PI - outlet.getPi());
-			        double exp_rho = outlet.getAvgReachPermillion();
-			        double rho = Math.log(exp_rho + Math.E);
 			            
 			        calcItem.setOutlet(outlet);
 			        calcItem.setD_tilde_i_j_t(d_tilde_i_j_t);
-			        calcItem.setExp_rho(exp_rho);
-			        calcItem.setRho(rho);
 			        		
-			        u = result_utility_w_i_j_t(calcItem.getRank(), 1, d_tilde_i_j_t, rho);	       
+			        u = result_utility_w_i_j_t(calcItem.getRank(), 1, d_tilde_i_j_t);	       
 				} else {
 					u =result_utility_w_i_j_t(calcItem.getRank());
 				}
 				
-				double epsilon = 0;
+				double epsilon = gumbel.sample();
 
 				calcItem.setU_raw(u);
 				calcItem.setU_final(u+epsilon);

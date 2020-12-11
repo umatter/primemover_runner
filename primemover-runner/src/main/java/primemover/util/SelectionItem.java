@@ -18,8 +18,6 @@ public class SelectionItem {
 	private boolean isKnown;
 	private Outlet outlet;
 	private double d_tilde_i_j_t;
-	private double exp_rho;
-	private double rho;
 	private double u_raw;
 	private double u_final;
 	private double exp_u;
@@ -95,22 +93,6 @@ public class SelectionItem {
 
 	public void setD_tilde_i_j_t(double d_tilde_i_j_t) {
 		this.d_tilde_i_j_t = d_tilde_i_j_t;
-	}
-
-	public double getExp_rho() {
-		return exp_rho;
-	}
-
-	public void setExp_rho(double exp_rho) {
-		this.exp_rho = exp_rho;
-	}
-
-	public double getRho() {
-		return rho;
-	}
-
-	public void setRho(double rho) {
-		this.rho = rho;
 	}
 
 	public double getU_final() {
