@@ -43,6 +43,9 @@ public class CrawlerService implements ICrawlerService {
 	@Value("#{'${backend.endpoint}' +'crawlers-unprocessed'}")
 	private String endpointPathUnprocessed;
 	
+	@Value("#{'${backend.endpoint}' +'crawlers'}")
+	private String endpointPathAll;
+	
 	@Value("#{'${backend.endpoint}' +'crawlers-testing'}")
 	private String endpointPathTesting;
 	
@@ -65,6 +68,7 @@ public class CrawlerService implements ICrawlerService {
 		String url;
 		if (mode == StartupMode.PRODUCTION || id != null) {
 			url = endpointPathUnprocessed;
+			//url = endpointPathAll;
 		} else {
 			url = endpointPathTesting;
 		}

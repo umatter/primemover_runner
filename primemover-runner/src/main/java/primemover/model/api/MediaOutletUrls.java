@@ -24,6 +24,4 @@ public class MediaOutletUrls {
 	public void setOutlets(Map<String, String> outlets) {
 		this.outlets = outlets;
 	}
-	
-	
 }

@@ -70,7 +70,7 @@ class RunGoogleSearchTest {
 		outlets.put("esquire.com", "https://www.esquire.com");
 		outlets.put("amp.gs", "https://amplifr.com");
 		outlets.put("theroot.com", "https://www.theroot.com");
-		selConfig.setOutlets(outlets);
+		//selConfig.setOutlets(outlets);
 		
 		config.setSelectionConfiguration(selConfig);
 		crawler.setConfig(config);

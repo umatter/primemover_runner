@@ -1,6 +1,9 @@
 package primemover.model.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,37 +16,43 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
-public class SearchTermsDeserializer extends JsonDeserializer<SearchTerms> {
+public class SearchTermDeserializer extends JsonDeserializer<List<SearchTerm>> {
 
-	private static Logger logger = LoggerFactory.getLogger(SearchTermsDeserializer.class);
+	private static final Logger logger = LoggerFactory.getLogger(SearchTermDeserializer.class);
+
+	private static final ArrayList<SearchTerm> emptyResult = new ArrayList<SearchTerm>();
 	
-	public SearchTermsDeserializer() {
+	public SearchTermDeserializer() {
 	}
 	
 
 	@Override
-	public SearchTerms deserialize(JsonParser p, DeserializationContext ctxt)
+	public List<SearchTerm> deserialize(JsonParser p, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
 		String text = p.getText();
         ObjectMapper mapper = (ObjectMapper) p.getCodec();
                 
         if (StringUtils.isEmpty(text)) {
-        	return null;
+        	return emptyResult;
+        }
+        
+        if (StringUtils.isWhitespace(text)) {
+        	return emptyResult;
         }
         
         if ("[]".equals(text)) {
-        	return null;
+        	return emptyResult;
         }
         
-        SearchTerms res = null;
+        SearchTerm[] res = null;
         try {
-        	res = mapper.readValue(text, SearchTerms.class);
+        	res = mapper.readValue(text, SearchTerm[].class);
+        	return Arrays.asList(res);
 		} catch (Exception e) {
 			logger.warn("error deserializing: {}", text, e);
 		}        
         
-        return res;
-        
+        return emptyResult;
 	}
 
 }

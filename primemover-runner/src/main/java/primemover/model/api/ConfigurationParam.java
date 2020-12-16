@@ -1,42 +1,45 @@
 package primemover.model.api;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConfigurationParam {
 	private long id;
-	private int pi;
-	private int psi;
+	private double pi;
+	private double psi;
 	private int kappa;
-	private int tau;
+	private double tau;
 	private double beta;
-	private int alpha;
-	@JsonDeserialize(using = SearchTermsDeserializer.class)
-	private SearchTerms search_terms;
-	@JsonDeserialize(using = MediaOutletUrlsDeserializer.class)
-	private MediaOutletUrls media_outlet_urls;
+	private double alpha;
+	
+	@JsonDeserialize(using = SearchTermDeserializer.class)
+	private List<SearchTerm> search_terms;
+	@JsonDeserialize(using = MediaOutletsDeserializer.class)
+	private List<MediaOutlet> media_outlet_urls;
 	
 	public ConfigurationParam() {
 	}
 
 
-	public int getPi() {
+	public double getPi() {
 		return pi;
 	}
 
 
-	public void setPi(int pi) {
+	public void setPi(double pi) {
 		this.pi = pi;
 	}
 
 
-	public int getPsi() {
+	public double getPsi() {
 		return psi;
 	}
 
 
-	public void setPsi(int psi) {
+	public void setPsi(double psi) {
 		this.psi = psi;
 	}
 
@@ -51,12 +54,12 @@ public class ConfigurationParam {
 	}
 
 
-	public int getTau() {
+	public double getTau() {
 		return tau;
 	}
 
 
-	public void setTau(int tau) {
+	public void setTau(double tau) {
 		this.tau = tau;
 	}
 
@@ -71,16 +74,17 @@ public class ConfigurationParam {
 	}
 
 
-	public int getAlpha() {
+	public double getAlpha() {
 		return alpha;
 	}
 
 
-	public void setAlpha(int alpha) {
+	public void setAlpha(double alpha) {
 		this.alpha = alpha;
 	}
 
 
+	/*
 	public SearchTerms getSearch_terms() {
 		return search_terms;
 	}
@@ -99,10 +103,20 @@ public class ConfigurationParam {
 	public void setMedia_outlet_urls(MediaOutletUrls media_outlet_urls) {
 		this.media_outlet_urls = media_outlet_urls;
 	}
-
+*/
 
 	public long getId() {
 		return id;
+	}
+
+
+	public List<MediaOutlet> getMedia_outlet_urls() {
+		return media_outlet_urls;
+	}
+
+
+	public void setMedia_outlet_urls(List<MediaOutlet> outlets) {
+		this.media_outlet_urls = outlets;
 	}
 
 

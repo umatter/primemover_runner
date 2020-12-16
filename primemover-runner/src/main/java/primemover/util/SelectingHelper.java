@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.IJob;
+import primemover.model.MediaOutlet;
 import primemover.model.Outlet;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
@@ -30,8 +31,8 @@ public class SelectingHelper {
 
 	private static Logger logger = LoggerFactory.getLogger(SelectingHelper.class);
 	
-	@Autowired
-	OutletsProvider outletsProvider;
+	//@Autowired
+	//OutletsProvider outletsProvider;
 	
 	@Autowired(required = false)
 	List<IStorageService> storages = new ArrayList<IStorageService>();
@@ -184,8 +185,6 @@ ideologically distant news
 		
 		GumbelDistribution gumbel = new GumbelDistribution(-0.4557735, 0.793006);
 		
-		Map<String, Outlet> outletsMapByDomain = outletsProvider.getOutletsMapByDomain();
-		
 		WebElement selectedElement = null;		
 		Selection selection = new Selection();
 		List<SelectionItem> calcItems = new ArrayList<>(elements.size());
@@ -203,14 +202,14 @@ ideologically distant news
 			if (!StringUtils.isEmpty(urlString)) {
 				
 				String normalizedUrl = normalizeDomainFromHref(urlString);
-				Boolean known = config.getOutlets().containsKey(normalizedUrl) && outletsMapByDomain.containsKey(normalizedUrl);
+				Boolean known = config.getOutlets().containsKey(normalizedUrl);
 				
 				calcItem.setSkiped(false);
 				calcItem.setNormalizedUrl(normalizedUrl);
 				calcItem.setKnown(known);
 				double u;
 				if (known) {
-					Outlet outlet = outletsMapByDomain.get(normalizedUrl);
+					MediaOutlet outlet = config.getOutlets().get(normalizedUrl);
 					
 					double d_tilde_i_j_t = Math.abs(Math.PI - outlet.getPi());
 			            

@@ -1,17 +1,18 @@
 package primemover.model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SelectionConfiguration {
 	
 	private long id;
-	private int pi;
-	private int psi;
+	private double pi;
+	private double psi;
 	private int kappa;
-	private int tau;
+	private double tau;
 	private double beta;
-	private int alpha;
-	private Map<String, String> outlets;
+	private double alpha;
+	private Map<String, MediaOutlet> outlets;
 
 	public SelectionConfiguration() {
 	}
@@ -24,19 +25,19 @@ public class SelectionConfiguration {
 		this.id = id;
 	}
 
-	public int getPi() {
+	public double getPi() {
 		return pi;
 	}
 
-	public void setPi(int pi) {
+	public void setPi(double pi) {
 		this.pi = pi;
 	}
 
-	public int getPsi() {
+	public double getPsi() {
 		return psi;
 	}
 
-	public void setPsi(int psi) {
+	public void setPsi(double psi) {
 		this.psi = psi;
 	}
 
@@ -48,11 +49,11 @@ public class SelectionConfiguration {
 		this.kappa = kappa;
 	}
 
-	public int getTau() {
+	public double getTau() {
 		return tau;
 	}
 
-	public void setTau(int tau) {
+	public void setTau(double tau) {
 		this.tau = tau;
 	}
 
@@ -64,19 +65,19 @@ public class SelectionConfiguration {
 		this.beta = beta;
 	}
 
-	public int getAlpha() {
+	public double getAlpha() {
 		return alpha;
 	}
 
-	public void setAlpha(int alpha) {
-		this.alpha = alpha;
+	public void setAlpha(double d) {
+		this.alpha = d;
 	}
 
-	public Map<String, String> getOutlets() {
+	public Map<String, MediaOutlet> getOutlets() {
 		return outlets;
 	}
 
-	public void setOutlets(Map<String, String> outlets) {
+	public void setOutlets(HashMap<String, MediaOutlet> outlets) {
 		this.outlets = outlets;
 	}
 

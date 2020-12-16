@@ -4,7 +4,7 @@ import org.openqa.selenium.WebElement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import primemover.model.Outlet;
+import primemover.model.MediaOutlet;
 
 public class SelectionItem {
 	private int rank;
@@ -16,7 +16,7 @@ public class SelectionItem {
 	private String url;
 	private String normalizedUrl;
 	private boolean isKnown;
-	private Outlet outlet;
+	private MediaOutlet outlet;
 	private double d_tilde_i_j_t;
 	private double u_raw;
 	private double u_final;
@@ -79,11 +79,11 @@ public class SelectionItem {
 		this.isKnown = isKnown;
 	}
 
-	public Outlet getOutlet() {
+	public MediaOutlet getOutlet() {
 		return outlet;
 	}
 
-	public void setOutlet(Outlet outlet) {
+	public void setOutlet(MediaOutlet outlet) {
 		this.outlet = outlet;
 	}
 

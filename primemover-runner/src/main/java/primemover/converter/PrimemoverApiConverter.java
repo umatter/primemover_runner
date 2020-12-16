@@ -19,6 +19,7 @@ import primemover.model.IAgent;
 import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
+import primemover.model.MediaOutlet;
 import primemover.model.MultiLoginAgent;
 import primemover.model.Outlet;
 import primemover.model.ScrollDirection;
@@ -278,6 +279,10 @@ public class PrimemoverApiConverter {
 
 	
 	private static Configuration convertApiConfiguration(primemover.model.api.Configuration item) {
+		if (item == null) {
+			return null;
+		}
+		
 		Configuration config = new Configuration();
 		config.setId(item.getId());
 		config.setName(item.getName());
@@ -296,10 +301,13 @@ public class PrimemoverApiConverter {
 			selectConfig.setPsi(param.getPsi());
 			selectConfig.setTau(param.getTau());
 			
-			HashMap<String, String> outlets = new HashMap<>();
-			MediaOutletUrls outletUrls = param.getMedia_outlet_urls();
-			if (outletUrls != null && outletUrls.getOutlets() != null) {
-				outlets.putAll(param.getMedia_outlet_urls().getOutlets());
+			HashMap<String, MediaOutlet> outlets = new HashMap<>();
+			for (primemover.model.api.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
+				MediaOutlet modelOutlet = new MediaOutlet();
+				modelOutlet.setDomain(apiOutlet.getDomain());
+				modelOutlet.setPi(apiOutlet.getPi());
+				modelOutlet.setUrl(apiOutlet.getUrl());
+				outlets.put(modelOutlet.getDomain(), modelOutlet);
 			}
 			selectConfig.setOutlets(outlets);
 			

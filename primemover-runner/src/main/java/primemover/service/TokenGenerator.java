@@ -26,6 +26,12 @@ public class TokenGenerator {
 	@Value("#{'${backend.endpoint}' +'login'}")
 	private String endpointPathReports;
 	
+	@Value("${backend.username}")
+	private String username;
+	@Value("${backend.password}")
+	private String password;
+	
+	
 	private RestTemplate restTemplate;
 	
 	private boolean isInit = false;
@@ -57,7 +63,7 @@ public class TokenGenerator {
 	private void refreshToken() {
 		init();
 		
-		TokenRequest req = new TokenRequest("user@primemover.example", "CHANGEME-backend-password");
+		TokenRequest req = new TokenRequest(username, password);
 		TokenResult res = restTemplate.postForObject(endpointPathReports, req, TokenResult.class);
 		String strToken = res.getAccess_token();
 		token.set(strToken);
