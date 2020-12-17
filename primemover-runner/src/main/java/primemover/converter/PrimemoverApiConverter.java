@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.text.StringEscapeUtils;
 import org.openqa.selenium.InvalidArgumentException;
-import org.springframework.util.StringUtils;
 
 import primemover.model.AgentType;
 import primemover.model.BasicAgent;
@@ -32,7 +33,6 @@ import primemover.model.api.ConfigurationParam;
 import primemover.model.api.CrawlerResult;
 import primemover.model.api.IpResult;
 import primemover.model.api.IpResultData;
-import primemover.model.api.MediaOutletUrls;
 import primemover.model.api.OutletResult;
 import primemover.model.api.TermResult;
 import primemover.model.jobs.BaseJob;
@@ -107,7 +107,11 @@ public class PrimemoverApiConverter {
 		} else if(ident.contains("chrome")) {
 			agent = new BasicAgent(new Long(item.getId()), AgentType.CHROME, item.getName(), item.getDescription(), item.getLocation());
 		} else if(ident.contains("multilogin") || ident.contains("multlogin")) {
-			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getLocation(), item.getMultilogin_id(), item.getMultilogin_profile());
+			String validatedJson = StringEscapeUtils.unescapeJson(item.getMultilogin_profile());
+			if (validatedJson.startsWith("\"")) {
+				validatedJson = validatedJson.substring(1, validatedJson.length() - 1);
+			}
+			agent = new MultiLoginAgent(new Long(item.getId()), item.getName(), item.getDescription(), item.getLocation(), item.getMultilogin_id(), validatedJson);
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
 		}

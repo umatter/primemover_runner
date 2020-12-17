@@ -68,7 +68,6 @@ public class CrawlerService implements ICrawlerService {
 		String url;
 		if (mode == StartupMode.PRODUCTION || id != null) {
 			url = endpointPathUnprocessed;
-			//url = endpointPathAll;
 		} else {
 			url = endpointPathTesting;
 		}

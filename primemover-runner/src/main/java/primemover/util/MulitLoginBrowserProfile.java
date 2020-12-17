@@ -321,7 +321,7 @@ public class MulitLoginBrowserProfile {
 			}		
 			
 			if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				logger.error("error creating profile for agent {}", agent.getId());
+				logger.error("error creating profile for agent {}; Response: {} {}", agent.getId(), con.getResponseCode(), con.getResponseMessage());
 				throw new IllegalStateException("Could not create browser profile for agent " + agent.getId());
 			}
 			

@@ -285,16 +285,18 @@ public class RecordingProxy {
 			
 		Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
 		
-		InetAddress adr = getInetAddress();
 		
+		InetAddress adr = getInetAddress();
 		String hostIp = adr.getHostAddress();
+		String port = String.valueOf(proxy.getPort());
 		seleniumProxy.setProxyType(ProxyType.MANUAL);
-		seleniumProxy.setHttpProxy(hostIp + ":" + proxy.getPort());
-		seleniumProxy.setSslProxy(hostIp + ":" + proxy.getPort());
+		seleniumProxy.setHttpProxy(hostIp + ":" + port);
+		seleniumProxy.setSslProxy(hostIp + ":" + port);
 	   
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
 		
-		logger.info("setting proxy to {}", adr);
+		logger.debug("setting http-proxy to {}", seleniumProxy.getHttpProxy());
+		logger.debug("setting ssl-proxy to {}", seleniumProxy.getSslProxy());
 		
 		return cap;
 	}

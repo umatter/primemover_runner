@@ -67,7 +67,7 @@ public class TokenGenerator {
 		TokenResult res = restTemplate.postForObject(endpointPathReports, req, TokenResult.class);
 		String strToken = res.getAccess_token();
 		token.set(strToken);
-		logger.debug("token refreshed to {}", strToken);
+		logger.trace("token refreshed to {}", strToken);
 	}
 	
 	public String getToken() {

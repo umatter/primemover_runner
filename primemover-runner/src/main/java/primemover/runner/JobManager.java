@@ -32,7 +32,7 @@ public class JobManager implements IJobManager {
 	@Value("${runner.MaxParallelExecution:4}")
 	private Integer maxThreads = 4; // maximum parallel executions of joblists
 	
-	@Value("${runner.UpdateInterval:5}")
+	@Value("${runner.UpdateInterval:15}")
 	private Integer updateInterval; // Update Interval to grab planned jobs in minutes
 	
 	@Value("${runner.MaxRedoMinutes:45}")
@@ -138,7 +138,7 @@ public class JobManager implements IJobManager {
 				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
 				delaySeconds = 0l;
 				
-				logger.info("Preparing execution of {} in {} seconds", task.getRight().getId(), delaySeconds);
+				logger.info("Preparing execution of job {} in {} seconds", task.getRight().getId(), delaySeconds);
 				
 				// just pass the job to the executor after reaching the starttime
 				scheduler.schedule(new Runnable() {
