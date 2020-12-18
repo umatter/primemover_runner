@@ -22,7 +22,7 @@ public class SelectionItem {
 	private double u_final;
 	private double exp_u;
 	private double probability;
-	private double e;
+	private double epsilon;
 	
 	private double prob_LowerEnd;
 	private double prob_UpperEnd;
@@ -103,12 +103,12 @@ public class SelectionItem {
 		this.u_final = u;
 	}
 
-	public double getE() {
-		return e;
+	public double getEpsilon() {
+		return epsilon;
 	}
 
-	public void setE(double e) {
-		this.e = e;
+	public void setEpsilon(double epsilon) {
+		this.epsilon = epsilon;
 	}
 
 	public double getU_raw() {

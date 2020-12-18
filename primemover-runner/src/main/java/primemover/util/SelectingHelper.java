@@ -225,7 +225,7 @@ ideologically distant news
 
 				calcItem.setU_raw(u);
 				calcItem.setU_final(u+epsilon);
-				calcItem.setE(epsilon);
+				calcItem.setEpsilon(epsilon);
 			} else {
 				calcItem.setSkiped(true);
 			}
