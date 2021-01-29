@@ -33,77 +33,117 @@ public class JobListRunner implements Callable<Boolean> {
 	@Autowired
 	private JobService jobService;
 	
-	@Override
-	public Boolean call() {
+	private enum SetupState {
+		SUCCESS,
+		FAILURE,
+		SKIPPED
+	}
+	
+	private SetupState setup() {
 		// Check for max delay
 		long diff = ChronoUnit.MINUTES.between(jobs.getStartTime(), ZonedDateTime.now());
+		logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
+		jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null, Boolean.TRUE); // set start time and processing, commit later
+		
 		
 		if (diff > redoMinutes) {
 			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff, redoMinutes);
-			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, ZonedDateTime.now(), null, Boolean.TRUE, null); // set execution time
-			return false;
+			
+			return SetupState.SKIPPED;
 		}
 		
-		// running
-		boolean setupRes = false;
-		boolean jobsRes = false;
+		// starting up
+		logger.debug("Setting up crawler {} for joblist {}", crawler.getId(), jobs.getId());
+		Boolean isStartedUp = taskOperator.setup(crawler);
 		
-		try {			
+		if (isStartedUp) {
+			logger.debug("setup completed successfully for crawler {} for joblist {}", crawler.getId(), jobs.getId());
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null, null, null); // set new state
+			return SetupState.SUCCESS;
+		} else {
+			logger.warn("setup failure for crawler {} for joblist {}", crawler.getId(), jobs.getId());
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null, null); // set new state
+			return SetupState.FAILURE;
+		}
+	}
+	
+	private enum RunningState {
+		SUCCESS,
+		FAILURE
+	}
+	
+	private RunningState runJoblist() {
+		logger.trace("running joblist {} for crawler {}", jobs.getId(), crawler.getId());
+		// run jobs
+		Boolean jobsRes = taskOperator.runJobList(jobs);
+		if (jobsRes) {
+			logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null, null);
+			return RunningState.SUCCESS;
+		} else {
+			logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null, null);
+			return RunningState.FAILURE;
+		}
+	}
+	
+	private void tearDown(SetupState setupRes, RunningState jobsRes) {
+		// release resources
+		logger.debug("tearing down crawler {} after running joblist {}", crawler.getId(), jobs.getId());
+		taskOperator.tearDown(false);
+		
+		
+		switch (setupRes) {
+		case FAILURE:
+			jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 			
-			logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null, Boolean.TRUE); // set start time and processing, commit later
+			break;			
+		case SKIPPED:
+			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE); // set execution end time
+			break;
 			
-			// get Taskservice and setup
-			setupRes = taskOperator.setup(crawler);
-			if (setupRes) {
-				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null, null, null);
-				logger.trace("running jobs for {} ({})", crawler.getId(), crawler.getName());
-				// run jobs
-				jobsRes = taskOperator.runJobList(jobs);
-				if (jobsRes) {
-					logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
-					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null, null);
-				} else {
-					logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
-
-					jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null, null);
-				};
-				
-				
-			} else {
-				logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
-				jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null, null);
-			};	
+		case SUCCESS:
+			
+			switch (jobsRes) {
+			case SUCCESS:
+				jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
+				break;
+			case FAILURE:
+				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
+				break;
+			}
+			break;
+		}
+	}
+	
+	
+	@Override
+	public Boolean call() {	
+		// running joblist
+		try {	
+			SetupState setupRes = null;
+			RunningState jobsRes = null;
+			
+			setupRes = setup();
+			
+			if (setupRes == SetupState.SUCCESS) {
+				jobsRes = runJoblist();
+			};
+			
+			tearDown(setupRes, jobsRes);			
 			
 		} catch (Exception e) {
-			logger.warn("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
+			logger.error("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
 			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 			
 			// make sure to tear down!
-			logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
+			logger.debug("tearing down crawler {} running joblistr {}", crawler.getId(), jobs.getId());
 			taskOperator.tearDown(false);
 			
 			return false; // exit due to error
 		}
-			
-			
-			
-		// release resources
-		logger.trace("tearing down crawler for {} ({})", crawler.getId(), crawler.getName());
-		taskOperator.tearDown(false);
 		
-		// set end-state and time
-		if (setupRes) {
-			if (jobsRes) {
-				jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
-			} else {
-				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
-			}
-		} else {
-			jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
-		}
-		
-		return true; // sucessfull exit	
+		return true; // execution was successful (all Exceptions are treated accordingly)	
 	}
 
 	public JobListRunner(ITaskOperator taskOperator, Crawler crawler, Joblist jobs) {

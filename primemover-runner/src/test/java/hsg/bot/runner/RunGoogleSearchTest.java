@@ -1,7 +1,6 @@
 package hsg.bot.runner;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +15,7 @@ import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
+import primemover.model.MediaOutlet;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
@@ -25,7 +25,6 @@ import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.ITaskOperator;
-import primemover.runner.TaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
 @SpringBootTest
@@ -59,7 +58,8 @@ class RunGoogleSearchTest {
 		selConfig.setTau(1);
 		selConfig.setBeta(0.62368980888047);
 		selConfig.setAlpha(0);
-		Map<String, String> outlets = new HashMap<>();
+		HashMap<String, MediaOutlet> outlets = new HashMap<>();
+		/*
 		outlets.put("hillreporter.com", "https://hillreporter.com");
 		outlets.put("nbcnews.com", "https://www.nbcnews.com");
 		outlets.put("pbs.org", "https://pbs.org");
@@ -69,8 +69,8 @@ class RunGoogleSearchTest {
 		outlets.put("cbsnews.com", "https://www.cbsnews.com");
 		outlets.put("esquire.com", "https://www.esquire.com");
 		outlets.put("amp.gs", "https://amplifr.com");
-		outlets.put("theroot.com", "https://www.theroot.com");
-		//selConfig.setOutlets(outlets);
+		outlets.put("theroot.com", "https://www.theroot.com");*/
+		selConfig.setOutlets(outlets);
 		
 		config.setSelectionConfiguration(selConfig);
 		crawler.setConfig(config);

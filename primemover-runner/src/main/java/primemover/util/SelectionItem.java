@@ -24,6 +24,10 @@ public class SelectionItem {
 	private double probability;
 	private double epsilon;
 	
+	private double alpha;
+	private double beta;
+	private double tau;
+	
 	private double prob_LowerEnd;
 	private double prob_UpperEnd;
 	
@@ -157,5 +161,29 @@ public class SelectionItem {
 
 	public void setSelected(boolean selected) {
 		this.selected = selected;
+	}
+
+	public double getAlpha() {
+		return alpha;
+	}
+
+	public void setAlpha(double alpha) {
+		this.alpha = alpha;
+	}
+
+	public double getBeta() {
+		return beta;
+	}
+
+	public void setBeta(double beta) {
+		this.beta = beta;
+	}
+
+	public double getTau() {
+		return tau;
+	}
+
+	public void setTau(double tau) {
+		this.tau = tau;
 	}
 }

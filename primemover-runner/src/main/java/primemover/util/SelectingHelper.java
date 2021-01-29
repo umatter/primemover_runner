@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +19,6 @@ import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.IJob;
 import primemover.model.MediaOutlet;
-import primemover.model.Outlet;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.jobs.SelectorBaseJob;
@@ -30,13 +28,13 @@ import primemover.service.jobdatawriter.SelectionJobDataWriter;
 public class SelectingHelper {
 
 	private static Logger logger = LoggerFactory.getLogger(SelectingHelper.class);
-	
-	//@Autowired
-	//OutletsProvider outletsProvider;
-	
+
+	// @Autowired
+	// OutletsProvider outletsProvider;
+
 	@Autowired(required = false)
 	List<IStorageService> storages = new ArrayList<IStorageService>();
-	
+
 	private Random rand = new Random();
 
 	public List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
@@ -90,80 +88,72 @@ public class SelectingHelper {
 
 		return element;
 	}
-	
+
 	public WebElement getElementByWebdriver(WebDriver driver, SelectorBaseJob selectorJob) {
 		SelectorType type = selectorJob.getType();
 		String selector = selectorJob.getSelector();
-		
+
 		return getElementByWebdriver(driver, type, selector);
 	}
-	
-	
-	private String normalizeDomainFromHref(String urlString) {				
+
+	private String normalizeDomainFromHref(String urlString) {
 		try {
 			URI uri = new URI(urlString);
-		    String domain = uri.getHost();
-		    return domain.startsWith("www.") ? domain.substring(4) : domain;
+			String domain = uri.getHost();
+			return domain.startsWith("www.") ? domain.substring(4) : domain;
 		} catch (URISyntaxException e) {
 			logger.warn("url is malformed {}", urlString, e);
 			return "";
-		}		
+		}
 	}
+
 	/*
-	 * """
-:param known: indicates whether or not individual knows the outlet.
-:param beta_i:
-:param r_j: int > 0 rank of outlet in search engine result list
-:param d_tilde_i_j_t: float > 0, ideological distance |pi_i-pi_tilde_j| where pi_i
-represents the political orientation of the individual and pi_tilde_j
-that of outlet j
-:param rho_j: float >= 0, reach of outlet j
-:param alpha_tilde: float >= 0, shift parameter
-:param tau_tilde: float > 0, "transportation costs" i.e. costs of consuming
-ideologically distant news
-:return: float utility of selecting result
-"""
+	 * """ :param known: indicates whether or not individual knows the outlet.
+	 * :param beta_i: :param r_j: int > 0 rank of outlet in search engine result
+	 * list :param d_tilde_i_j_t: float > 0, ideological distance |pi_i-pi_tilde_j|
+	 * where pi_i represents the political orientation of the individual and
+	 * pi_tilde_j that of outlet j :param rho_j: float >= 0, reach of outlet j
+	 * :param alpha_tilde: float >= 0, shift parameter :param tau_tilde: float > 0,
+	 * "transportation costs" i.e. costs of consuming ideologically distant news
+	 * :return: float utility of selecting result """
 	 */
-	private double result_utility_w_i_j_t(double r_j, double known, double d_tilde_i_j_t, double alpha_tilde, double tau_tilde, double beta_i) {
-	return  (1 - beta_i * (r_j - 1)) + known * (alpha_tilde - tau_tilde * d_tilde_i_j_t * d_tilde_i_j_t);
+	private double result_utility_w_i_j_t(double r_j, double beta_i, double known, double d_tilde_i_j_t, double alpha_tilde,
+			double tau_tilde) {
+		return (1 - beta_i * (r_j - 1)) + known * (alpha_tilde - tau_tilde * d_tilde_i_j_t * d_tilde_i_j_t);
 	}
-	
-	private double result_utility_w_i_j_t(double r_j, double known, double d_tilde_i_j_t) {
-		return result_utility_w_i_j_t(r_j, known, d_tilde_i_j_t, 1, 1, 0.1);
+
+	private double result_utility_w_i_j_t(double r_j, double beta_i) {
+		return result_utility_w_i_j_t(r_j, beta_i, 0, 0, 1, 1);
 	}
-	
-	private double result_utility_w_i_j_t(double r_j) {
-		return result_utility_w_i_j_t(r_j, 0, 0, 0, 1, 1);
-	}
-	
-	private WebElement selectItem (Selection selection) {
+
+	private WebElement selectItem(Selection selection) {
 		WebElement selectedItem = null;
-		
+
 		double choice = rand.nextDouble();
 		selection.setChoice(choice);
-		
+
 		double lowerEnd;
 		double upperEnd = 0.0d;
 		for (SelectionItem item : selection.getItems()) {
 			if (!item.isSkiped()) {
 				lowerEnd = upperEnd;
 				upperEnd = upperEnd + item.getProbability();
-				
+
 				item.setProb_LowerEnd(lowerEnd);
 				item.setProb_UpperEnd(upperEnd);
-				
+
 				if (lowerEnd < choice && choice <= upperEnd) {
 					item.setSelected(true);
 					selectedItem = item.getElement();
 				}
 			}
 		}
-		
+
 		return selectedItem;
 	}
-	
+
 	private void calculateProbabilities(List<SelectionItem> calcItems) {
-		
+
 		double total_exp_u = 0.0d;
 		for (SelectionItem item : calcItems) {
 			if (!item.isSkiped()) {
@@ -172,82 +162,89 @@ ideologically distant news
 				item.setExp_u(exp_u);
 			}
 		}
-		
+
 		for (SelectionItem item : calcItems) {
 			if (!item.isSkiped()) {
 				item.setProbability(item.getExp_u() / total_exp_u);
 			}
 		}
 	}
-	
+
 	private WebElement chooseCalculatedElement(Crawler crawler, IJob job, List<WebElement> elements) {
 		SelectionConfiguration config = crawler.getConfig().getSelectionConfiguration();
-		
+		double tau = config.getTau();
+		double beta = config.getBeta();
+		double alpha = config.getAlpha();
+
 		GumbelDistribution gumbel = new GumbelDistribution(-0.4557735, 0.793006);
-		
-		WebElement selectedElement = null;		
+
+		WebElement selectedElement = null;
 		Selection selection = new Selection();
 		List<SelectionItem> calcItems = new ArrayList<>(elements.size());
-		
-		
+
 		for (int i = 0; i < elements.size(); i++) {
 			WebElement webElement = elements.get(i);
 			SelectionItem calcItem = new SelectionItem();
 			String urlString = webElement.getAttribute("href");
-			
-			calcItem.setRank(i+1);
+
+			calcItem.setRank(i + 1);
 			calcItem.setElement(webElement);
 			calcItem.setUrl(urlString);
 			
+			// Defaults des Crawler
+			calcItem.setAlpha(alpha);
+			calcItem.setBeta(beta);
+			calcItem.setTau(tau);
+
 			if (!StringUtils.isEmpty(urlString)) {
-				
+
 				String normalizedUrl = normalizeDomainFromHref(urlString);
 				Boolean known = config.getOutlets().containsKey(normalizedUrl);
-				
+
 				calcItem.setSkiped(false);
 				calcItem.setNormalizedUrl(normalizedUrl);
 				calcItem.setKnown(known);
 				double u;
 				if (known) {
 					MediaOutlet outlet = config.getOutlets().get(normalizedUrl);
-					
+
 					double d_tilde_i_j_t = Math.abs(Math.PI - outlet.getPi());
-			            
-			        calcItem.setOutlet(outlet);
-			        calcItem.setD_tilde_i_j_t(d_tilde_i_j_t);
-			        		
-			        u = result_utility_w_i_j_t(calcItem.getRank(), 1, d_tilde_i_j_t);	       
+					
+					calcItem.setOutlet(outlet);
+					calcItem.setD_tilde_i_j_t(d_tilde_i_j_t);
+
+					u = result_utility_w_i_j_t(calcItem.getRank(), beta, 1, d_tilde_i_j_t, alpha, tau);
 				} else {
-					u =result_utility_w_i_j_t(calcItem.getRank());
+					calcItem.setD_tilde_i_j_t(0);
+					u = result_utility_w_i_j_t(calcItem.getRank(), beta, 0, 0, alpha, tau);
 				}
-				
+
 				double epsilon = gumbel.sample();
 
 				calcItem.setU_raw(u);
-				calcItem.setU_final(u+epsilon);
+				calcItem.setU_final(u + epsilon);
 				calcItem.setEpsilon(epsilon);
 			} else {
 				calcItem.setSkiped(true);
 			}
-			
+
 			calcItems.add(calcItem);
 		}
-		
+
 		calculateProbabilities(calcItems);
-		
+
 		selection.setItems(calcItems);
-		
+
 		selectedElement = selectItem(selection);
-		
+
 		// Writing data
 		boolean writeRes = true;
 		for (IStorageService storage : storages) {
 			writeRes = writeRes && storage.writeData(job, new SelectionJobDataWriter(job, selection));
 		}
-				
+
 		return selectedElement;
 	}
-	
 
 	public WebElement chooseElement(Crawler crawler, IJob job, List<WebElement> elements, DecisionType type) {
 
@@ -257,10 +254,10 @@ ideologically distant news
 			switch (type) {
 			case CALCULATED:
 				logger.debug("making randomized choice out of known outlets");
-				
+
 				return chooseCalculatedElement(crawler, job, elements);
-				//throw new UnsupportedOperationException("Not implemented yet");
-				// break;
+			// throw new UnsupportedOperationException("Not implemented yet");
+			// break;
 			case FIRST:
 				logger.debug("select first");
 				selection = elements.get(0);
@@ -272,7 +269,7 @@ ideologically distant news
 			case RANDOM:
 				logger.debug("making random choice");
 				Long id = Math.round(rand.nextDouble() * (elements.size() - 1));
-				selection = elements.get(id.intValue());				
+				selection = elements.get(id.intValue());
 				break;
 			default:
 				throw new UnsupportedOperationException("Not implemented yet");

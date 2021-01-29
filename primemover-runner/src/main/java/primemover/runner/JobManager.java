@@ -63,6 +63,10 @@ public class JobManager implements IJobManager {
 		executorService = Executors.newFixedThreadPool(maxThreads);
 		scheduler = Executors.newSingleThreadScheduledExecutor(); // jobs will only pass the execution to the executor service
 	}
+	
+	private void timeOutJoblist(Joblist jobs) {
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see primemover.runner.IJobManager#run()
