@@ -5,7 +5,8 @@ import java.util.Set;
 import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
 
-import net.lightbody.bmp.core.har.Har;
+import com.browserup.harreader.model.Har;
+
 import primemover.model.LocationInfo;
 
 public class JobData {

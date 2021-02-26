@@ -22,6 +22,8 @@ import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.TrySwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.ITaskOperator;
@@ -83,24 +85,28 @@ class RunGoogleSearchTest {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
-		// open page
+		// open page and aggree terms
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
 		jobs.appendJob(visitJob);
+		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		jobs.appendJob(trySwitchToJob);
+		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		jobs.appendJob(tryClickJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.FIRST);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.FIRST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(7l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);
@@ -113,21 +119,25 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
+		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		jobs.appendJob(trySwitchToJob);
+		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		jobs.appendJob(tryClickJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.LAST);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(7l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);
@@ -141,23 +151,27 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
 		jobs.appendJob(visitJob);
+		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		jobs.appendJob(trySwitchToJob);
+		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		jobs.appendJob(tryClickJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "news.yahoo.com", TypingModeType.DIRECT, true);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "news.yahoo.com", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
 		//SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.CSS, "#rso > div > div > div.yuRUbf > a", DecisionType.CALCULATED);
 		//SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a | .//div[@id='rso']/div/div/div/div/a", DecisionType.CALCULATED);
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//*[@class=\"yuRUbf\"]/a", DecisionType.CALCULATED);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select calculated entry", "select calculated entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.CALCULATED);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(7l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);
@@ -171,21 +185,25 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
+		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		jobs.appendJob(trySwitchToJob);
+		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		jobs.appendJob(tryClickJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung", TypingModeType.SIMULATED_NOTYPOS, true);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung", TypingModeType.SIMULATED_NOTYPOS, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.LAST);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(7l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);
@@ -199,21 +217,25 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
+		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		jobs.appendJob(trySwitchToJob);
+		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		jobs.appendJob(tryClickJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist real", TypingModeType.SIMULATED_NOTYPOS, true);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist real", TypingModeType.SIMULATED_NOTYPOS, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.LAST);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(7l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);

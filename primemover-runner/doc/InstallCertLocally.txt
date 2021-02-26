@@ -1,0 +1,13 @@
+rem lokal installieren in JDK gemäss Einstellungen
+cd "C:\Program Files\Java\openjdk-15.0.1\lib\security\"
+"C:\Program Files\Java\openjdk-15.0.1\bin\keytool" -keystore cacerts -delete -v -storepass changeit -alias primemover
+"C:\Program Files\Java\openjdk-15.0.1\bin\keytool" -keystore cacerts -importcert -file "C:\Users\dburkolter\git\primemover_runner\primemover-runner\cert\certificate.cer" -v -storepass changeit -alias primemover
+
+
+
+rem lokal installieren für Multilogin Java Runtime
+cd "C:\Program Files (x86)\Multilogin\rt\lib\security\"
+"C:\Program Files\Java\openjdk-15.0.1\bin\keytool" -keystore cacerts -delete -v -storepass changeit -alias primemover
+"C:\Program Files\Java\openjdk-15.0.1\bin\keytool" -keystore cacerts -importcert -file "C:\Users\dburkolter\git\primemover_runner\primemover-runner\cert\certificate.cer" -v -storepass changeit -alias primemover
+
+rem Manuell das Zertifikat als Root Vertrauensstelle installieren in Windows und Reboot

@@ -14,6 +14,11 @@ import java.net.SocketAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 
+import org.littleshoot.proxy.HttpFilters;
+import org.littleshoot.proxy.HttpFiltersAdapter;
+import org.littleshoot.proxy.HttpFiltersSourceAdapter;
+import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
+import org.littleshoot.proxy.impl.ProxyUtils;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.remote.CapabilityType;
@@ -22,16 +27,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-import net.lightbody.bmp.BrowserMobProxy;
-import net.lightbody.bmp.BrowserMobProxyServer;
-import net.lightbody.bmp.client.ClientUtil;
-import net.lightbody.bmp.core.har.Har;
-import net.lightbody.bmp.mitm.CertificateAndKeySource;
-import net.lightbody.bmp.mitm.KeyStoreFileCertificateSource;
-import net.lightbody.bmp.mitm.keys.ECKeyGenerator;
-import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
-import net.lightbody.bmp.proxy.CaptureType;
-import net.lightbody.bmp.proxy.auth.AuthType;
+import com.browserup.bup.BrowserUpProxyServer;
+import com.browserup.bup.client.ClientUtil;
+import com.browserup.bup.proxy.CaptureType;
+import com.browserup.bup.proxy.auth.AuthType;
+import com.browserup.harreader.model.Har;
+
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+
+import com.browserup.bup.mitm.CertificateAndKeySource;
+import com.browserup.bup.mitm.KeyStoreFileCertificateSource;
+import com.browserup.bup.mitm.RootCertificateGenerator;
+import com.browserup.bup.mitm.keys.ECKeyGenerator;
+import com.browserup.bup.mitm.manager.ImpersonatingMitmManager;
+
 import primemover.model.GeoSurfProxy;
 import primemover.model.IProxy;
 import primemover.service.IpService;
@@ -55,7 +67,7 @@ public class RecordingProxy {
 	@Value("${recorder.gracefullTeardownSeconds:20}")
 	private Integer gracefullTeardownSeconds;
 	
-	@Value("${recorder.connectTimeoutSeconds:30}")
+	@Value("${recorder.connectTimeoutSeconds:45}")
 	private Integer connectTimeoutSeconds;
 	
 	@Value("${recorder.iddleConnectionTimeoutSeconds:60}")
@@ -67,18 +79,17 @@ public class RecordingProxy {
 	@Value("${recorder.connectivityRetryCount:3}")
 	private Integer connectivityRetryCount;
 	
-	@Value("${recorder.connectivityDelaySeconds:5}")
+	@Value("${recorder.connectivityDelaySeconds:30}")
 	private Integer connectivityDelaySeconds;
 	
 	@Value("${verifyConnections:true}")
 	private Boolean verifyConnections;
 	
-	@Value("#{'${recorder.connectivityVerificationUrls:https://siaw.primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero length string default!
+	@Value("#{'${recorder.connectivityVerificationUrls:https://primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero length string default!
 	private List<String> connectivityVerificationUrls;
 
-	BrowserMobProxy proxy = null;
+	BrowserUpProxyServer proxy = null;
 
-	
 	public void tearDown(boolean immediate) {
 		if (proxy == null) {
 			return; // nothing to do
@@ -116,42 +127,37 @@ public class RecordingProxy {
 	private void buildMitmProxy(IProxy targetProxy) {
 		logger.debug("buidling recorder");
 		
-		/*
+/*		
 		// create a RootCertificateGenerator that generates EC Certificate Authorities; you may also load your
 	    // own EC certificate and private key using any other CertificateAndKeySource implementation 
 	    // (KeyStoreFileCertificateSource, PemFileCertificateSource, etc.).
 		RootCertificateGenerator rootCertificateGenerator = RootCertificateGenerator.builder()
-	            .keyGenerator(new ECKeyGenerator())
-	            .build();
+            .keyGenerator(new ECKeyGenerator())
+            .build();
 
 	    // save the newly-generated Root Certificate and Private Key -- the .cer file can be imported 
 	    // directly into a browser
-	    rootCertificateGenerator.saveRootCertificateAsPemFile(new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/certificate.cer"));
-	    rootCertificateGenerator.savePrivateKeyAsPemFile(new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/private-key.pem"), "CHANGEME-password");
+	    rootCertificateGenerator.saveRootCertificateAsPemFile(new File("out/certificate.cer"));
+	    rootCertificateGenerator.savePrivateKeyAsPemFile(new File("out/private-key.pem"), "CHANGEME-password");
 	    
 	    // or save the certificate and private key as a PKCS12 keystore, for later use
-	    rootCertificateGenerator.saveRootCertificateAndKey("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), 
+	    rootCertificateGenerator.saveRootCertificateAndKey("PKCS12", new File("out/keystore.p12"), 
 	            "primemover", "CHANGEME-password");
-
-	    CertificateAndKeySource existingCertificateSource = 
-	            new KeyStoreFileCertificateSource("PKCS12", new File("C:/Users/dburkolter/git/primemover_runner/primemover-runner/out/keystore.p12"), "primemover", "CHANGEME-password");
-	            
-	    */
+*/
 
 		CertificateAndKeySource existingCertificateSource = 
 				new KeyStoreFileCertificateSource(this.certType, new File(this.certPath), this.certAlias, this.certPassword);
-
 
 		// tell the ImpersonatingMitmManager to generate EC keys and to use the EC RootCertificateGenerator
 		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
 				.rootCertificateSource(existingCertificateSource)
 				.serverKeyGenerator(new ECKeyGenerator())
-				.cacheConcurrencyLevel(16) // 8 is default
-				.cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
+				//.cacheConcurrencyLevel(16) // 8 is default
+				//.cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
 				//.trustAllServers(true)
 				.build();
-
-		proxy = new BrowserMobProxyServer();
+                
+		proxy = new BrowserUpProxyServer();
 		// proxy.setMitmDisabled(true);
 		proxy.setMitmManager(mitmManager);
 
@@ -159,7 +165,22 @@ public class RecordingProxy {
 		proxy.setConnectTimeout(connectTimeoutSeconds, TimeUnit.SECONDS);
 		proxy.setIdleConnectionTimeout(iddleConnectionTimeoutSeconds, TimeUnit.SECONDS);
 		proxy.setRequestTimeout(requestTimeoutSeconds, TimeUnit.SECONDS);
-
+		
+		// remove VIA-Header
+		proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
+            @Override
+            public HttpFilters filterRequest(HttpRequest originalRequest) {
+                return new HttpFiltersAdapter(originalRequest) {
+                    @Override
+                    public HttpResponse proxyToServerRequest(HttpObject httpObject) {
+                        if (httpObject instanceof HttpRequest) {
+                            ((HttpRequest) httpObject).headers().remove(HttpHeaders.Names.VIA);
+                        }
+                        return null;
+                    }
+                };
+            }
+        });
 
 		if (targetProxy != null) {
 			logger.debug("using chained proxy");
@@ -172,8 +193,30 @@ public class RecordingProxy {
 				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
 				geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
 				
-				proxy.addHeader("loc", geoProxy.getLocation());
-				proxy.addHeader("X-session", geoProxy.getSessionId());
+				// add custom auth headers -> https://github.com/browserup/browserup-proxy/blob/88914049391bd3ec5d3db1e4e92618fc7d197810/browserup-proxy-core/src/main/java/com/browserup/bup/BrowserUpProxyServer.java
+				// little danger as we don't watch missing auth credentials as in above code
+				proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
+					GeoSurfProxy proxy = geoProxy;
+					
+		            @Override
+		            public HttpFilters filterRequest(HttpRequest originalRequest) {
+		                return new HttpFiltersAdapter(originalRequest) {
+		                	
+		                    @SuppressWarnings("deprecation")
+							@Override
+		                    public HttpResponse proxyToServerRequest(HttpObject httpObject) {
+		                        if (httpObject instanceof HttpRequest) {
+		                        	if (ProxyUtils.isCONNECT(httpObject) || !((HttpRequest) httpObject).uri().startsWith("/")) {
+		                        		HttpHeaders headers = ((HttpRequest) httpObject).headers();
+		                        		headers.add("loc", proxy.getLocation());
+		                            	headers.add("X-session", proxy.getSessionId());
+		                        	}
+		                        }
+		                        return null;
+		                    }
+		                };
+		            }
+		        });
 			}	
 		}
 
@@ -285,15 +328,19 @@ public class RecordingProxy {
 			
 		Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
 		
-		
 		InetAddress adr = getInetAddress();
 		String hostIp = adr.getHostAddress();
 		String port = String.valueOf(proxy.getPort());
 		seleniumProxy.setProxyType(ProxyType.MANUAL);
-		seleniumProxy.setHttpProxy(hostIp + ":" + port);
-		seleniumProxy.setSslProxy(hostIp + ":" + port);
+		//seleniumProxy.setHttpProxy(hostIp + ":" + port);
+		//seleniumProxy.setSslProxy(hostIp + ":" + port);
+		
+		seleniumProxy.setHttpProxy("localhost:" + port);
+		seleniumProxy.setSslProxy("localhost:" + port);
 	   
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
+		//cap.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
+		//cap.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 		
 		logger.debug("setting http-proxy to {}", seleniumProxy.getHttpProxy());
 		logger.debug("setting ssl-proxy to {}", seleniumProxy.getSslProxy());

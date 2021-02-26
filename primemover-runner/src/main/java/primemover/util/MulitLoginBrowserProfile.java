@@ -34,6 +34,10 @@ public class MulitLoginBrowserProfile {
 	@Value("${mulitlogin.ApiWaitSeconds:10}")
 	private Long apiWaitSeconds = 10l;
 	
+	private int apiConnectTimeoutSeconds = 15;
+	private int apiReadTimeoutSeconds = 90;
+	
+	
 	@Autowired()
 	private MultiLoginDefaultTemplateLoader defaultTemplateLoader;
 	
@@ -83,8 +87,8 @@ public class MulitLoginBrowserProfile {
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setConnectTimeout(10000);
-		con.setReadTimeout(10000);
+		con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
+		con.setReadTimeout(apiReadTimeoutSeconds * 1000);
 
 		// setup method
 		con.setRequestMethod("POST");
@@ -126,8 +130,8 @@ public class MulitLoginBrowserProfile {
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setConnectTimeout(10000);
-		con.setReadTimeout(10000);
+		con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
+		con.setReadTimeout(apiReadTimeoutSeconds * 1000);
 		con.setRequestMethod("GET");
 		
 		Integer responseCode = con.getResponseCode();
@@ -158,8 +162,8 @@ public class MulitLoginBrowserProfile {
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setConnectTimeout(10000);
-		con.setReadTimeout(60000);
+		con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
+		con.setReadTimeout(apiReadTimeoutSeconds * 1000);
 		con.setRequestMethod("GET");
 		
 		Integer responseCode = con.getResponseCode();
@@ -197,8 +201,8 @@ public class MulitLoginBrowserProfile {
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setConnectTimeout(5000);
-		con.setReadTimeout(60000);
+		con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
+		con.setReadTimeout(apiReadTimeoutSeconds * 1000);
 		
 		con.setRequestMethod("GET");
 		
@@ -229,8 +233,8 @@ public class MulitLoginBrowserProfile {
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-		con.setConnectTimeout(10000);
-		con.setReadTimeout(60000);
+		con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
+		con.setReadTimeout(apiReadTimeoutSeconds * 1000);
 		con.setRequestMethod("DELETE");
 		
 		Integer responseCode = con.getResponseCode();
@@ -309,8 +313,8 @@ public class MulitLoginBrowserProfile {
 			
 			URL obj = new URL(url);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-			con.setConnectTimeout(10000);
-			con.setReadTimeout(60000);
+			con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
+			con.setReadTimeout(apiReadTimeoutSeconds * 1000);
 			con.setRequestMethod("POST");
 			con.setRequestProperty("Content-Type", "application/json; utf-8");
 			con.setDoOutput(true);

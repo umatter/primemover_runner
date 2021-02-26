@@ -23,7 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import net.lightbody.bmp.core.har.Har;
+import com.browserup.harreader.model.Har;
+
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.Crawler;

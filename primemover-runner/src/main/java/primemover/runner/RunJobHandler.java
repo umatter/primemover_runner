@@ -12,6 +12,7 @@ import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,9 @@ import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.TrySwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.util.Page;
@@ -233,6 +236,11 @@ public class RunJobHandler {
 
 				if (selectedElement != null) {
 					try {
+						logger.debug("clicking element {}", selectedElement);
+						Actions actions = new Actions(driver);
+						actions.moveToElement(selectedElement);
+						actions.perform();
+						
 						selectedElement.click();
 					} catch (ElementNotInteractableException e) {
 						// Fallback hack for google-elements TODO: optimize with recursive try and error
@@ -240,7 +248,14 @@ public class RunJobHandler {
 						List<WebElement> subSelements = selectedElement.findElements(By.tagName("div"));
 						
 						if (subSelements.size() > 0) {
-							subSelements.get(0).click();
+							WebElement clickItem = subSelements.get(0);
+							logger.debug("clicking fallback felement {}", clickItem);
+						
+							Actions actions = new Actions(driver);
+							actions.moveToElement(clickItem);
+							actions.perform();							
+							
+							clickItem.click();
 						} else {
 							throw new IllegalStateException("no clickable elements found", e);
 						}	
@@ -267,9 +282,78 @@ public class RunJobHandler {
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
+
+					logger.debug("element found in TryClickJob {}", job.getId());
 					WebElement selectedElement = elements.get(0);
 					
-					selectedElement.click();
+					try {
+						Actions actions = new Actions(driver);
+						actions.moveToElement(selectedElement);
+						actions.click(selectedElement);
+						actions.perform();
+					} catch (Exception e) {
+						logger.error("Fatal", e);
+					}
+				} else {
+					logger.debug("no element found in TryClickJob {}", job.getId());
+				}
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// nothing to do
+				}
+			}
+		});
+		
+		logger.trace("creating TrySwitchToJob-Handler");
+		dispatch.put(TrySwitchToJob.class, new Handler() {
+			public void handle(OperatorContext context, IJob job) {
+				WebDriver driver = context.getDriver();
+				TrySwitchToJob typedJob = (TrySwitchToJob) job;
+
+				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				if (elements.size() == 1) {
+
+					logger.debug("element found in TryClickJob {}", job.getId());
+					WebElement selectedElement = elements.get(0);
+					
+					try {
+
+						driver.switchTo().frame(selectedElement);
+					} catch (Exception e) {
+						logger.warn("Error in job {}", job.getId(), e);
+					}
+				} else {
+					logger.debug("no element found in TryClickJob {}", job.getId());
+				}
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// nothing to do
+				}
+			}
+		});
+		
+		logger.trace("creating SwitchToJob-Handler");
+		dispatch.put(SwitchToJob.class, new Handler() {
+			public void handle(OperatorContext context, IJob job) {
+				WebDriver driver = context.getDriver();
+				SwitchToJob typedJob = (SwitchToJob) job;
+
+				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+						typedJob.getSelector());
+				
+				if (elements.size() == 1) {
+					logger.debug("Switching to element for job {}", typedJob.getId());
+					WebElement selectedElement = elements.get(0);
+					driver.switchTo().frame(selectedElement);
+				} else {
+					logger.warn("Found more than one element for job {}", typedJob.getId());
+					throw new IllegalStateException("More than one element found for job " + typedJob.getId());
 				}
 				
 				try {
@@ -290,6 +374,7 @@ public class RunJobHandler {
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
+					logger.debug("Clicking on element for job {}", typedJob.getId());
 					WebElement selectedElement = elements.get(0);
 					
 					selectedElement.click();

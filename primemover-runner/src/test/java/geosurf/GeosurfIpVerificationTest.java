@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.parallel.Execution;
@@ -28,11 +31,10 @@ class GeosurfIpVerificationTest {
 	
 	private static Logger logger = LoggerFactory.getLogger(GeosurfIpVerificationTest.class);
 	
-	
-	
 	@Autowired
 	private RecordingProxyFactory recFac;	
-	private List<String> cities = java.util.Arrays.asList("US-CO-COLORADO_SPRINGS",
+	private List<String> cities = java.util.Arrays.asList(
+			"US-CO-COLORADO_SPRINGS",
 			"US-OK-OKLAHOMA_CITY",
 			"US-KS-WICHITA",
 			"US-CA-BAKERSFIELD",
@@ -65,9 +67,7 @@ class GeosurfIpVerificationTest {
 	 * 
 	 * @param city: target according to GeoSurf API e.g. "US-TX-HOUSTON"
 	 */
-	void verifyIpIOver20RunsForCity(String city) {
-		int numRuns = 20;
-		
+	void verifyIpIOverXRunsForCity(String city, Integer numRuns, Integer waitMillis) {		
 		String failIP = "(fail)";
 		GeoSurfProxy targetProxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", city);		
 		RecordingProxy rec = recFac.createRecordingProxy();
@@ -75,22 +75,26 @@ class GeosurfIpVerificationTest {
 		
 		IpService ipService = ipServiceFactory.getInstance(rec);
 		
-		List<String> ipInfo = new ArrayList<String>(20);
+
+		Set<String> ipMap = new HashSet<>();
+		List<String> ipList = new ArrayList<String>(20);
 		
 		for(int n = 1; n <= numRuns; n++) {
 			logger.debug("run {} of {}", n, numRuns);
 			LocationInfo locInfo = ipService.getLocationInfo();
 			
 			if (locInfo == null) {
-				ipInfo.add(failIP);
+				ipMap.add(failIP);
+				ipList.add(failIP);
 			} else {
-				ipInfo.add(locInfo.getIp());
+				ipMap.add(locInfo.getIp());
+				ipList.add(locInfo.getIp());
 			}
 			
 			
 			// add some delay in between calls
 			try {
-				Thread.sleep(60000);
+				Thread.sleep(waitMillis);
 			} catch (InterruptedException e) {
 				// nothing to do
 			}
@@ -101,33 +105,57 @@ class GeosurfIpVerificationTest {
 		
 		// log results
 		StringBuilder builder = new StringBuilder();
-		builder.append("IPs for ");
-		builder.append(city);
-		builder.append(": ");
-		for (String ip : ipInfo) {
-			builder.append(ip);
-			builder.append(" ");
-		}
-		logger.debug(builder.toString());
+		builder.append("Num IPs found: ");
+		builder.append(ipMap.size());
+		builder.append(StringUtils.CR);
+		ipMap.forEach((String) -> {
+			builder.append("IP ");
+			builder.append(String);
+			builder.append(StringUtils.CR);
+        });
+		String msg = builder.toString();
+		logger.debug(msg);
 		
+		// assert Num results
+		assertEquals(1, ipMap.size(), msg);
 		
-		// assert results
-		String expected = ipInfo.get(0);
-		for (String actual : ipInfo) {
-			assertEquals(expected, actual, "IPs not equal " + builder.toString());
+		// assert failIP
+		for (String actual : ipList) {
 			assertNotEquals(failIP, actual, "IP was not retrieved");
 		}
+	}
+	
+	private Stream<DynamicTest> createTests(Integer numRuns, Integer waitMillisInBetween) {
+		return cities.stream()
+	      .map(city -> DynamicTest.dynamicTest("verifiying IP over " + numRuns + " runs with " + (waitMillisInBetween / 1000) + " seconds wait for " + city + "", 
+	        () -> {
+	        	verifyIpIOverXRunsForCity(city, numRuns, waitMillisInBetween);
+	    }));  
+	}
+	
+	@TestFactory
+	@Execution(ExecutionMode.CONCURRENT)
+	Stream<DynamicTest> dynamicGeosurfTestsOver10RunsWith90SecondsWait() {
+	    return createTests (20, 90000); 
+	}
+	
+	@TestFactory
+	@Execution(ExecutionMode.CONCURRENT)
+	Stream<DynamicTest> dynamicGeosurfTestsOver10RunsWith60SecondsWait() {
+		return createTests (35, 60000);   
 	}
 	
 	
 	@TestFactory
 	@Execution(ExecutionMode.CONCURRENT)
-	Stream<DynamicTest> dynamicTestsFromStreamInJava8() {
-	    return cities.stream()
-	      .map(city -> DynamicTest.dynamicTest("verifiying IP over 20 run for " + city + "", 
-	        () -> {
-	        	verifyIpIOver20RunsForCity(city);
-	    }));       
+	Stream<DynamicTest> dynamicGeosurfTestsOver10RunsWith30SecondsWait() {
+		return createTests (70, 30000);     
+	}
+	
+	@TestFactory
+	@Execution(ExecutionMode.CONCURRENT)
+	Stream<DynamicTest> dynamicGeosurfTestsOver10RunsWith10SecondsWait() {
+		return createTests (140, 10000);
 	}
 	
 }

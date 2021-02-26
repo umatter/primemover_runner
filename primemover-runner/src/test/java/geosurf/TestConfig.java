@@ -1,9 +1,9 @@
 package geosurf;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -17,40 +17,46 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.capture.RecordingProxyFactory;
-import primemover.runner.JobListRunnerFactory;
-import primemover.runner.MockJobManager;
+import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
-import primemover.service.BackendStorageService;
-import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
-import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
+import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
+import primemover.service.OutletService;
+import primemover.service.TermsService;
 import primemover.service.TokenGenerator;
 import primemover.service.TokenRequestInterceptor;
 import primemover.util.MultiLoginBrowserProfileFactory;
+import primemover.util.MultiLoginDefaultTemplateLoader;
+import primemover.util.OutletsProvider;
+import primemover.util.SelectingHelper;
 
 @SpringBootConfiguration
-public class TestConfig {
-	@Bean(name="jobmanager", initMethod = "setup")
-	MockJobManager getManager() {
-		return new MockJobManager();	
-	}
-	
-	@Bean(name="jobListRunnerFactory")
-	JobListRunnerFactory getJobListRunnerFactory() {
-		return new JobListRunnerFactory();
-	}
+public class TestConfig {	
+
+	@Value("${global.mode}")
+	private String mode;
 	
 	@Bean(name="JobService")
 	JobService getJobService() {
 		return new JobService();
 	}
 
+	@Bean(name="IpServiceFactory")
+	public IpServiceFactory getIpServiceFactory() {
+		return new IpServiceFactory();
+	}
+	
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
+	}
+	
+	@Bean("TermsService")
+	TermsService getTermsService() {
+		return new TermsService();
 	}
 	
 	@Bean(name="MultiLoginBrowserProfileFactory")
@@ -58,19 +64,49 @@ public class TestConfig {
 		return new MultiLoginBrowserProfileFactory();
 	}
 	
-	@Bean(name="fileStorageService")
-	IStorageService getFileStorageServices() {
+	@Bean(name="storageService")
+	IStorageService getStorageService() {
 		return new FileStorageService();
 	}
-	
-	@Bean(name="backendStorageService")
-	IStorageService getBackendStorageServices() {
-		return new BackendStorageService();
+
+	@Bean(name="TaskServiceFactory")
+	TaskOperatorFactory getTaskServiceFactory() {
+		return new TaskOperatorFactory();
 	}
 	
-	@Bean("CrawlerService")
-	ICrawlerService getCrawlerService() {
-		return new CrawlerService();
+	@Bean(name="RecordingProxyFactory")
+	RecordingProxyFactory getRecorderFactory() {
+		return new RecordingProxyFactory();
+	}	
+	
+	/*
+	@Bean(name="jobmanager", initMethod = "setup")
+	JobManager getManager() {
+		JobManager jobManager = new JobManager();
+	
+		// jobManager will be called with spring's scheduler
+		return jobManager;		
+	}
+	*/
+	@Bean("OutletService")
+	OutletService getOutletService() {
+		return new OutletService();
+	}
+	
+	@Bean(name="OutletsProvider", initMethod = "refresh")
+	OutletsProvider getOutletsProvider() {
+		return new OutletsProvider();
+	}
+	
+	@Bean(name="SelectingHelper")
+	public SelectingHelper getSelectingHelper() {
+		return new SelectingHelper();
+	}
+	
+
+	@Bean(name="RunJobHandler")
+	public RunJobHandler getRunJobHandler() {
+		return new RunJobHandler();
 	}
 
 	@Bean(name="tokenGenerator")
@@ -107,13 +143,8 @@ public class TestConfig {
         return restTemplate; 
 	}
 	
-	@Bean(name="TaskOperatorFactory")
-	TaskOperatorFactory getTaskOperatorFactory() {
-		return new TaskOperatorFactory();
+	@Bean(name="MultiLoginDefaultTemplateLoader", initMethod="init")
+	MultiLoginDefaultTemplateLoader getMultiLoginDefaultTemplateLoader() {
+		return MultiLoginDefaultTemplateLoader.getInstance();
 	}
-	
-	@Bean(name="RecordingProxyFactory")
-	RecordingProxyFactory getRecorderFactory() {
-		return new RecordingProxyFactory();
-	}	
 }

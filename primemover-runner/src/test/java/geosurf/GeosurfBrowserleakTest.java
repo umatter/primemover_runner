@@ -1,0 +1,136 @@
+package geosurf;
+
+import java.util.HashMap;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import primemover.model.AgentType;
+import primemover.model.BasicAgent;
+import primemover.model.Configuration;
+import primemover.model.Crawler;
+import primemover.model.GeoSurfProxy;
+import primemover.model.HttpProxy;
+import primemover.model.IAgent;
+import primemover.model.IProxy;
+import primemover.model.Joblist;
+import primemover.model.MediaOutlet;
+import primemover.model.MultiLoginAgent;
+import primemover.model.SelectionConfiguration;
+import primemover.model.jobs.VisitJob;
+import primemover.model.jobs.WaitJob;
+import primemover.runner.ITaskOperator;
+import primemover.runner.TaskOperatorFactory;
+
+@SpringBootTest
+public class GeosurfBrowserleakTest {
+	
+	private static Logger logger = LoggerFactory.getLogger(GeosurfBrowserleakTest.class);
+
+	@Autowired
+	private TaskOperatorFactory operatorFactory;
+	
+	private ITaskOperator operator;
+	private IAgent agent;
+	Crawler crawler;
+	
+
+	public void setup(IProxy proxy, boolean useMultiLoginAgent) {
+		operator = operatorFactory.getItem();
+		
+		if (useMultiLoginAgent) {
+			agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", "bf4cd0e3-68b7-4cb6-a38f-6ed12ac2c666", "");
+		} else {
+			agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
+		}
+		
+		crawler = new Crawler();
+		crawler.setAgent(agent);
+		
+		Configuration config = new Configuration();
+		config.setId(1);
+		config.setDescription("Test Configuration browserleaks");
+		config.setName("browserleaks.com");
+		
+		SelectionConfiguration selConfig = new SelectionConfiguration();
+		selConfig.setId(1);
+		selConfig.setPi(-1);
+		selConfig.setPsi(0);
+		selConfig.setKappa(1);
+		selConfig.setTau(1);
+		selConfig.setBeta(0.62368980888047);
+		selConfig.setAlpha(0);
+		HashMap<String, MediaOutlet> outlets = new HashMap<>();
+		selConfig.setOutlets(outlets);
+		
+		config.setSelectionConfiguration(selConfig);
+		crawler.setConfig(config);
+		
+		crawler.setProxy(proxy);
+		
+		operator.setup(crawler);
+	}
+	
+	
+	Joblist createJobList() {
+		Joblist jobs = new Joblist();
+		
+		// IP Test
+		VisitJob visitJob = new VisitJob(1l, "browserleak.com IP Test", "visit browserleak.com/ip", "https://browserleaks.com/ip");
+		jobs.appendJob(visitJob);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 30);
+		jobs.appendJob(waitJob);
+		
+		// Ad-blocker and Proxy-Detection test
+		visitJob = new VisitJob(1l, "browserleak.com detector", "visit browserleak.com/proxy", "https://browserleaks.com/proxy");
+		jobs.appendJob(visitJob);
+		waitJob = new WaitJob(1l, "wait", "wait", 30);
+		jobs.appendJob(waitJob);
+		
+		return jobs;
+	}
+	
+	void runStateProxyWithHeaders(boolean useMultiLoginAgent) {
+		GeoSurfProxy targetProxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", "US-NY-NEW_YORK");		
+		setup(targetProxy, useMultiLoginAgent);
+		
+		Joblist jobs = createJobList();
+		operator.runJobList(jobs);
+		
+		operator.tearDown(true);
+	}
+	
+	@Test
+	void runStateProxyWithHeadersNonMultiLogin() {
+		runStateProxyWithHeaders(false);
+	}
+	
+	@Test
+	void runStateProxyWithHeadersMultiLogin() {
+		runStateProxyWithHeaders(true);
+	}
+	
+	void runStateProxyWithUsernameLocator(boolean useMultiLoginAgent) {
+		HttpProxy targetProxy = new HttpProxy("us-30m.geosurf.io", 8000, "000000+US-NY-NEW_YORK+000000-589621", "CHANGEME-password");
+		setup(targetProxy, useMultiLoginAgent);
+		
+		Joblist jobs = createJobList();
+		operator.runJobList(jobs);
+		
+		operator.tearDown(true);
+	}
+	
+	@Test
+	void runStateProxyWithUsernameLocatorNonMultiLogin() {
+		runStateProxyWithUsernameLocator(false);
+	}
+	
+	@Test
+	void runStateProxyWithUsernameLocatorMultiLogin() {
+		runStateProxyWithUsernameLocator(true);
+	}
+}

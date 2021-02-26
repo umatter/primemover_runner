@@ -38,6 +38,9 @@ public class JobManager implements IJobManager {
 	@Value("${runner.MaxRedoMinutes:45}")
 	private Integer redoMinutes; // Update Interval to grab planned jobs in minutes
 	
+	@Value("${runner.ProcessingTimeoutMinutes:180}")
+	private Integer processingTimeoutMinutes; // Update Interval to grab planned jobs in minutes
+	
 	private ZonedDateTime lastExecution = null; // last execution time of scheduler
 	private ZonedDateTime lastTimeAdded = ZonedDateTime.now(); // the max datetime of the jobs added during the last run
 	
@@ -62,10 +65,6 @@ public class JobManager implements IJobManager {
 	public void setup() {
 		executorService = Executors.newFixedThreadPool(maxThreads);
 		scheduler = Executors.newSingleThreadScheduledExecutor(); // jobs will only pass the execution to the executor service
-	}
-	
-	private void timeOutJoblist(Joblist jobs) {
-		
 	}
 
 	/* (non-Javadoc)
@@ -115,6 +114,11 @@ public class JobManager implements IJobManager {
 			
 			// verifiy states and skip inactive, processing or processed joblists. Make sure to mark jobs as processed!
 			if (jobs.isProcessing()) {
+				// We may had a teardown before, or there was a fatal error -> mark processing timeout
+				if (ChronoUnit.MINUTES.between(jobs.getStartTime(), curRun) > processingTimeoutMinutes) {
+					jobService.updateJoblistState(jobs, JoblistState.DONE_PROCESSING_TIMEOUT, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE); // set execution time				
+				};
+				
 				continue;
 			}
 			

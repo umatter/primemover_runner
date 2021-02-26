@@ -12,7 +12,8 @@ public enum JoblistState {
 	RUNNING_JOBSFAILURE("running", "failure running jobs"),
 	DONE_SUCCESS("success", "done"),
 	DONE_JOBSFAILURE("failure", "failure running jobs"),
-	DONE_FAILURE("failure", "stoped with fatal failure");
+	DONE_FAILURE("failure", "stoped with fatal failure"),
+	DONE_PROCESSING_TIMEOUT("failure", "processing timed out");
 
 	
 	private String code;
