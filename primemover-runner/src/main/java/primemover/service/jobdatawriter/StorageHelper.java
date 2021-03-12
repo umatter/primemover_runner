@@ -72,9 +72,12 @@ public class StorageHelper {
 		os.write(tmp.toString().getBytes(StandardCharsets.UTF_8));
 	}
 	
-	
+	public String getIdentifier(IJob job) {
+		return "static_jobdata_" + job.getId().toString();
+	}
+		
 	public String getFilenameAsZip(IJob job) {
-		return dateFormat.format(new Date()) + "_static_jobdata_" + job.getId().toString() + ".zip";
+		return dateFormat.format(new Date()) + "_" + getIdentifier(job) + ".zip";
 	}
 	
 	public Boolean writeJobDataAsZip(OutputStream os, IJob job, JobData data) {

@@ -116,6 +116,7 @@ public class JobManager implements IJobManager {
 			if (jobs.isProcessing()) {
 				// We may had a teardown before, or there was a fatal error -> mark processing timeout
 				if (ChronoUnit.MINUTES.between(jobs.getStartTime(), curRun) > processingTimeoutMinutes) {
+					logger.info("Timming out processing joblist {}", jobs.getId());
 					jobService.updateJoblistState(jobs, JoblistState.DONE_PROCESSING_TIMEOUT, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE); // set execution time				
 				};
 				

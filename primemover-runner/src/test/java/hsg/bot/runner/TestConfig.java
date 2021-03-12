@@ -20,6 +20,7 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
+import primemover.service.AwsS3StorageService;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
 import primemover.service.IpServiceFactory;
@@ -66,6 +67,11 @@ public class TestConfig {
 	@Bean(name="storageService")
 	IStorageService getStorageService() {
 		return new FileStorageService();
+	}
+	
+	@Bean(name="AwsS3StorageService")
+	IStorageService getAwsS3StorageServices() {
+		return new AwsS3StorageService();
 	}
 
 	@Bean(name="TaskServiceFactory")

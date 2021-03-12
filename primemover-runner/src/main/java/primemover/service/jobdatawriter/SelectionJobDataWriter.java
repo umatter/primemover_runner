@@ -7,16 +7,23 @@ import primemover.util.Selection;
 
 public class SelectionJobDataWriter extends JsonAsZipJobDataWriter<Selection> {
 
+	private String identifier;
 	private String baseName;
 	private Selection data;
 	
 
 	public SelectionJobDataWriter(IJob job, Selection data) {
 		String datePrefix = StorageHelper.formatDateForFilePrefix(new Date());
-		this.baseName = datePrefix + "_dynamic_jobdata_" + job.getId(); 
+		this.identifier = "dynamic_jobdata_" + job.getId();
+		this.baseName = datePrefix + "_" + identifier; 
 		this.data = data;
 	}
 
+	@Override
+	public String getIdentifier() {
+		return this.identifier;
+	}
+	
 	@Override
 	protected Selection getObject() {
 		return data;
@@ -36,4 +43,6 @@ public class SelectionJobDataWriter extends JsonAsZipJobDataWriter<Selection> {
 	public String getDescription() {
 		return "Calculation data of the selection-method";
 	}
+
+	
 }
