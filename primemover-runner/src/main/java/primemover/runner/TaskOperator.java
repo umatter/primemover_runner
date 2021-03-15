@@ -307,7 +307,12 @@ public class TaskOperator implements ITaskOperator {
 			// Writing data
 			boolean writeRes = true;
 			for (IStorageService storage : storages) {
-				writeRes = writeRes && storage.writeFixedJobData(job, data);
+				try {
+					writeRes = writeRes && storage.writeFixedJobData(job, data);
+				} catch (Exception e) {
+					logger.warn("Error writing to job-data to storage for job {}", job.getId(), e);
+					writeRes = false;
+				}
 			}
 
 			if (writeRes) {
