@@ -90,4 +90,12 @@ public class MockCrawlerService implements ICrawlerService {
 		return res;
 	}
 
+
+	@Override
+	public Boolean writeS3JobData(Long jobId, String filename, String description) {
+		return writeResult;
+	}
+	
+	
+
 }

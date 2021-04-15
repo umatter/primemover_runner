@@ -218,5 +218,33 @@ public class CrawlerService implements ICrawlerService {
 	    	logger.warn("failure storing data to server for job " + jobId, ex);
 	    	return false;
 	    }
+	}
+	
+	public Boolean writeS3JobData(Long jobId, String filename, String description) {
+		HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_JSON);
+	    JSONObject data = new JSONObject();
+	    data.put("job_id", jobId);
+	    data.put("description", description);
+	    data.put("mimetype", "primemover/s3");
+	    data.put("filename", filename);
+	    
+	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
+	  	   
+	    try {
+	    	logger.debug("writing report to {}", endpointPathReports);	    	
+	    	ResponseEntity<String> response = restTemplate.postForEntity(endpointPathReports, request, String.class);
+		    
+	    	 if (response.getStatusCode().is2xxSuccessful()) {
+	 	    	logger.info("stored data to server for job " + jobId);
+	 	    	return true;
+	 	    } else {
+	 	    	logger.warn("failure storing data to server for job " + jobId);
+	 	    	return false;
+	 	    }	    
+	    } catch (ResourceAccessException ex) {
+	    	logger.warn("failure storing data to server for job " + jobId, ex);
+	    	return false;
+	    }
 	}	
 }

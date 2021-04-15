@@ -3,6 +3,7 @@ package primemover.service;
 import java.io.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.model.IJob;
@@ -18,6 +19,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class AwsS3StorageService implements IStorageService {
 
 	private static Logger logger = LoggerFactory.getLogger(AwsS3StorageService.class);
+	
+	@Autowired
+	private ICrawlerService crawlerService;
 
 	@Value("${awsS3.bucketName}")
 	private String bucketName;
@@ -48,15 +52,19 @@ public class AwsS3StorageService implements IStorageService {
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream(4048)) {
 			logger.trace("Start writing data for job " + job.getId().toString());
 			if (helper.writeJobDataAsZip(os, job, data)) {
+				String identifier = helper.getIdentifier(job);
 				PutObjectRequest objectRequest = PutObjectRequest.builder()
 	                    .bucket(bucketName)
 	                    .contentType("application/zip")
-	                    .key(subFolder + helper.getIdentifier(job))
+	                    .key(subFolder + identifier)
 	                    .build();
 	            
 
 	            s3.putObject(objectRequest, RequestBody.fromBytes(os.toByteArray()));
 	            logger.debug("fixed data written so AWS S3 for job {}", job.getId());
+	            
+	            crawlerService.writeS3JobData(job.getId(), "s3://" + bucketName + "/" + subFolder + identifier, "fixed job data");
+	            logger.debug("wrote info to backend for job {}", job.getId());
 	            return true;
 			} else {
 				logger.warn("error creating zip for job {}", job.getId());
@@ -93,8 +101,10 @@ public class AwsS3StorageService implements IStorageService {
             writer.writeData(os);
 
             s3.putObject(objectRequest, RequestBody.fromBytes(os.toByteArray()));
-            
             logger.debug("data written so AWS S3 for job {}", job.getId());
+            
+            crawlerService.writeS3JobData(job.getId(), "s3://" + bucketName + "/" + subFolder + writer.getIdentifier(), "fixed job data");
+            logger.debug("wrote info to backend for job {}", job.getId());
             return true;
 		} catch (Exception e) {
 			logger.error("error writing data to AWS S3 for job {}", job.getId());

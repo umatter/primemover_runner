@@ -54,7 +54,6 @@ public class TaskOperator implements ITaskOperator {
 	@Value("${runner.StartupRetryCount:3}")
 	private Integer maxRetryCountInit;
 
-
 	private OperatorContext context;
 
 	@Autowired
