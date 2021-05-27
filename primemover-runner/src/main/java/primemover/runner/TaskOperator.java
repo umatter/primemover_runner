@@ -53,7 +53,9 @@ public class TaskOperator implements ITaskOperator {
 	private Integer retryDelayMultiLogin;
 	@Value("${runner.StartupRetryCount:3}")
 	private Integer maxRetryCountInit;
-
+	@Value("${anticaptcha.check.enabled:true}")
+	private Boolean runCaptchaChecks;
+	
 	private OperatorContext context;
 
 	@Autowired
@@ -243,13 +245,21 @@ public class TaskOperator implements ITaskOperator {
 			} catch (Exception e) {
 				logger.warn("IP-Checking (before job) was unsuccessfull for job {}", job.getId());
 			}
-			
 
 			// start MITM
 			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
 
 			// running job
 			runJobHandler.handle(context, job);
+			
+			// captcha verification
+			if (this.runCaptchaChecks) {
+				String source = this.context.getDriver().getPageSource();
+				source = source.toLowerCase();
+				if (StringUtils.contains(source, "captcha")) {
+					logger.warn("captcha found in job {}", job.getId());
+				}
+			}
 
 			jobService.updateJobState(job, JobState.STORINGDATA, null, null);
 

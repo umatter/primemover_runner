@@ -23,6 +23,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.captcha.CaptchaJobHelper;
+import primemover.captcha.CaptchaJobHelper.JobPosition;
+import primemover.captcha.CaptchaSolver;
+import primemover.captcha.CaptchaSolverResult;
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.IJob;
@@ -58,10 +62,12 @@ public class RunJobHandler {
 	@Autowired
 	private SelectingHelper selectingHelper;
 	
+	@Autowired
+	private CaptchaSolver captchaSolver;
+	
 	@Value("${global.mode}")
 	private StartupMode mode;
-	
-	
+			
 	// Interface for our IJob-Handlers
 	private interface Handler {
 		void handle(OperatorContext context, IJob job);
@@ -79,11 +85,18 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
 				VisitJob typedJob = (VisitJob) job;
+				
+				// captcha before
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+				
 				logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
 				driver.navigate().to(typedJob.getUrl());
 				
 				// wait with retry until loaded
 				primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 10, 12); // check every 10 seconds for 2 Minutes
+				
+				// captcha after
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
 			}
 		});
 
@@ -166,6 +179,9 @@ public class RunJobHandler {
 						SelectorType selectorType = typedJob.getType();
 						String selector = typedJob.getSelector();
 						
+						// captcha before
+						CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+						
 						// provide WebElement dynamic for below functions. Google search will stale the element with the search suggestions
 						Supplier<WebElement> elementSup = () -> selectingHelper.getElementByWebdriver(driver, selectorType,
 								selector);
@@ -190,6 +206,10 @@ public class RunJobHandler {
 							throw new UnsupportedOperationException("Not implemented yet (" + typingMode + ")");
 						}
 						logger.debug("done typing text");
+						
+						// captcha after
+						CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
+						
 						done = true;
 					} catch (StaleElementReferenceException e) { 
 						done = false; // retry

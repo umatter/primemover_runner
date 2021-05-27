@@ -255,9 +255,8 @@ public class SelectingHelper {
 			case CALCULATED:
 				logger.debug("making randomized choice out of known outlets");
 
-				return chooseCalculatedElement(crawler, job, elements);
-			// throw new UnsupportedOperationException("Not implemented yet");
-			// break;
+				selection = chooseCalculatedElement(crawler, job, elements);
+				break;
 			case FIRST:
 				logger.debug("select first");
 				selection = elements.get(0);

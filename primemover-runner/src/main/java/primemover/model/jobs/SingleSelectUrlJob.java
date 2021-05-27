@@ -6,6 +6,8 @@ import primemover.model.SelectorType;
 public class SingleSelectUrlJob extends SelectorBaseJob {
 	
 	private DecisionType decision;
+	
+	private String criterionSelector; // regular expression
 
 	public DecisionType getDecisionType() {
 		return decision;
@@ -15,10 +17,17 @@ public class SingleSelectUrlJob extends SelectorBaseJob {
 		this.decision = decision;
 	}
 
+	public String getCriterionSelector() {
+		return this.criterionSelector;
+	}
+	
+	public void setCriterionSelector(String newVal) {
+		this.criterionSelector = newVal;
+	}
+	
 	public SingleSelectUrlJob() {
 		super();
 	}
-
 
 	public SingleSelectUrlJob(Long id, String name, String description, SelectorType type, String selector,
 			DecisionType decision) {

@@ -15,6 +15,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 public class AwsS3StorageService implements IStorageService {
 
@@ -61,9 +62,10 @@ public class AwsS3StorageService implements IStorageService {
 	            
 
 	            s3.putObject(objectRequest, RequestBody.fromBytes(os.toByteArray()));
+
 	            logger.debug("fixed data written so AWS S3 for job {}", job.getId());
 	            
-	            crawlerService.writeS3JobData(job.getId(), "s3://" + bucketName + "/" + subFolder + identifier, "fixed job data");
+	            crawlerService.writeS3JobData(job.getId(), identifier, "s3://" + bucketName + "/" + subFolder + identifier, "fixed job data");
 	            logger.debug("wrote info to backend for job {}", job.getId());
 	            return true;
 			} else {
@@ -103,7 +105,9 @@ public class AwsS3StorageService implements IStorageService {
             s3.putObject(objectRequest, RequestBody.fromBytes(os.toByteArray()));
             logger.debug("data written so AWS S3 for job {}", job.getId());
             
-            crawlerService.writeS3JobData(job.getId(), "s3://" + bucketName + "/" + subFolder + writer.getIdentifier(), "fixed job data");
+            String identifier = writer.getIdentifier();
+            
+            crawlerService.writeS3JobData(job.getId(), identifier, "s3://" + bucketName + "/" + subFolder + identifier, "fixed job data");
             logger.debug("wrote info to backend for job {}", job.getId());
             return true;
 		} catch (Exception e) {
@@ -112,4 +116,5 @@ public class AwsS3StorageService implements IStorageService {
 		}
 	}
 
+	
 }

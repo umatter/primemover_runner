@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
@@ -46,6 +47,10 @@ public class TestConfig {
 		return new JobService();
 	}
 	
+	@Bean(name="CaptchaSolver")
+	public CaptchaSolver getCaptchaSolver() {
+		return new CaptchaSolver();
+	}
 	
 	@Bean("CrawlerService")
 	CrawlerService getCrawlerService() {

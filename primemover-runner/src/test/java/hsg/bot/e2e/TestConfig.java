@@ -1,6 +1,5 @@
 package hsg.bot.e2e;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.JobListRunnerFactory;
 import primemover.runner.MockJobManager;
@@ -53,6 +53,11 @@ public class TestConfig {
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
+	}
+	
+	@Bean(name="CaptchaSolver")
+	public CaptchaSolver getCaptchaSolver() {
+		return new CaptchaSolver();
 	}
 	
 	@Bean(name="MultiLoginBrowserProfileFactory")

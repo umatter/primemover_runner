@@ -16,12 +16,15 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
+import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
+import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
@@ -52,6 +55,16 @@ public class TestConfig {
 	@Bean(name="AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
+	}
+	
+	@Bean(name="CaptchaSolver")
+	public CaptchaSolver getCaptchaSolver() {
+		return new CaptchaSolver();
+	}
+	
+	@Bean("CrawlerService")
+	ICrawlerService getCrawlerService() {
+		return new CrawlerService();
 	}
 	
 	@Bean("TermsService")

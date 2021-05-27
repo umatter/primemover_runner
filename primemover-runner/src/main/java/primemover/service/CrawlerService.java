@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+import primemover.captcha.CaptchaSolvingType;
 import primemover.config.StartupMode;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
@@ -52,6 +52,8 @@ public class CrawlerService implements ICrawlerService {
 	@Value("#{'${backend.endpoint}' +'reports'}")
 	private String endpointPathReports;
 	
+	@Value("${anticaptcha.defaultMode:NEVER}")
+	private CaptchaSolvingType captchaSolvingDefault;	
 
 	private static Logger logger = LoggerFactory.getLogger(CrawlerService.class);
 	
@@ -148,7 +150,7 @@ public class CrawlerService implements ICrawlerService {
 		String url = calculateCrawlerUrl(null);
 		logger.debug("loading jobs from {}", url);
 		CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);		
-		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes);
+		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes, captchaSolvingDefault);
 		
 		if (mode != StartupMode.PRODUCTION) {
 			adjustJobsToToday(res);
@@ -177,7 +179,7 @@ public class CrawlerService implements ICrawlerService {
 			logger.debug("loading jobs from {}", url);
 			CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);
 
-			List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes);
+			List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes, captchaSolvingDefault);
 			if (mode != StartupMode.PRODUCTION) {
 				adjustJobsToToday(res);
 			}
@@ -201,6 +203,8 @@ public class CrawlerService implements ICrawlerService {
 	    data.put("mimetype", mimeType);
 	    data.put("filename", filename);
 	    
+	    logger.trace("writing Job-Report data", data);
+	    
 	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 	  	   
 	    try {
@@ -220,7 +224,7 @@ public class CrawlerService implements ICrawlerService {
 	    }
 	}
 	
-	public Boolean writeS3JobData(Long jobId, String filename, String description) {
+	public Boolean writeS3JobData(Long jobId, String filename, String path, String description) {
 		HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_JSON);
 	    JSONObject data = new JSONObject();
@@ -228,6 +232,9 @@ public class CrawlerService implements ICrawlerService {
 	    data.put("description", description);
 	    data.put("mimetype", "primemover/s3");
 	    data.put("filename", filename);
+	    data.put("path", path);
+	    
+	    logger.trace("writing S3-Report data", data);
 	    
 	    HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 	  	   

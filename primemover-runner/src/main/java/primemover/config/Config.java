@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.IJobManager;
 import primemover.runner.JobListRunnerFactory;
@@ -95,6 +96,11 @@ public class Config {
         return restTemplate; 
 	}
 	
+	@Bean(name="CaptchaSolver")
+	public CaptchaSolver getCaptchaSolver() {
+		return new CaptchaSolver();
+	}
+	
 	@Bean(name="IpServiceFactory")
 	public IpServiceFactory getIpServiceFactory() {
 		return new IpServiceFactory();
@@ -105,12 +111,12 @@ public class Config {
 	IStorageService getFileStorageServices() {
 		return new FileStorageService();
 	}
-	*/
+	
 	
 	@Bean(name="backendStorageService")
 	IStorageService getBackendStorageServices() {
 		return new BackendStorageService();
-	}
+	}*/
 	
 	@Bean(name="AwsS3StorageService")
 	IStorageService getAwsS3StorageServices() {

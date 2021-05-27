@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import primemover.captcha.CaptchaSolvingType;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
@@ -27,13 +29,16 @@ public class MockCrawlerService implements ICrawlerService {
 	@Qualifier("ServiceRestTemplate")
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Value("${anticaptcha.defaultMode:NEVER}")
+	private CaptchaSolvingType captchaSolvingDefault;
+	
 
 	private String filePath;
 	private Boolean writeResult = true;
 	
 	public MockCrawlerService() {
 	}
-	
 	
 	private ObjectMapper getObjectMapper() {
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
@@ -44,7 +49,8 @@ public class MockCrawlerService implements ICrawlerService {
 				return jconverter.getObjectMapper();
 			}
 		}
-         return null; 
+        
+		return null; 
 	}
 	
 	public void setMockFile(String filePath) {
@@ -68,7 +74,7 @@ public class MockCrawlerService implements ICrawlerService {
 			String json = new String(Files.readAllBytes(Paths.get(filePath)));
 			
 			CrawlerResult apiCrawler = mapper.readValue(json, CrawlerResult.class);
-			return PrimemoverApiConverter.convertFromApi(apiCrawler);
+			return PrimemoverApiConverter.convertFromApi(apiCrawler, captchaSolvingDefault);
 		} catch (JsonMappingException e) {
 			throw new IllegalStateException("could not convert input file", e);
 		} catch (JsonProcessingException e) {
@@ -90,12 +96,8 @@ public class MockCrawlerService implements ICrawlerService {
 		return res;
 	}
 
-
 	@Override
-	public Boolean writeS3JobData(Long jobId, String filename, String description) {
+	public Boolean writeS3JobData(Long jobId, String filename, String path, String description) {
 		return writeResult;
 	}
-	
-	
-
 }

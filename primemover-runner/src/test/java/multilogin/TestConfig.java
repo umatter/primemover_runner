@@ -6,6 +6,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
@@ -35,6 +36,11 @@ public class TestConfig {
 	@Bean("OutletService")
 	OutletService getOutletService() {
 		return new OutletService();
+	}
+	
+	@Bean(name="CaptchaSolver")
+	public CaptchaSolver getCaptchaSolver() {
+		return new CaptchaSolver();
 	}
 	
 	@Bean("TermsService")

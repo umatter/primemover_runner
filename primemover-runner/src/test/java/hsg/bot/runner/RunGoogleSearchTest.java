@@ -88,9 +88,9 @@ class RunGoogleSearchTest {
 		// open page and aggree terms
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
 		jobs.appendJob(visitJob);
-		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//iframe");
 		jobs.appendJob(trySwitchToJob);
-		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"zV9nZe\"]/div"); 
 		jobs.appendJob(tryClickJob);
 		
 		// enter search term
