@@ -29,13 +29,15 @@ import java.util.Map;
 public class MulitLoginBrowserProfile {
 	
 	private static Logger logger = LoggerFactory.getLogger(MulitLoginBrowserProfile.class);
-	
-	
+		
 	@Value("${mulitlogin.ApiWaitSeconds:10}")
-	private Long apiWaitSeconds = 10l;
+	private Long apiWaitSeconds;
 	
-	private int apiConnectTimeoutSeconds = 15;
-	private int apiReadTimeoutSeconds = 90;
+	@Value("${mulitlogin.ConnectTimeoutSeconds:20}")
+	private int apiConnectTimeoutSeconds;
+	
+	@Value("${mulitlogin.ReadTimeoutSeconds:90}")
+	private int apiReadTimeoutSeconds;
 	
 	
 	@Autowired()
@@ -84,6 +86,8 @@ public class MulitLoginBrowserProfile {
 	
 	public void updateProxy(RecordingProxy proxy) throws Exception {
 		String url = "http://127.0.0.1:35000/api/v2/profile/" + this.profileId;
+		
+		logger.debug("Updating proxy for profile {}", this.profileId);
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -199,6 +203,9 @@ public class MulitLoginBrowserProfile {
 		 */
 		String url = "http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=" + this.profileId;
 
+		logger.debug("Starting profile {}", this.profileId);
+
+		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		con.setConnectTimeout(apiConnectTimeoutSeconds * 1000);
@@ -224,6 +231,7 @@ public class MulitLoginBrowserProfile {
 			return jsonResponse.getString("value");
 		}
 		
+		logger.warn("could not start profile {}", this.profileId);
 		throw new IllegalStateException("Could not load Mulitlogin profile");
 	}
 	
@@ -241,8 +249,10 @@ public class MulitLoginBrowserProfile {
 
 		if (responseCode == 204) {
 			runApiWait();
+			logger.debug("deleted profile {}", this.profileId);
 			return true;
 		} else {
+			logger.warn("could not delete profile {}", this.profileId);
 			return false;
 		}
 	}

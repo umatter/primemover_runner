@@ -42,7 +42,9 @@ import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.TrySwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.model.IJob;
@@ -209,6 +211,24 @@ public class PrimemoverApiConverter {
 		return job;
 	}
 	
+	private static SwitchToJob convertApiSwitchJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		SwitchToJob job = new SwitchToJob();
+		setBaseFields(job, id, name, description, captchaSolving);
+		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setSelector(behaviours.get("selector"));
+
+		return job;
+	}
+	
+	private static TrySwitchToJob convertApiTrySwitchJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		TrySwitchToJob job = new TrySwitchToJob();
+		setBaseFields(job, id, name, description, captchaSolving);
+		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setSelector(behaviours.get("selector"));
+
+		return job;
+	}
+	
 	
 	private static SingleSelectUrlJob convertApiSingleSelectUrlJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		SingleSelectUrlJob job = new SingleSelectUrlJob();
@@ -258,7 +278,7 @@ public class PrimemoverApiConverter {
 		// Anti-Captcha
 		CaptchaSolvingType captchaSolving = defaultCaptchaSolving;
 		if (behaviors.containsKey("captchaMode")) {
-			captchaSolving = CaptchaSolvingType.valueOf(behaviors.get("captchaMode"));
+			captchaSolving = CaptchaSolvingType.valueOf(behaviors.get("captchaMode").toUpperCase());
 		}
 		
 		
@@ -274,6 +294,12 @@ public class PrimemoverApiConverter {
 			break;
 		case "singleselecturljob":
 			res = convertApiSingleSelectUrlJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+			break;
+		case "tryswitchjob":
+			res = convertApiTrySwitchJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+			break;
+		case "switchjob":
+			res = convertApiSwitchJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
 			break;
 		case "tryclickjob":
 			res = convertApiTryClickJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
@@ -339,7 +365,7 @@ public class PrimemoverApiConverter {
 	private static Joblist convertApiQueue(primemover.model.api.Queue item, CaptchaSolvingType defaultCaptchaSolving) {
 		Joblist jobList = new Joblist();
 		
-		jobList.setId(new Long(item.getId()));
+		jobList.setId(item.getId().longValue());
 		jobList.setActive(item.isActive());
 		jobList.setProcessed(item.isProcessed());
 		jobList.setReviewed(item.isReviewed());
@@ -369,7 +395,7 @@ public class PrimemoverApiConverter {
 		// grab crawler
 		Crawler crawler = new Crawler();
 		
-		crawler.setId(new Long(item.getId()));
+		crawler.setId(item.getId().longValue());
 		crawler.setName(item.getName());
 		crawler.setDescription(item.getDescription());
 		crawler.setAgent(convertApiAgent(item.getAgent()));
