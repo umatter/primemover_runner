@@ -56,7 +56,7 @@ public class TaskOperator implements ITaskOperator {
 	@Value("${anticaptcha.check.enabled:true}")
 	private Boolean runCaptchaChecks;
 	
-	private OperatorContext context;
+	private OperatorContext context = null;
 
 	@Autowired
 	private JobService jobService;
@@ -498,6 +498,11 @@ public class TaskOperator implements ITaskOperator {
 
 	@Override
 	public void tearDown(boolean immediate) {
+		
+		if (context == null) {
+			return; // nothing to do
+		}
+		
 		logger.info("Tearing down crawler {}", context.getCrawler().getId());
 
 		isSetup.set(false);
