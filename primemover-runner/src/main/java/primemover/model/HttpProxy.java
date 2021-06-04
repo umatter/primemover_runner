@@ -6,6 +6,7 @@ public class HttpProxy implements IProxy {
 	private Integer port;
 	private String username;
 	private String password;
+	private Boolean useHttps = false;
 	
 	@Override
 	public String getUrl() {
@@ -53,6 +54,14 @@ public class HttpProxy implements IProxy {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public Boolean useHttps() {
+		return useHttps;
+	}
+
+	public void setUseHttps(Boolean useHttps) {
+		this.useHttps = useHttps;
 	}
 	
 	

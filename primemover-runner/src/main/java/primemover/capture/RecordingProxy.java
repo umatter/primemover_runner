@@ -17,7 +17,6 @@ import java.net.UnknownHostException;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
-import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.littleshoot.proxy.impl.ProxyUtils;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.Proxy.ProxyType;
@@ -40,11 +39,11 @@ import io.netty.handler.codec.http.HttpResponse;
 
 import com.browserup.bup.mitm.CertificateAndKeySource;
 import com.browserup.bup.mitm.KeyStoreFileCertificateSource;
-import com.browserup.bup.mitm.RootCertificateGenerator;
 import com.browserup.bup.mitm.keys.ECKeyGenerator;
 import com.browserup.bup.mitm.manager.ImpersonatingMitmManager;
 
 import primemover.model.GeoSurfProxy;
+import primemover.model.HttpProxy;
 import primemover.model.IProxy;
 import primemover.service.IpService;
 
@@ -152,8 +151,8 @@ public class RecordingProxy {
 		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
 				.rootCertificateSource(existingCertificateSource)
 				.serverKeyGenerator(new ECKeyGenerator())
-				//.cacheConcurrencyLevel(16) // 8 is default
-				//.cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
+				.cacheConcurrencyLevel(16) // 8 is default
+				.cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
 				//.trustAllServers(true)
 				.build();
                 
@@ -183,9 +182,17 @@ public class RecordingProxy {
         });
 
 		if (targetProxy != null) {
-			logger.debug("using chained proxy");
+			logger.debug("using chained proxy {}:{}", targetProxy.getPort(), targetProxy.getPort());
 			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
 			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
+			
+			if (targetProxy instanceof  HttpProxy) {
+				HttpProxy typedTargetProxy = (HttpProxy) targetProxy;
+				
+				if (typedTargetProxy.useHttps()) {
+					proxy.setChainedProxyHTTPS(true);
+				}
+			}
 
 			// create session-identifier and set session-headers
 			if (targetProxy instanceof GeoSurfProxy) {
@@ -328,15 +335,18 @@ public class RecordingProxy {
 			
 		Proxy seleniumProxy = ClientUtil.createSeleniumProxy(proxy);
 		
-		InetAddress adr = getInetAddress();
-		String hostIp = adr.getHostAddress();
-		String port = String.valueOf(proxy.getPort());
-		seleniumProxy.setProxyType(ProxyType.MANUAL);
+		//InetAddress adr = getInetAddress();
+		//String hostIp = adr.getHostAddress();
 		//seleniumProxy.setHttpProxy(hostIp + ":" + port);
 		//seleniumProxy.setSslProxy(hostIp + ":" + port);
+		String port = String.valueOf(proxy.getPort());
+		seleniumProxy.setProxyType(ProxyType.MANUAL);
 		
-		seleniumProxy.setHttpProxy("localhost:" + port);
-		seleniumProxy.setSslProxy("localhost:" + port);
+		seleniumProxy.setHttpProxy("0.0.0.0:" + port);
+		seleniumProxy.setSslProxy("0.0.0.0:" + port);
+		
+		//seleniumProxy.setHttpProxy("localhost:" + port);
+		//seleniumProxy.setSslProxy("localhost:" + port);
 	   
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
 		//cap.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);

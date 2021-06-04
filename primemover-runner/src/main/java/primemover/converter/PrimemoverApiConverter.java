@@ -70,6 +70,10 @@ public class PrimemoverApiConverter {
 				
 			} else if (type.contains("http")) {
 				res = new HttpProxy();
+				
+				if (type.equals("https")) {
+					res.setUseHttps(true);
+				}
 			} else {
 				throw new InvalidArgumentException("Unknown proxy type");
 			}
