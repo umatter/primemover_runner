@@ -28,7 +28,6 @@ import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
-import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;

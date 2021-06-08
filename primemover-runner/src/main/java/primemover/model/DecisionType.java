@@ -4,5 +4,5 @@ public enum DecisionType {
 	FIRST,
 	LAST,
 	RANDOM,
-	CALCULATED	
+	CALCULATED
 }

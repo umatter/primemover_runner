@@ -102,9 +102,6 @@ public class PrimemoverApiConverter {
 		
 		if (StringUtils.isEmpty(ident)) {
 			ident = "multilogin";
-			
-			// TODO reimplement
-			// throw new InvalidArgumentException("Identification is required");
 		}
 		
 		ident = ident.toLowerCase();

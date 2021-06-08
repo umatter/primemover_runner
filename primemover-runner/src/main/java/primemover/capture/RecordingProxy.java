@@ -209,7 +209,7 @@ public class RecordingProxy {
 		            public HttpFilters filterRequest(HttpRequest originalRequest) {
 		                return new HttpFiltersAdapter(originalRequest) {
 		                	
-		                    @SuppressWarnings("deprecation")
+		                    @SuppressWarnings("deprecated")
 							@Override
 		                    public HttpResponse proxyToServerRequest(HttpObject httpObject) {
 		                        if (httpObject instanceof HttpRequest) {

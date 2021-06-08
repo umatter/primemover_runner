@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import primemover.captcha.CaptchaJobHelper;
 import primemover.captcha.CaptchaJobHelper.JobPosition;
 import primemover.captcha.CaptchaSolver;
-import primemover.captcha.CaptchaSolverResult;
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.IJob;

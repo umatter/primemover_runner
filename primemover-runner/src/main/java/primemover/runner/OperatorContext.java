@@ -4,7 +4,6 @@ import org.openqa.selenium.WebDriver;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
-import primemover.service.JobData;
 
 public abstract class OperatorContext {
 	
