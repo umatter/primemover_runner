@@ -341,10 +341,10 @@ public class PrimemoverApiConverter {
 		case "scrollbylengthjob":
 			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
 			break;
-		case "handlealertJob":
+		case "handlealertjob":
 			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
 			break;
-		case "tryhandlealertJob":
+		case "tryhandlealertjob":
 			res = convertApiTryHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
 			break;
 		default:

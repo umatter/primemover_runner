@@ -18,7 +18,8 @@
 	<description>Runner for the Botnet</description>
 
 	<properties>
-		<java.version>14</java.version>
+		<java.version>11</java.version>
+		<skipTests>true</skipTests>
 	</properties>
 	
 	<repositories>  
