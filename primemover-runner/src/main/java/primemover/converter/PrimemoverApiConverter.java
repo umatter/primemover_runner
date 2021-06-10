@@ -16,6 +16,7 @@ import primemover.model.BasicAgent;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
+import primemover.model.DialogHandleType;
 import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
 import primemover.model.IProxy;
@@ -39,11 +40,13 @@ import primemover.model.api.TermResult;
 import primemover.model.jobs.BaseJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
+import primemover.model.jobs.HandleAlertJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.TryHandleAlertJob;
 import primemover.model.jobs.TrySwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
@@ -150,6 +153,30 @@ public class PrimemoverApiConverter {
 		return job;
 	}
 	
+	private static HandleAlertJob convertApiHandleAlertJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		HandleAlertJob job = new HandleAlertJob();
+		setBaseFields(job, id, name, description, captchaSolving);
+		if (behaviours.containsKey("seconds")) {
+			job.setAction(DialogHandleType.valueOf(behaviours.get("action")));
+		} else {
+			job.setAction(DialogHandleType.ACCEPT);
+		}		
+	
+		return job;
+	}
+
+	private static HandleAlertJob convertApiTryHandleAlertJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		TryHandleAlertJob job = new TryHandleAlertJob();
+		setBaseFields(job, id, name, description, captchaSolving);
+		if (behaviours.containsKey("seconds")) {
+			job.setAction(DialogHandleType.valueOf(behaviours.get("action")));
+		} else {
+			job.setAction(DialogHandleType.ACCEPT);
+		}		
+	
+		return job;
+	}
+
 	private static WaitJob convertApiWaitJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		WaitJob job = new WaitJob();
 		setBaseFields(job, id, name, description, captchaSolving);
@@ -313,6 +340,12 @@ public class PrimemoverApiConverter {
 			break;
 		case "scrollbylengthjob":
 			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+			break;
+		case "handlealertJob":
+			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+			break;
+		case "tryhandlealertJob":
+			res = convertApiTryHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid Job type found: " + job.getType());

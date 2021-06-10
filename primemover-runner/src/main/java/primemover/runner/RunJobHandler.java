@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -40,11 +41,13 @@ import primemover.model.jobs.AssertScrolledMaxJob;
 import primemover.model.jobs.AssertTextInFieldJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
+import primemover.model.jobs.HandleAlertJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.TryHandleAlertJob;
 import primemover.model.jobs.TrySwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
@@ -156,6 +159,53 @@ public class RunJobHandler {
 					throw new UnsupportedOperationException("Not implemented yet");
 				}
 
+			}
+		});
+
+
+		logger.trace("creating HandleAlertJob-Handler");
+		dispatch.put(HandleAlertJob.class, new Handler() {
+			public void handle(OperatorContext context, IJob job) {
+				WebDriver driver = context.getDriver();
+				HandleAlertJob typedJob = (HandleAlertJob) job;
+
+				Alert dialog = driver.switchTo().alert();
+
+				switch (typedJob.getAction()) {
+				case ACCEPT:
+					dialog.accept();
+					break;
+				case REJECT:
+					dialog.dismiss();
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented yet");
+				}
+			}
+		});
+
+		logger.trace("creating TryHandleAlertJob-Handler");
+		dispatch.put(TryHandleAlertJob.class, new Handler() {
+			public void handle(OperatorContext context, IJob job) {
+				WebDriver driver = context.getDriver();
+				TryHandleAlertJob typedJob = (TryHandleAlertJob) job;
+
+				try {
+					Alert dialog = driver.switchTo().alert();
+				
+				switch (typedJob.getAction()) {
+				case ACCEPT:
+					dialog.accept();
+					break;
+				case REJECT:
+					dialog.dismiss();
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented yet");
+				}
+				} catch (Exception e) {
+					logger.warn("error execution TryHandleAlertJob", e);
+				}
 			}
 		});
 		

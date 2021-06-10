@@ -57,6 +57,8 @@ set ERROR_CODE=0
 @REM To isolate internal variables from possible post scripts, we use another setlocal
 @setlocal
 
+set "JAVA_HOME=C:\Program Files\Java\jdk-14.0.2"
+
 @REM ==== START VALIDATION ====
 if not "%JAVA_HOME%" == "" goto OkJHome
 
@@ -68,6 +70,9 @@ echo.
 goto error
 
 :OkJHome
+
+echo "JAVA_HOME %JAVA_HOME%"
+
 if exist "%JAVA_HOME%\bin\java.exe" goto init
 
 echo.
@@ -107,6 +112,9 @@ set MAVEN_PROJECTBASEDIR=%EXEC_DIR%
 cd "%EXEC_DIR%"
 
 :endDetectBaseDir
+@REM Hack to set the correct base directory
+set MAVEN_PROJECTBASEDIR="%MAVEN_PROJECTBASEDIR%/primemover-runner"
+echo "MAVEN_PROJECTBASEDIR %MAVEN_PROJECTBASEDIR%"
 
 IF NOT EXIST "%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config" goto endReadAdditionalConfig
 
@@ -157,6 +165,8 @@ if exist %WRAPPER_JAR% (
 @REM Provide a "standardized" way to retrieve the CLI args that will
 @REM work with both Windows and non-Windows executions.
 set MAVEN_CMD_LINE_ARGS=%*
+
+echo "Running %MAVEN_JAVA_EXE% %JVM_CONFIG_MAVEN_PROPS% %MAVEN_OPTS% %MAVEN_DEBUG_OPTS% -classpath %WRAPPER_JAR% "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*"
 
 %MAVEN_JAVA_EXE% %JVM_CONFIG_MAVEN_PROPS% %MAVEN_OPTS% %MAVEN_DEBUG_OPTS% -classpath %WRAPPER_JAR% "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*
 if ERRORLEVEL 1 goto error
