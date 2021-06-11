@@ -8,8 +8,8 @@ public abstract class BaseJob implements IJob {
 	String description;
 	String name;
 	CaptchaSolvingType captchaSolving;
+	Boolean runFailsave = false; // Defaults to false
 	
-
 	public BaseJob() {
 		super();
 	}
@@ -50,10 +50,27 @@ public abstract class BaseJob implements IJob {
 		return this.captchaSolving;
 	}
 
+	public void setIsFailsave(Boolean value) {
+		this.runFailsave = value;
+	}
+
+	@Override
+	public Boolean isFailsave() {
+		return this.runFailsave;
+	}
+
 	public BaseJob(Long id, String name, String description) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.description = description;
+	}
+
+	public BaseJob(Long id, String name, String description, Boolean isFailsave) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.description = description;
+		this.runFailsave = isFailsave;
 	}
 }

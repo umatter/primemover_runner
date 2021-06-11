@@ -8,4 +8,5 @@ public interface IJob {
 	String getName();
 	String getDescription();
 	CaptchaSolvingType getCaptchaSolving();
+	Boolean isFailsave();
 }

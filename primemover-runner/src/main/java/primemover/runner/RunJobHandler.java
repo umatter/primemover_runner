@@ -46,9 +46,6 @@ import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
-import primemover.model.jobs.TryClickJob;
-import primemover.model.jobs.TryHandleAlertJob;
-import primemover.model.jobs.TrySwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.util.Page;
@@ -183,32 +180,6 @@ public class RunJobHandler {
 				}
 			}
 		});
-
-		logger.trace("creating TryHandleAlertJob-Handler");
-		dispatch.put(TryHandleAlertJob.class, new Handler() {
-			public void handle(OperatorContext context, IJob job) {
-				WebDriver driver = context.getDriver();
-				TryHandleAlertJob typedJob = (TryHandleAlertJob) job;
-
-				try {
-					Alert dialog = driver.switchTo().alert();
-				
-				switch (typedJob.getAction()) {
-				case ACCEPT:
-					dialog.accept();
-					break;
-				case REJECT:
-					dialog.dismiss();
-					break;
-				default:
-					throw new UnsupportedOperationException("Not implemented yet");
-				}
-				} catch (Exception e) {
-					logger.warn("error execution TryHandleAlertJob", e);
-				}
-			}
-		});
-		
 		
 		logger.trace("creating EnterTextFieldJob-Handler");
 		dispatch.put(EnterTextFieldJob.class, new Handler() {
@@ -341,72 +312,6 @@ public class RunJobHandler {
 			}
 		});
 		
-		logger.trace("creating TryClickJob-Handler");
-		dispatch.put(TryClickJob.class, new Handler() {
-			public void handle(OperatorContext context, IJob job) {
-				WebDriver driver = context.getDriver();
-				TryClickJob typedJob = (TryClickJob) job;
-
-				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
-						typedJob.getSelector());
-				
-				if (elements.size() == 1) {
-
-					logger.debug("element found in TryClickJob {}", job.getId());
-					WebElement selectedElement = elements.get(0);
-					
-					try {
-						Actions actions = new Actions(driver);
-						actions.moveToElement(selectedElement);
-						actions.click(selectedElement);
-						actions.perform();
-					} catch (Exception e) {
-						logger.error("Fatal", e);
-					}
-				} else {
-					logger.debug("no element found in TryClickJob {}", job.getId());
-				}
-				
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// nothing to do
-				}
-			}
-		});
-		
-		logger.trace("creating TrySwitchToJob-Handler");
-		dispatch.put(TrySwitchToJob.class, new Handler() {
-			public void handle(OperatorContext context, IJob job) {
-				WebDriver driver = context.getDriver();
-				TrySwitchToJob typedJob = (TrySwitchToJob) job;
-
-				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
-						typedJob.getSelector());
-				
-				if (elements.size() == 1) {
-
-					logger.debug("element found in TryClickJob {}", job.getId());
-					WebElement selectedElement = elements.get(0);
-					
-					try {
-
-						driver.switchTo().frame(selectedElement);
-					} catch (Exception e) {
-						logger.warn("Error in job {}", job.getId(), e);
-					}
-				} else {
-					logger.debug("no element found in TryClickJob {}", job.getId());
-				}
-				
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// nothing to do
-				}
-			}
-		});
-		
 		logger.trace("creating SwitchToJob-Handler");
 		dispatch.put(SwitchToJob.class, new Handler() {
 			public void handle(OperatorContext context, IJob job) {
@@ -432,8 +337,7 @@ public class RunJobHandler {
 				}
 			}
 		});
-		
-		logger.trace("creating TryClickJob-Handler");
+		logger.trace("creating ClickJob-Handler");
 		dispatch.put(ClickJob.class, new Handler() {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
@@ -459,7 +363,6 @@ public class RunJobHandler {
 				}
 			}
 		});
-		
 		logger.trace("creating AssertTextInFieldJob-Handler");
 		dispatch.put(AssertTextInFieldJob.class, new Handler() {
 			public void handle(OperatorContext context, IJob job) {
@@ -608,6 +511,17 @@ public class RunJobHandler {
 		if (h == null) {
 			throw new UnsupportedOperationException("This type is not yet supported");
 		}
-		h.handle(context, job); // <<== Here is the magic
+
+		if (job.isFailsave()) {
+			// catch any exception
+			try {
+				h.handle(context, job);
+			} catch (Exception e) {
+				logger.warn("Error in Failsave Job {} of type {}", job.getId(), job.getClass().getSimpleName(), e);
+			}
+		} else {
+			h.handle(context, job);
+		}
+
 	}
 }
