@@ -90,6 +90,12 @@ public class Waiter {
 				logger.trace("element still here after timeout of {} millis {}", timeoutMillis, element);
 				throw new TimeoutException("wait for object to vanish timed out " + element.toString());
 			}
+
+			try {
+                Thread.sleep(50);
+            } catch (Exception e) {
+                // Nothing to do
+            }
 		}
 
 		logger.trace("Element gone {}", element);

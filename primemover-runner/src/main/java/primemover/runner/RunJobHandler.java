@@ -48,6 +48,7 @@ import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
+import primemover.util.NavigationHelper;
 import primemover.util.Page;
 import primemover.util.Scrolling;
 import primemover.util.SelectingHelper;
@@ -84,6 +85,7 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
 				VisitJob typedJob = (VisitJob) job;
+				NavigationHelper navHelper = new NavigationHelper(driver, 120000);
 				
 				// captcha before
 				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
@@ -91,7 +93,10 @@ public class RunJobHandler {
 				logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
 				driver.navigate().to(typedJob.getUrl());
 				
-				// wait with retry until loaded
+				// Wait for DOM-reload
+				navHelper.waitForPageLoad();
+				
+				// wait for pending javascript triggered loads
 				primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 10, 12); // check every 10 seconds for 2 Minutes
 				
 				// captcha after
