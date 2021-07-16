@@ -23,7 +23,7 @@ public class NavigationHelper {
     }
 
     public void init() {
-        logger.trace("initialized");
+        logger.debug("initialized");
         try {
         	old_page = driver.findElement(By.id("html"));        	
 		} catch (NoSuchElementException e) {
@@ -32,6 +32,7 @@ public class NavigationHelper {
     }
 
     public void waitForPageLoad() {
+    	logger.debug("start waiting for page load");
         boolean done = false;
         final long startMillis = System.currentTimeMillis();
         long curMillis;
@@ -64,6 +65,6 @@ public class NavigationHelper {
             }
         }
 
-        logger.trace("page loaded");
+        logger.debug("page loaded");
     }
 }

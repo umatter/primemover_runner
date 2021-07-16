@@ -105,8 +105,6 @@ class ProxyTestSuite {
 	}
 	
 	
-	
-	
 	@AfterEach
     public void tearDown() {
         service.tearDown(true);

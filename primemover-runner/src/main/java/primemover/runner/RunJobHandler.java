@@ -94,7 +94,12 @@ public class RunJobHandler {
 				driver.navigate().to(typedJob.getUrl());
 				
 				// Wait for DOM-reload
-				navHelper.waitForPageLoad();
+				try {
+					navHelper.waitForPageLoad();
+				} catch (Exception e) {
+					logger.warn("simple page load wait (DOM) failed.");
+					// second chance below
+				}
 				
 				// wait for pending javascript triggered loads
 				primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 5, 12); // check every 5 seconds for 1 Minutes

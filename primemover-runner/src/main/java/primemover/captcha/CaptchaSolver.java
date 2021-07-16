@@ -66,8 +66,6 @@ public class CaptchaSolver {
 				
 				String response = client.getTaskSolution().getGRecaptchaResponse();
 				
-				//WebElement elemResponse = driver.findElement(By.className("g-recaptcha-response"));
-				
 				// write respone in Javascript as target is hidden!
 				JavascriptExecutor jse = (JavascriptExecutor) driver;
 				jse.executeScript("document.getElementById(\"g-recaptcha-response\").innerHTML = \"" + response + "\";");
@@ -75,8 +73,29 @@ public class CaptchaSolver {
 				Thread.sleep(1000l);
 				
 				if (submit) {
-					WebElement elemSubmit = driver.findElement(By.xpath("//*[@type=\"submit\"]"));
-					elemSubmit.click();	
+					// Kaskadierend Varianten ausprobieren
+					boolean submitDone = false;
+					try {
+						WebElement elemSubmit = driver.findElement(By.xpath("//*[@type=\"submit\"]"));
+						elemSubmit.click();
+						submitDone = true;
+						logger.debug("submitted form (job {})", job.getId());
+					} catch (Exception e) {
+						logger.debug("nothing found to submit via submit-Button (job {})", job.getId());
+						// Silently ignoring the not existing submit button
+					}
+					
+					if (!submitDone) {
+						try {
+
+							WebElement captchaForm = driver.findElement(By.className("captcha-form"));
+							captchaForm.submit();
+							submitDone = true;
+						} catch (NoSuchElementException e) {
+							logger.debug("nothing found to submit via form-element(job {})", job.getId());
+							// Silently ignoring the not existing submit on the form
+						}
+					}
 				}
 				
 				return CaptchaSolverResult.SUCCESS;
