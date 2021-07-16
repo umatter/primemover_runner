@@ -38,6 +38,7 @@ public class SelectingHelper {
 	private Random rand = new Random();
 
 	public List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
+		logger.debug("grabing elements by {} with selector {}", type, selector);
 		List<WebElement> elements;
 		switch (type) {
 		case CLASS:

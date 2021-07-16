@@ -351,13 +351,16 @@ public class RunJobHandler {
 					WebElement selectedElement = elements.get(0);
 					
 					selectedElement.click();
+					if (typedJob.expectsPageReload()) {
+						Waiter.waitUntilObjectGone(driver, 2000, selectedElement);
+					}
 				} else {
 					logger.warn("Found more than one element for job {}", typedJob.getId());
 					throw new IllegalStateException("More than one element found for job " + typedJob.getId());
 				}
 				
 				try {
-					Thread.sleep(500);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// nothing to do
 				}

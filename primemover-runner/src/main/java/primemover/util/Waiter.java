@@ -1,8 +1,13 @@
 package primemover.util;
 
+import java.util.Date;
+
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -11,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 public class Waiter {
 	private static Logger logger = LoggerFactory.getLogger(Waiter.class);
-	
 	
 	/**
 	 * Waits for Javascript to finish loading
@@ -63,4 +67,31 @@ public class Waiter {
             return true;
         }
     }
+
+	
+
+	public static void waitUntilObjectGone(WebDriver driver, Integer timeoutMillis, WebElement element) {
+		boolean done = false;
+		logger.trace("Waiting for element to vanish {} for {} millis", element, timeoutMillis);
+
+		final long startMillis = System.currentTimeMillis();
+		long curMillis;
+
+		while (!done) {
+			try {
+				element.findElements(By.id("doesn't matter"));
+			} catch (StaleElementReferenceException e) {
+				done = true;
+			}
+
+			curMillis = System.currentTimeMillis();
+
+			if ((curMillis - startMillis) > timeoutMillis) {
+				logger.trace("element still here after timeout of {} millis {}", timeoutMillis, element);
+				throw new TimeoutException("wait for object to vanish timed out " + element.toString());
+			}
+		}
+
+		logger.trace("Element gone {}", element);
+	}
 }

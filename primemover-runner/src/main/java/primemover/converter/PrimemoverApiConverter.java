@@ -56,6 +56,10 @@ public class PrimemoverApiConverter {
 		
 	private static IProxy convertApiProxy(primemover.model.api.Proxy item, Crawler crawler) {
 		
+		if (item == null) {
+			return null;
+		}
+
 		HttpProxy res;	
 		
 		String type = item.getType();
@@ -217,6 +221,12 @@ public class PrimemoverApiConverter {
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
+
+		if (behaviours.containsKey("expectsPageReload")) {
+			job.setExpectsPageReload(Boolean.parseBoolean(behaviours.get("expectsPageReload")));
+		} else {
+			job.setExpectsPageReload(Boolean.FALSE);
+		}
 	
 		return job;
 	}
