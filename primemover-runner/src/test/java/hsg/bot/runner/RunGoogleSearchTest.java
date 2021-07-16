@@ -19,11 +19,11 @@ import primemover.model.MediaOutlet;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
+import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectUrlJob;
-import primemover.model.jobs.TryClickJob;
-import primemover.model.jobs.TrySwitchToJob;
+import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.ITaskOperator;
@@ -88,9 +88,11 @@ class RunGoogleSearchTest {
 		// open page and aggree terms
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
 		jobs.appendJob(visitJob);
-		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//iframe");
+		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//iframe");
+		trySwitchToJob.setIsFailsave(true);
 		jobs.appendJob(trySwitchToJob);
-		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"zV9nZe\"]/div"); 
+		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"zV9nZe\"]/div", false); 
+		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 		
 		// enter search term
@@ -119,25 +121,30 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
-		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		WaitJob waitJob = new WaitJob(2l, "wait", "wait", 1);
+		jobs.appendJob(waitJob);
+		
+		SwitchToJob trySwitchToJob = new SwitchToJob(3l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		trySwitchToJob.setIsFailsave(true);
 		jobs.appendJob(trySwitchToJob);
-		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		ClickJob tryClickJob = new ClickJob(4l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
+		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(5l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 10);
+		waitJob = new WaitJob(6l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(7l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(7l, "wait", "wait", 10);
+		waitJob = new WaitJob(8l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);
@@ -151,9 +158,11 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
 		jobs.appendJob(visitJob);
-		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		trySwitchToJob.setIsFailsave(true);
 		jobs.appendJob(trySwitchToJob);
-		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
+		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 		
 		// enter search term
@@ -185,9 +194,11 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
-		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		trySwitchToJob.setIsFailsave(true);
 		jobs.appendJob(trySwitchToJob);
-		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
+		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 		
 		// enter search term
@@ -217,9 +228,11 @@ class RunGoogleSearchTest {
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
 		jobs.appendJob(visitJob);
-		TrySwitchToJob trySwitchToJob = new TrySwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
+		trySwitchToJob.setIsFailsave(true);
 		jobs.appendJob(trySwitchToJob);
-		TryClickJob tryClickJob = new TryClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span");
+		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
+		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 		
 		// enter search term
@@ -248,5 +261,4 @@ class RunGoogleSearchTest {
         agent = null;
         crawler = null;
     }
-
 }

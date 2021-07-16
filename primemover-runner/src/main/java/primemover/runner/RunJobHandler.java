@@ -85,7 +85,7 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
 				VisitJob typedJob = (VisitJob) job;
-				NavigationHelper navHelper = new NavigationHelper(driver, 120000);
+				NavigationHelper navHelper = new NavigationHelper(driver, 2*60*1000l); // 2 Minuten
 				
 				// captcha before
 				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
@@ -97,7 +97,7 @@ public class RunJobHandler {
 				navHelper.waitForPageLoad();
 				
 				// wait for pending javascript triggered loads
-				primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 10, 12); // check every 10 seconds for 2 Minutes
+				primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 5, 12); // check every 5 seconds for 1 Minutes
 				
 				// captcha after
 				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);

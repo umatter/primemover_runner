@@ -345,8 +345,9 @@ public class RecordingProxy {
 		seleniumProxy.setHttpProxy("0.0.0.0:" + port);
 		seleniumProxy.setSslProxy("0.0.0.0:" + port);
 		
-		//seleniumProxy.setHttpProxy("localhost:" + port);
-		//seleniumProxy.setSslProxy("localhost:" + port);
+		// debug only
+		seleniumProxy.setHttpProxy("localhost:" + port);
+		seleniumProxy.setSslProxy("localhost:" + port);
 	   
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
 		//cap.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);

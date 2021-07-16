@@ -3,6 +3,7 @@ package primemover.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -23,7 +24,11 @@ public class NavigationHelper {
 
     public void init() {
         logger.trace("initialized");
-        old_page = driver.findElement(By.id("html"));
+        try {
+        	old_page = driver.findElement(By.id("html"));        	
+		} catch (NoSuchElementException e) {
+			// nothing to do. Assume first page
+		}
     }
 
     public void waitForPageLoad() {
@@ -32,9 +37,19 @@ public class NavigationHelper {
         long curMillis;
 
         while (!done) {
-            WebElement new_page = driver.findElement(By.id("html"));
+            WebElement new_page = null;
 
-            done = !new_page.equals(old_page);
+            try {
+            	new_page = driver.findElement(By.id("html"));
+            	
+            	if (new_page != null) {
+                    done = !new_page.equals(old_page);
+            	}
+            	
+			} catch (NoSuchElementException e) {
+				// nothing to do. Assume still loading
+			}
+
             
             curMillis = System.currentTimeMillis();
             if ((curMillis - startMillis) > this.timeoutMillis) {

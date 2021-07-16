@@ -17,7 +17,7 @@ import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
-import primemover.model.jobs.TryClickJob;
+import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.ITaskOperator;
@@ -83,7 +83,8 @@ class RunAntiCaptchaTest {
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com/recaptcha/api2/demo");
 		jobs.appendJob(visitJob);
 		
-		TryClickJob tryClickJob = new TryClickJob(2l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"recaptcha-demo-submit\"]"); 
+		ClickJob tryClickJob = new ClickJob(2l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"recaptcha-demo-submit\"]", false); 
+		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 				
 		// quick wait for search to finish
