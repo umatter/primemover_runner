@@ -32,6 +32,7 @@ public class CaptchaSolver {
 	
 	private CaptchaSolverResult trySolveGoogleRecaptchaV2(OperatorContext context, IJob job, Boolean submit) {
 		WebDriver driver = context.getDriver();
+		logger.debug("Start solving captcha for job {}", job.getId());
 		
 		try {
 			// check for type
@@ -70,6 +71,7 @@ public class CaptchaSolver {
 				JavascriptExecutor jse = (JavascriptExecutor) driver;
 				jse.executeScript("document.getElementById(\"g-recaptcha-response\").innerHTML = \"" + response + "\";");
 				
+				// wait 1 Second for any script to finish
 				Thread.sleep(1000l);
 				
 				if (submit) {
@@ -79,9 +81,9 @@ public class CaptchaSolver {
 						WebElement elemSubmit = driver.findElement(By.xpath("//*[@type=\"submit\"]"));
 						elemSubmit.click();
 						submitDone = true;
-						logger.debug("submitted form (job {})", job.getId());
+						logger.debug("submitted form via submit-button (job {})", job.getId());
 					} catch (Exception e) {
-						logger.debug("nothing found to submit via submit-Button (job {})", job.getId());
+						logger.debug("nothing found to submit via submit-button (job {})", job.getId());
 						// Silently ignoring the not existing submit button
 					}
 					
@@ -91,6 +93,7 @@ public class CaptchaSolver {
 							WebElement captchaForm = driver.findElement(By.className("captcha-form"));
 							captchaForm.submit();
 							submitDone = true;
+							logger.debug("submitted form via form-element (job {})", job.getId());
 						} catch (NoSuchElementException e) {
 							logger.debug("nothing found to submit via form-element(job {})", job.getId());
 							// Silently ignoring the not existing submit on the form
