@@ -114,11 +114,18 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WaitJob typedJob = (WaitJob) job;
 
+				// captcha before
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+				
+				
 				try {
 					Thread.sleep(typedJob.getSeconds() * 1000);
 				} catch (InterruptedException e) {
 					// nothing to do
 				}
+				
+				// captcha after
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
 			}
 		});
 
@@ -175,6 +182,10 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
 				HandleAlertJob typedJob = (HandleAlertJob) job;
+				
+				// captcha before
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+				
 
 				Alert dialog = driver.switchTo().alert();
 
@@ -188,6 +199,9 @@ public class RunJobHandler {
 				default:
 					throw new UnsupportedOperationException("Not implemented yet");
 				}
+				
+				// captcha after
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
 			}
 		});
 		

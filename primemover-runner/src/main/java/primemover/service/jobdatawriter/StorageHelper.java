@@ -29,7 +29,7 @@ public class StorageHelper {
 	}
 	
 	private void writeCookies(OutputStream os, JobData data) throws IOException {
-		logger.debug("writting cookeis");
+		logger.debug("writting cookies");
 		
 		Integer cnt = 0;
 

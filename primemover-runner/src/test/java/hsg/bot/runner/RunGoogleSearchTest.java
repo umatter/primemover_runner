@@ -10,9 +10,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import primemover.model.BasicAgent;
 import primemover.model.Configuration;
+import primemover.captcha.CaptchaSolvingType;
 import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
+import primemover.model.DialogHandleType;
+import primemover.model.GeoSurfProxy;
+import primemover.model.HttpProxy;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
@@ -21,6 +25,7 @@ import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
+import primemover.model.jobs.HandleAlertJob;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
@@ -47,6 +52,10 @@ class RunGoogleSearchTest {
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		
+		// Defined proxy for US and city of New York for test!
+		HttpProxy proxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", "US-NY-NEW_YORK");
+		crawler.setProxy(proxy);
+				
 		Configuration config = new Configuration();
 		config.setId(1);
 		config.setDescription("Test Configuration for climate change");
@@ -79,21 +88,92 @@ class RunGoogleSearchTest {
 		
 		operator.setup(crawler);
 	}
+	
+	void visitGoogleInclAgreementJobs(Joblist jobs, long jobIdStart) {
+		// open page and aggree terms
+		VisitJob visitJob = new VisitJob(jobIdStart, "visit google", "visit google", "https://www.google.com");
+		jobs.appendJob(visitJob);
+		
+		jobIdStart++;
+		SwitchToJob trySwitchToJob = new SwitchToJob(jobIdStart, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//iframe");
+		trySwitchToJob.setIsFailsave(true);
+		jobs.appendJob(trySwitchToJob);
+		
+		jobIdStart++;
+		ClickJob tryClickJob = new ClickJob(jobIdStart, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"L2AGLb\"]/div", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		
+		jobIdStart++;
+		WaitJob waitJob = new WaitJob(jobIdStart, "wait", "wait", 2);
+		jobs.appendJob(waitJob);
+	}
+	
+	void visitGoogleInclAgreementJobs(Joblist jobs) {
+		visitGoogleInclAgreementJobs(jobs, 1l);
+	}
+	
+	@Test
+	void runGoogleSettingsChange() {
+		// Define jobs for google search
+		Joblist jobs = new Joblist();
+		
+		visitGoogleInclAgreementJobs(jobs);
+		
+		// quick wait for search to finish
+		WaitJob waitJob = new WaitJob(5l, "wait", "wait", 1);
+		jobs.appendJob(waitJob);
+		
+		// go to settings
+		ClickJob tryClickJob = new ClickJob(6l, "click settings buttons", "google settings", SelectorType.XPATH, "//*[@id=\"Mses6b\"]", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		
+		// set to 40 results
+		tryClickJob = new ClickJob(7l, "click settings buttons", "google settings", SelectorType.XPATH, "//*[@id=\"dEjpnf\"]/li[1]", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		tryClickJob = new ClickJob(8l, "click settings buttons", "google settings", SelectorType.XPATH, "//*[@id=\"result_slider\"]/ol/li[3]", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		tryClickJob = new ClickJob(9l, "click settings buttons", "google settings", SelectorType.XPATH, "//*[@id=\"result_slider\"]/ol/li[3]", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		tryClickJob = new ClickJob(10l, "click settings buttons", "google settings", SelectorType.XPATH, "//*[@id=\"result_slider\"]/ol/li[3]", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		
+		// quick wait
+		waitJob = new WaitJob(11l, "wait", "wait", 1);
+		jobs.appendJob(waitJob);
+		
+		// save
+		tryClickJob = new ClickJob(12l, "click settings buttons", "google settings", SelectorType.XPATH, "//*[@id=\"form-buttons\"]/div[1]", false); 
+		tryClickJob.setIsFailsave(true);
+		jobs.appendJob(tryClickJob);
+		
+		HandleAlertJob handleAlertJob = new HandleAlertJob(13l, "accept save settings", "save settings", DialogHandleType.ACCEPT);
+		jobs.appendJob(handleAlertJob);
+		
+		// quick wait
+		waitJob = new WaitJob(14l, "wait", "wait", 2);
+		waitJob.setCaptchaSolving(CaptchaSolvingType.AFTER);
+		jobs.appendJob(waitJob);	
+		
+		waitJob = new WaitJob(15l, "wait", "wait", 10);
+		jobs.appendJob(waitJob);	
+		
+		// run
+		operator.runJobList(jobs);
+	}
+	
 
 	@Test
 	void runGoogleSearchSelectFirst() {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
-		// open page and aggree terms
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
-		jobs.appendJob(visitJob);
-		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//iframe");
-		trySwitchToJob.setIsFailsave(true);
-		jobs.appendJob(trySwitchToJob);
-		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"zV9nZe\"]/div", false); 
-		tryClickJob.setIsFailsave(true);
-		jobs.appendJob(tryClickJob);
+		visitGoogleInclAgreementJobs(jobs);
 		
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
@@ -118,25 +198,14 @@ class RunGoogleSearchTest {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
-		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
-		jobs.appendJob(visitJob);
-		WaitJob waitJob = new WaitJob(2l, "wait", "wait", 1);
-		jobs.appendJob(waitJob);
-		
-		SwitchToJob trySwitchToJob = new SwitchToJob(3l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
-		trySwitchToJob.setIsFailsave(true);
-		jobs.appendJob(trySwitchToJob);
-		ClickJob tryClickJob = new ClickJob(4l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
-		tryClickJob.setIsFailsave(true);
-		jobs.appendJob(tryClickJob);
+		visitGoogleInclAgreementJobs(jobs);
 		
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(5l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		waitJob = new WaitJob(6l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(6l, "wait", "wait", 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
@@ -155,15 +224,7 @@ class RunGoogleSearchTest {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
-		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com");
-		jobs.appendJob(visitJob);
-		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
-		trySwitchToJob.setIsFailsave(true);
-		jobs.appendJob(trySwitchToJob);
-		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
-		tryClickJob.setIsFailsave(true);
-		jobs.appendJob(tryClickJob);
+		visitGoogleInclAgreementJobs(jobs);
 		
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "news.yahoo.com", TypingModeType.DIRECT, true);
@@ -191,15 +252,7 @@ class RunGoogleSearchTest {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
-		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
-		jobs.appendJob(visitJob);
-		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
-		trySwitchToJob.setIsFailsave(true);
-		jobs.appendJob(trySwitchToJob);
-		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
-		tryClickJob.setIsFailsave(true);
-		jobs.appendJob(tryClickJob);
+		visitGoogleInclAgreementJobs(jobs);
 		
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung", TypingModeType.SIMULATED_NOTYPOS, true);
@@ -225,15 +278,7 @@ class RunGoogleSearchTest {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 		
-		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
-		jobs.appendJob(visitJob);
-		SwitchToJob trySwitchToJob = new SwitchToJob(2l, "switching to agreement frame", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"cnsw\"]/iframe");
-		trySwitchToJob.setIsFailsave(true);
-		jobs.appendJob(trySwitchToJob);
-		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"introAgreeButton\"]/span/span", false);
-		tryClickJob.setIsFailsave(true);
-		jobs.appendJob(tryClickJob);
+		visitGoogleInclAgreementJobs(jobs);
 		
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist real", TypingModeType.SIMULATED_NOTYPOS, true);

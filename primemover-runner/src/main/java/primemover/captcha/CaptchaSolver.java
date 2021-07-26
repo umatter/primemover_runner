@@ -90,7 +90,7 @@ public class CaptchaSolver {
 					if (!submitDone) {
 						try {
 
-							WebElement captchaForm = driver.findElement(By.className("captcha-form"));
+							WebElement captchaForm = driver.findElement(By.id("captcha-form"));
 							captchaForm.submit();
 							submitDone = true;
 							logger.debug("submitted form via form-element (job {})", job.getId());

@@ -22,6 +22,11 @@ public class CaptchaJobHelper {
 	
 	public static Optional<CaptchaSolverResult> solveCaptcha(OperatorContext context, IJob job, JobPosition position, CaptchaSolver solver) {
 
+		if (job.getCaptchaSolving() == CaptchaSolvingType.NEVER) {
+			logger.debug("not running captcha (NEVER) for job {}", job.getId());
+			return Optional.empty();
+		}
+		
 		switch (position) {
 		case AFTER:
 			if (job.getCaptchaSolving() == CaptchaSolvingType.ALWAYS) {

@@ -23,11 +23,12 @@ public class NavigationHelper {
     }
 
     public void init() {
-        logger.debug("initialized");
         try {
-        	old_page = driver.findElement(By.id("html"));        	
+        	old_page = driver.findElement(By.tagName("html"));
+            logger.debug("initialized");
 		} catch (NoSuchElementException e) {
 			// nothing to do. Assume first page
+			logger.debug("no initial html-tag found");
 		}
     }
 
@@ -41,16 +42,21 @@ public class NavigationHelper {
             WebElement new_page = null;
 
             try {
-            	new_page = driver.findElement(By.id("html"));
+            	new_page = driver.findElement(By.tagName("html"));
             	
-            	if (new_page != null) {
-                    done = !new_page.equals(old_page);
+            	if (old_page == null) {
+            		done = (new_page != null);
+            	} else {
+            		done = !(old_page.equals(new_page));
             	}
             	
 			} catch (NoSuchElementException e) {
 				// nothing to do. Assume still loading
 			}
 
+            if (done) {
+            	break;
+            }
             
             curMillis = System.currentTimeMillis();
             if ((curMillis - startMillis) > this.timeoutMillis) {

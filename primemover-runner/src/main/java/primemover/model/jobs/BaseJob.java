@@ -7,7 +7,7 @@ public abstract class BaseJob implements IJob {
 	Long id;
 	String description;
 	String name;
-	CaptchaSolvingType captchaSolving;
+	CaptchaSolvingType captchaSolving = CaptchaSolvingType.NEVER;
 	Boolean runFailsave = false; // Defaults to false
 	
 	public BaseJob() {
