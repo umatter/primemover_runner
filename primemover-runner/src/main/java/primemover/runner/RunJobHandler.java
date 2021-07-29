@@ -5,15 +5,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,8 +190,9 @@ public class RunJobHandler {
 				// captcha before
 				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
 				
-
-				Alert dialog = driver.switchTo().alert();
+				// Wait for Element
+				WebDriverWait wait = new WebDriverWait(driver, 5);
+				Alert dialog = wait.until(ExpectedConditions.alertIsPresent());
 
 				switch (typedJob.getAction()) {
 				case ACCEPT:
@@ -301,12 +306,13 @@ public class RunJobHandler {
 				if (selectedElement != null) {
 					try {
 						logger.debug("clicking element {}", selectedElement);
-						Actions actions = new Actions(driver);
-						actions.moveToElement(selectedElement);
-						actions.perform();
 						
+						// Wait for Element
+						WebDriverWait wait = new WebDriverWait(driver, 5);
+						wait.until(ExpectedConditions.elementToBeClickable(selectedElement));
 						selectedElement.click();
-					} catch (ElementNotInteractableException e) {
+						
+					} catch (ElementNotInteractableException | TimeoutException e) {
 						// Fallback hack for google-elements TODO: optimize with recursive try and error
 						//List<WebElement> subSelements = selectedElement.findElements(By.xpath("./child::*"));
 						List<WebElement> subSelements = selectedElement.findElements(By.tagName("div"));
@@ -341,14 +347,17 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
 				SwitchToJob typedJob = (SwitchToJob) job;
-
+				
 				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
 					logger.debug("Switching to element for job {}", typedJob.getId());
 					WebElement selectedElement = elements.get(0);
-					driver.switchTo().frame(selectedElement);
+					
+					// Wait for Element
+					WebDriverWait wait = new WebDriverWait(driver, 5);
+					wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(selectedElement));
 				} else {
 					logger.warn("Found more than one element for job {}", typedJob.getId());
 					throw new IllegalStateException("More than one element found for job " + typedJob.getId());
@@ -366,13 +375,17 @@ public class RunJobHandler {
 			public void handle(OperatorContext context, IJob job) {
 				WebDriver driver = context.getDriver();
 				ClickJob typedJob = (ClickJob) job;
-
+				
 				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
 					logger.debug("Clicking on element for job {}", typedJob.getId());
 					WebElement selectedElement = elements.get(0);
+					
+					// Wait for Element
+					WebDriverWait wait = new WebDriverWait(driver, 5);
+					wait.until(ExpectedConditions.elementToBeClickable(selectedElement));
 					
 					selectedElement.click();
 					if (typedJob.expectsPageReload()) {

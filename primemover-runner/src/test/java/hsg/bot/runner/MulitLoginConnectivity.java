@@ -34,7 +34,6 @@ class MulitLoginConnectivity {
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		
-
 		service.setup(crawler);
 	}
 

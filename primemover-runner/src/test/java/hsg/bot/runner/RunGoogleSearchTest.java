@@ -156,11 +156,11 @@ class RunGoogleSearchTest {
 		jobs.appendJob(handleAlertJob);
 		
 		// quick wait
-		waitJob = new WaitJob(14l, "wait", "wait", 2);
+		waitJob = new WaitJob(14l, "wait", "wait", 5);
 		waitJob.setCaptchaSolving(CaptchaSolvingType.AFTER);
 		jobs.appendJob(waitJob);	
 		
-		waitJob = new WaitJob(15l, "wait", "wait", 10);
+		waitJob = new WaitJob(15l, "wait", "wait", 10000);
 		jobs.appendJob(waitJob);	
 		
 		// run

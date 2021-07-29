@@ -11,6 +11,8 @@ import org.apache.commons.math3.distribution.GumbelDistribution;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,19 +41,21 @@ public class SelectingHelper {
 
 	public List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
 		logger.debug("grabing elements by {} with selector {}", type, selector);
+		WebDriverWait wait = new WebDriverWait(driver, 5);
+		
 		List<WebElement> elements;
 		switch (type) {
 		case CLASS:
-			elements = driver.findElements(By.className(selector));
-			break;
+			// Wait for Element
+			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className(selector)));
 		case CSS:
-			elements = driver.findElements(By.cssSelector(selector));
+			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(selector)));
 			break;
 		case ID:
-			elements = driver.findElements(By.id(selector));
+			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(selector)));
 			break;
 		case XPATH:
-			elements = driver.findElements(By.xpath(selector));
+			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(selector)));
 			break;
 		default:
 			throw new UnsupportedOperationException("Not implemented yet");
@@ -69,19 +73,22 @@ public class SelectingHelper {
 	 * @return
 	 */
 	public WebElement getElementByWebdriver(WebDriver driver, SelectorType type, String selector) {
+		logger.debug("grabing element by {} with selector {}", type, selector);
 		WebElement element;
+		WebDriverWait wait = new WebDriverWait(driver, 5);
+		
 		switch (type) {
 		case CLASS:
-			element = driver.findElement(By.className(selector));
+			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.className(selector)));
 			break;
 		case CSS:
-			element = driver.findElement(By.cssSelector(selector));
+			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(selector)));
 			break;
 		case ID:
-			element = driver.findElement(By.id(selector));
+			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.id(selector)));
 			break;
 		case XPATH:
-			element = driver.findElement(By.xpath(selector));
+			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(selector)));
 			break;
 		default:
 			throw new UnsupportedOperationException("Not implemented yet");
