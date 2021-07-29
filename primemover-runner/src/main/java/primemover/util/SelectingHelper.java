@@ -39,7 +39,7 @@ public class SelectingHelper {
 
 	private Random rand = new Random();
 
-	public List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
+	public static List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
 		logger.debug("grabing elements by {} with selector {}", type, selector);
 		WebDriverWait wait = new WebDriverWait(driver, 5);
 		
@@ -72,7 +72,7 @@ public class SelectingHelper {
 	 * @param selector
 	 * @return
 	 */
-	public WebElement getElementByWebdriver(WebDriver driver, SelectorType type, String selector) {
+	public static WebElement getElementByWebdriver(WebDriver driver, SelectorType type, String selector) {
 		logger.debug("grabing element by {} with selector {}", type, selector);
 		WebElement element;
 		WebDriverWait wait = new WebDriverWait(driver, 5);
@@ -97,7 +97,7 @@ public class SelectingHelper {
 		return element;
 	}
 
-	public WebElement getElementByWebdriver(WebDriver driver, SelectorBaseJob selectorJob) {
+	public static WebElement getElementByWebdriver(WebDriver driver, SelectorBaseJob selectorJob) {
 		SelectorType type = selectorJob.getType();
 		String selector = selectorJob.getSelector();
 

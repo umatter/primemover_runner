@@ -152,15 +152,19 @@ class RunGoogleSearchTest {
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 		
-		HandleAlertJob handleAlertJob = new HandleAlertJob(13l, "accept save settings", "save settings", DialogHandleType.ACCEPT);
+		// quick wait
+		waitJob = new WaitJob(13l, "wait", "wait", 5);
+		jobs.appendJob(waitJob);
+		
+		HandleAlertJob handleAlertJob = new HandleAlertJob(14l, "accept save settings", "save settings", DialogHandleType.ACCEPT);
 		jobs.appendJob(handleAlertJob);
 		
 		// quick wait
-		waitJob = new WaitJob(14l, "wait", "wait", 5);
+		waitJob = new WaitJob(15l, "wait", "wait", 2);
 		waitJob.setCaptchaSolving(CaptchaSolvingType.AFTER);
 		jobs.appendJob(waitJob);	
 		
-		waitJob = new WaitJob(15l, "wait", "wait", 10000);
+		waitJob = new WaitJob(16l, "wait", "wait", 5);
 		jobs.appendJob(waitJob);	
 		
 		// run
