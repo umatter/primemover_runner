@@ -65,7 +65,6 @@ public class CrawlerService implements ICrawlerService {
 	@Autowired
 	private RestTemplate restTemplate;
 	
-	
 	private String calculateCrawlerUrl(Long id) {
 		String url;
 		if (mode == StartupMode.PRODUCTION || id != null) {
