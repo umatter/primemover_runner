@@ -104,6 +104,11 @@
 			<artifactId>junit-jupiter</artifactId>
 			<!-- Can't reduce to text-scope as there are assert-functions in RunJobHandler -->
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.13</version>
+		</dependency>
 	</dependencies>
 
 	<build>

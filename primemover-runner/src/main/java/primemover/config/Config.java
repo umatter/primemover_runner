@@ -37,6 +37,7 @@ import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.service.TokenGenerator;
 import primemover.service.TokenRequestInterceptor;
+import primemover.service.anticaptcha.AntiCaptchaService;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.MultiLoginDefaultTemplateLoader;
 import primemover.util.OutletsProvider;
@@ -93,6 +94,32 @@ public class Config {
 		restTemplate.setInterceptors(interceptors);
 		
         return restTemplate; 
+	}
+	
+	@Bean(name="AntiCaptchaRestTemplate")
+	public RestTemplate antiCaptchaRestTemplate() {
+		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		logger.debug("setting up AntiCaptchaRestTemplate - Defaults");
+		RestTemplate restTemplate = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
+				.build();
+		
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();		
+		for (Object converter : converters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
+				ObjectMapper mapper = jconverter.getObjectMapper();
+				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+			}
+		}
+				
+        return restTemplate; 
+	}
+	
+	@Bean(name="AntiCaptchaService")
+	public AntiCaptchaService getAntiCaptchaService() {
+		return new AntiCaptchaService();
 	}
 	
 	@Bean(name="CaptchaSolver")

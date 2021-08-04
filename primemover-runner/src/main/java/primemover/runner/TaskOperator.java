@@ -263,14 +263,19 @@ public class TaskOperator implements ITaskOperator {
 
 			jobService.updateJobState(job, JobState.STORINGDATA, null, null);
 
-			// capture screenshot
-			if (context.getDriver() instanceof TakesScreenshot) {
+			// save capturing screenshot
+			try {
+				if (context.getDriver() instanceof TakesScreenshot) {
 
-				TakesScreenshot camera = (TakesScreenshot) context.getDriver();
-				byte[] screenshot = camera.getScreenshotAs(OutputType.BYTES);
+					TakesScreenshot camera = (TakesScreenshot) context.getDriver();
+					byte[] screenshot = camera.getScreenshotAs(OutputType.BYTES);
 
-				data.setScreenshot(screenshot);
+					data.setScreenshot(screenshot);
+				}
+			} catch (Exception e) {
+				// noting to do
 			}
+			
 
 			// capture trafic data
 			Har har = context.getRecorder().stopCapturing();
@@ -280,7 +285,14 @@ public class TaskOperator implements ITaskOperator {
 			try {
 				data.setPageSource(primemover.util.Page.getBodyeFromJavascript(context.getDriver()));
 			} catch (Exception ex) {
-				logger.warn("Could not read page source for job {}", job.getId(), ex);
+				logger.debug("Could not read page source for job via Javascript. Falling back to direct driver read. jobid {}", job.getId(), ex);
+				
+				try {
+					logger.debug("read pagesource directly from driver (fallback)");
+					data.setPageSource(context.getDriver().getPageSource());
+				} catch (Exception e) {
+					logger.warn("Could not read page source from driver. No Fallback possible. jobid {}", job.getId(), ex);
+				}
 				data.setPageSource(null);
 			}
 

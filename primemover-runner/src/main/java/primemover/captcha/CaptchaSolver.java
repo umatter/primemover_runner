@@ -10,15 +10,21 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import primemover.util.SelectingHelper;
 
 import com.anti_captcha.api.NoCaptchaProxyless;
+import com.anti_captcha.api.response.TaskResultResponse.SolutionData;
 
 import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.runner.OperatorContext;
+import primemover.service.anticaptcha.AntiCaptchaService;
+import primemover.service.anticaptcha.SolvingResponse;
+import primemover.service.anticaptcha.SolvingSolution;
 
 
 // find the captcha: https://gist.github.com/2captcha/2ee70fa1130e756e1693a5d4be4d8c70
@@ -33,8 +39,11 @@ public class CaptchaSolver {
 	@Value("${anticaptcha.api.key}")
 	private String apiKey;
 	
-	@Value("${anticaptcha.api.solvingTimeoutSeconds:300}")
-	private Integer maxSolvingTimeoutSeconds = 300;
+	@Value("${anticaptcha.api.solvingTimeoutSeconds:120}")
+	private Integer maxSolvingTimeoutSeconds = 120;
+	
+	@Autowired
+	private AntiCaptchaService captchaService;
 	
 	private CaptchaSolverResult trySolveGoogleRecaptchaV2(OperatorContext context, IJob job, Boolean submit) {
 		WebDriver driver = context.getDriver();
@@ -55,40 +64,41 @@ public class CaptchaSolver {
 
 			// Start solving
 			try {
+				String websiteUrl = driver.getCurrentUrl();
 				String siteKey = elem.getAttribute("data-sitekey");
 				String siteSToken = elem.getAttribute("data-s");
 				String submitCallback = elem.getAttribute("data-callback");
 				
 				logger.debug("collected data: sitekey: {}, s: {}, callback: {}", siteKey, siteSToken, submitCallback);
 				
-				NoCaptchaProxyless client = new NoCaptchaProxyless();
-				client.setClientKey(apiKey);
-				client.setWebsiteUrl(new URL(driver.getCurrentUrl()));
-				client.setWebsiteKey(siteKey);
-				
-				if (StringUtils.hasText(siteSToken)) {
-					client.setWebsiteSToken(siteSToken);
-				}
-				
-				if(!client.createTask()) {
-					logger.warn("failed to create anti-captcha task for job {}", job.getId());
+				ResponseEntity<SolvingResponse> response = null;
+				try {
+					
+					response = captchaService.solveRecaptchaV2TaskProxyless(websiteUrl, siteKey, siteSToken, true);
+					
+				} catch (Exception e) {
+					logger.warn("error solving captcha for job {}", job.getId(), e);
 					return CaptchaSolverResult.ERROR;
 				}
 				
-				logger.debug("Waitng for result for job {}", job.getId());
-				if (!client.waitForResult(maxSolvingTimeoutSeconds)) {
-					logger.warn("timout solving captcha for job {}", job.getId());
+				if (response == null) {
 					return CaptchaSolverResult.ERROR;
 				}
 				
-				String response = client.getTaskSolution().getGRecaptchaResponse();
+				SolvingSolution solution = response.getBody().getSolution(); 			
+				String responseToken = solution.getgRecaptchaResponse();
+				logger.debug("captcha result for job {}", job.getId(), solution);
 				
-				logger.debug("captcha result '{}' for job {}", response, job.getId());
+				if (solution.getCookies() != null) {
+					for (String item : solution.getCookies()) {
+						// driver.manage().addCookie(cookie);
+					}
+				}
 				
 				// write respone in Javascript as target is hidden!
 				JavascriptExecutor jse = (JavascriptExecutor) driver;
 				//jse.executeScript("var element=document.getElementById(\"g-recaptcha-response\"); element.style.display=\"\";");
-				jse.executeScript("document.getElementById(\"g-recaptcha-response\").innerHTML = \"" + response + "\";");
+				jse.executeScript("document.getElementById(\"g-recaptcha-response\").innerHTML = \"" + responseToken + "\";");
 				
 				// wait for any script to finish
 				Thread.sleep(500l);
@@ -99,9 +109,10 @@ public class CaptchaSolver {
 				// submit callback)
 				if (StringUtils.hasText(submitCallback)) {
 					try {
-						String script = submitCallback + "(\"" + response + "\");";
+						String script = submitCallback + "(\"" + responseToken + "\");";
 						logger.debug("trying submit callback via script '" + script + "' for job {}", job.getId());
 						jse.executeScript(script);
+						logger.debug("submit done for job {})", job.getId());
 						submitDone = true;
 					} catch (Exception e) {
 						logger.debug("submit callback via script not working (job {})", job.getId(), e);
@@ -123,7 +134,6 @@ public class CaptchaSolver {
 				
 				if (!submitDone) {
 					try {
-
 						WebElement captchaForm = driver.findElement(By.id("captcha-form"));
 						captchaForm.submit();
 						submitDone = true;
@@ -134,11 +144,11 @@ public class CaptchaSolver {
 					}
 				}
 				
-				
-				return CaptchaSolverResult.SUCCESS;
-			} catch (MalformedURLException e) {
-				logger.warn("invalid URL {} for anti-captcha for job {}", driver.getCurrentUrl(), job.getId(), e);
-				return CaptchaSolverResult.ERROR;
+				if (submitDone) {
+					return CaptchaSolverResult.SUCCESS;
+				} else {
+					return CaptchaSolverResult.ERROR;
+				}
 			} catch (InterruptedException e) {
 				logger.warn("Exception waiting for response for job {}", job.getId(), e);
 				return CaptchaSolverResult.ERROR;

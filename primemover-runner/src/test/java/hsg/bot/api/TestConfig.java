@@ -1,5 +1,6 @@
 package hsg.bot.api;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +30,17 @@ import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.service.TokenGenerator;
 import primemover.service.TokenRequestInterceptor;
+import primemover.service.anticaptcha.AntiCaptchaService;
 import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
 public class TestConfig {
+	
+	@Value("${backend.requestTimeoutSeconds:60}")
+	private Long requestTimeoutSeconds;
+	
+	@Value("${backend.connectionTimeoutSeconds:10}")
+	private Long connectionTimeoutSeconds;
 	
 	@Value("${global.mode:DEVELOP}")
 	private String mode;
@@ -131,4 +139,29 @@ public class TestConfig {
 	RecordingProxyFactory getRecorderFactory() {
 		return new RecordingProxyFactory();
 	}	
+	
+	@Bean(name="AntiCaptchaRestTemplate")
+	public RestTemplate antiCaptchaRestTemplate() {
+		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		RestTemplate restTemplate = new RestTemplateBuilder()
+				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
+				.build();
+		
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();		
+		for (Object converter : converters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
+				ObjectMapper mapper = jconverter.getObjectMapper();
+				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+			}
+		}
+				
+        return restTemplate; 
+	}
+	
+	@Bean(name="AntiCaptchaService")
+	public AntiCaptchaService getAntiCaptchaService() {
+		return new AntiCaptchaService();
+	}
 }
