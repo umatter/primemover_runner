@@ -47,7 +47,6 @@ public class CaptchaSolver {
 	
 	private CaptchaSolverResult trySolveGoogleRecaptchaV2(OperatorContext context, IJob job, Boolean submit) {
 		WebDriver driver = context.getDriver();
-		logger.debug("Start solving captcha for job {}", job.getId());
 		
 		try {
 			// check for captcha element
@@ -55,14 +54,16 @@ public class CaptchaSolver {
 			try {
 				elem = SelectingHelper.getElementByWebdriver(driver, SelectorType.ID, "recaptcha");
 			} catch (Exception e) {
+				logger.debug("No captcha found for job {}", job.getId());
 				return CaptchaSolverResult.NOTFOUND;
 			}					
 			if (elem == null) {
+				logger.debug("No captcha found for job {}", job.getId());
 				return CaptchaSolverResult.NOTFOUND;
 			}
 			
-
 			// Start solving
+			logger.debug("Start solving captcha for job {}", job.getId());			
 			try {
 				String websiteUrl = driver.getCurrentUrl();
 				String siteKey = elem.getAttribute("data-sitekey");
