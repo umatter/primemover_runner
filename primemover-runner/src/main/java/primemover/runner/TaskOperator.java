@@ -252,12 +252,31 @@ public class TaskOperator implements ITaskOperator {
 			// running job
 			runJobHandler.handle(context, job);
 			
+			
+			// reading page-source ready to re-use
+			String pageSource = null;
+			try {
+				pageSource = primemover.util.Page.getBodyeFromJavascript(context.getDriver());
+			} catch (Exception ex) {
+				logger.debug("Could not read page source for job via Javascript. Falling back to direct driver read. jobid {}", job.getId(), ex);
+				
+				try {
+					pageSource = context.getDriver().getPageSource();
+				} catch (Exception e) {
+					logger.warn("Could not read page source from driver. No more Fallback possible. jobid {}", job.getId(), ex);
+				}
+			}
+			
+			
 			// captcha verification
 			if (this.runCaptchaChecks) {
-				String source = this.context.getDriver().getPageSource();
-				source = source.toLowerCase();
-				if (StringUtils.contains(source, "captcha")) {
-					logger.warn("captcha found in job {}", job.getId());
+				if (StringUtils.isNotEmpty(pageSource)) {
+					String lowerPageSource = pageSource.toLowerCase();
+					if (StringUtils.contains(lowerPageSource, "captcha")) {
+						logger.warn("captcha found in job {}", job.getId());
+					}
+				} else {
+					logger.warn("no page source available for captcha-check for job {}", job.getId());
 				}
 			}
 
@@ -275,25 +294,17 @@ public class TaskOperator implements ITaskOperator {
 			} catch (Exception e) {
 				// noting to do
 			}
-			
 
 			// capture trafic data
 			Har har = context.getRecorder().stopCapturing();
 			data.setHar(har);
 
 			// capture page data
-			try {
-				data.setPageSource(primemover.util.Page.getBodyeFromJavascript(context.getDriver()));
-			} catch (Exception ex) {
-				logger.debug("Could not read page source for job via Javascript. Falling back to direct driver read. jobid {}", job.getId(), ex);
-				
-				try {
-					logger.debug("read pagesource directly from driver (fallback)");
-					data.setPageSource(context.getDriver().getPageSource());
-				} catch (Exception e) {
-					logger.warn("Could not read page source from driver. No Fallback possible. jobid {}", job.getId(), ex);
-				}
+			if (StringUtils.isEmpty(pageSource)) {
 				data.setPageSource(null);
+				logger.warn("no page source available for job {}", job.getId());
+			} else {
+				data.setPageSource(pageSource);
 			}
 
 			// capture cookies, localstorage, etc.
