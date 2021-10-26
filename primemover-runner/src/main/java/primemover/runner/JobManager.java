@@ -145,7 +145,6 @@ public class JobManager implements IJobManager {
 			if (newLastTimeToAdd.isAfter(startTime)) {
 				// calculating execution delay (positive only)
 				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
-				delaySeconds = 0l;
 				
 				logger.info("Preparing execution of job {} in {} seconds", task.getRight().getId(), delaySeconds);
 				
