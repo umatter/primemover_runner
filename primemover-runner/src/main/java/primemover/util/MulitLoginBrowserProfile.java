@@ -156,6 +156,15 @@ public class MulitLoginBrowserProfile {
 			
 			return resp;
 		} else {
+			String responseMessage = "";
+			try {
+				responseMessage = con.getResponseMessage();
+			} catch(Exception ex) {
+				// nothing to do
+			}
+			
+			logger.warn("could not check active state of profile {}; MulitLogin-Response {} {}", this.profileId, responseCode, responseMessage);
+			
 			return false;
 		}
 	}
@@ -188,6 +197,16 @@ public class MulitLoginBrowserProfile {
 			runApiWait();
 			return true;
 		} else {
+			
+			String responseMessage = "";
+			try {
+				responseMessage = con.getResponseMessage();
+			} catch(Exception ex) {
+				// nothing to do
+			}
+			
+			logger.warn("could not stop profile {}; MulitLogin-Response {} {}", this.profileId, responseCode, responseMessage);
+			
 			return false;
 		}
 	}
@@ -231,7 +250,14 @@ public class MulitLoginBrowserProfile {
 			return jsonResponse.getString("value");
 		}
 		
-		logger.warn("could not start profile {}", this.profileId);
+		String responseMessage = "";
+		try {
+			responseMessage = con.getResponseMessage();
+		} catch(Exception ex) {
+			// nothing to do
+		}
+		
+		logger.warn("could not start profile {}; MulitLogin-Response {} {}", this.profileId, responseCode, responseMessage);
 		throw new IllegalStateException("Could not load Mulitlogin profile");
 	}
 	
