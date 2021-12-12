@@ -10,6 +10,8 @@ import org.springframework.util.Assert;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.Crawler;
+import primemover.model.GeoSurfProxy;
+import primemover.model.HttpProxy;
 import primemover.model.IAgent;
 import primemover.model.MultiLoginAgent;
 import primemover.util.MulitLoginBrowserProfile;
@@ -69,6 +71,36 @@ class AutocreationOfMultiloginProfiles {
 				"	}\n" + 
 				"}");
 		crawler.setAgent(agent);
+		
+		MulitLoginBrowserProfile bp = browserProfileFactory.getItem(crawler, recorder);
+
+		Assert.hasText(bp.getProfileId(), "Profile was not created");
+		
+		bp.deleteProfile();
+	}
+	
+	@Test
+	void createNewProfileWithTemplateAndGeoSurfProxy() throws Exception {
+		agent = new MultiLoginAgent(10000l, "Testing", "Testing", "", "", "{\n" + 
+				"	\"name\": \"OVERWRITTEN_NAME\",\n" + 
+				"	\"os\": \"%%OS%%\",\n" + 
+				"	\"browser\": \"%%BROWSER%%\",\n" + 
+				"	\"network\": {\n" + 
+				"		\"proxy\": {\n" + 
+				"			\"type\": \"%%PROXYTYPE%%\",\n" + 
+				"			\"host\": \"%%PROXYHOST%%\",\n" + 
+				"			\"port\": \"%%PROXYPORT%%\",\n" + 
+				"			\"username\": \"%%PROXYUSERNAME%%\",\n" + 
+				"			\"password\": \"%%PROXYPASSWORD%%\"\n" + 
+				"		},\n" + 
+				"		\"dns\": []\n" + 
+				"	}\n" + 
+				"}");
+		crawler.setAgent(agent);
+		
+		// Defined proxy for US and city of New York for test!
+		HttpProxy proxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", "US-NY-NEW_YORK");
+		crawler.setProxy(proxy);
 		
 		MulitLoginBrowserProfile bp = browserProfileFactory.getItem(crawler, recorder);
 

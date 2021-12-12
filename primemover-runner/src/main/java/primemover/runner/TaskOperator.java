@@ -173,9 +173,9 @@ public class TaskOperator implements ITaskOperator {
 				}
 
 				// apply proxy
-				logger.trace("updating proxy");
-				bp.updateProxy(recorder);
-				logger.trace("starting remote driver");
+				logger.debug("updating proxy");
+				bp.updateProxy(recorder);		
+				logger.debug("starting remote MultiLogin driver");
 				URL remoteUrl = new URL(bp.startProfile());
 				RemoteWebDriver driver = new RemoteWebDriver(remoteUrl, capabilities);
 				done = true;

@@ -39,6 +39,7 @@ import primemover.service.TokenRequestInterceptor;
 import primemover.service.anticaptcha.AntiCaptchaService;
 import primemover.util.LoggingInterceptor;
 import primemover.util.MultiLoginBrowserProfileFactory;
+import primemover.util.MultiLoginDefaultTemplateLoader;
 import primemover.util.OutletsProvider;
 import primemover.util.SelectingHelper;
 
@@ -82,11 +83,6 @@ public class TestConfig {
 	@Bean("TermsService")
 	TermsService getTermsService() {
 		return new TermsService();
-	}
-	
-	@Bean(name="MultiLoginBrowserProfileFactory")
-	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
-		return new MultiLoginBrowserProfileFactory();
 	}
 	
 	@Bean(name="storageService")
@@ -137,6 +133,16 @@ public class TestConfig {
 	@Bean(name="RunJobHandler")
 	public RunJobHandler getRunJobHandler() {
 		return new RunJobHandler();
+	}
+	
+	@Bean(name="MultiLoginDefaultTemplateLoader", initMethod="init")
+	MultiLoginDefaultTemplateLoader getMultiLoginDefaultTemplateLoader() {
+		return MultiLoginDefaultTemplateLoader.getInstance();
+	}
+	
+	@Bean(name="MultiLoginBrowserProfileFactory")
+	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
+		return new MultiLoginBrowserProfileFactory();
 	}
 
 	@Bean(name="tokenGenerator")

@@ -118,9 +118,17 @@ public class MulitLoginBrowserProfile {
 			logger.warn("Exception writing proxy data to profile {}", this.profileId, ex);
 			throw new IllegalStateException("Could not write proxy to MultiLogin - Service " + this.profileId, ex);
 		}
+		
+		Integer responseCode = con.getResponseCode();
+		String responseMessage = "";
+		try {
+			responseMessage = con.getResponseMessage();
+		} catch(Exception ex) {
+			// nothing to do
+		}
 				
-		if (con.getResponseCode() != 204) {
-			logger.warn("Could not update proxy on profile {}, MultiLogin response was {}: {}", this.profileId, con.getResponseCode(), con.getResponseMessage());
+		if (responseCode != 204) {
+			logger.warn("Could not update proxy on profile {}, MultiLogin response was {}: {}", this.profileId, responseCode, responseMessage);
 			throw new IllegalStateException("Proxy was not properly set on MultiLogin profile " + this.profileId);
 		}
 		
@@ -220,10 +228,9 @@ public class MulitLoginBrowserProfile {
 		 * Please make sure that you have Multilogin listening port set to 35000.
 		 * Otherwise please change the port value in the url string
 		 */
-		String url = "http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=" + this.profileId;
+		String url = "http://127.0.0.1:35000/api/v1/profile/start?profileId=" + this.profileId + "&automation=true";
 
 		logger.debug("Starting profile {}", this.profileId);
-
 		
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -257,7 +264,7 @@ public class MulitLoginBrowserProfile {
 			// nothing to do
 		}
 		
-		logger.warn("could not start profile {}; MulitLogin-Response {} {}", this.profileId, responseCode, responseMessage);
+		logger.warn("could not start profile {}; MulitLogin-Response: {} {}", this.profileId, responseCode, responseMessage);
 		throw new IllegalStateException("Could not load Mulitlogin profile");
 	}
 	
