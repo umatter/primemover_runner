@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -72,7 +74,7 @@ public class JobManager implements IJobManager {
 	 */
 	@Override
 	@Scheduled(fixedRate = 60000, initialDelay = 10000)
-	public void run() {
+	public void run() {		
 		ZonedDateTime curRun = ZonedDateTime.now();
 		
 		if (lastExecution != null) {
@@ -146,7 +148,7 @@ public class JobManager implements IJobManager {
 				// calculating execution delay (positive only)
 				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
 				
-				logger.info("Preparing execution of job {} in {} seconds", task.getRight().getId(), delaySeconds);
+				logger.info("Preparing execution of joblist {} in {} seconds", task.getRight().getId(), delaySeconds);
 				
 				// just pass the job to the executor after reaching the starttime
 				scheduler.schedule(new Runnable() {
@@ -162,11 +164,16 @@ public class JobManager implements IJobManager {
 		            }
 		            
 		        }, delaySeconds, TimeUnit.SECONDS);
-			} 
+			}
 		}
 		
-		logger.info("Done initializing jobs");
-		
+		// log out stats
+		 if (executorService instanceof ThreadPoolExecutor) {
+        	ThreadPoolExecutor implementation = (ThreadPoolExecutor) executorService;
+            int size = implementation.getQueue().size();
+            logger.info("{} joblist are ready to execute; {} are actually executing", size, Math.min(size, maxThreads));    
+        }
+	        
 		lastExecution = curRun;
 		lastTimeAdded = newLastTimeToAdd;
 	}
