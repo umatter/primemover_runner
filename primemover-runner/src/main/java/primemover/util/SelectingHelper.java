@@ -216,7 +216,7 @@ public class SelectingHelper {
 				if (known) {
 					MediaOutlet outlet = config.getOutlets().get(normalizedUrl);
 
-					double d_tilde_i_j_t = Math.abs(Math.PI - outlet.getPi());
+					double d_tilde_i_j_t = Math.abs(config.getPi() - outlet.getPi());
 					
 					calcItem.setOutlet(outlet);
 					calcItem.setD_tilde_i_j_t(d_tilde_i_j_t);
