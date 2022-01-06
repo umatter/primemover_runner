@@ -37,6 +37,13 @@ public class NavigationHelper {
         boolean done = false;
         final long startMillis = System.currentTimeMillis();
         long curMillis;
+        
+        // initial wait to allow browser to navigate
+        try {
+            Thread.sleep(Math.min(timeoutMillis, 500));
+        } catch (Exception e) {
+            // Nothing to do
+        }
 
         while (!done) {
             WebElement new_page = null;

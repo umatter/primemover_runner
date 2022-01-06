@@ -250,8 +250,11 @@ public class TaskOperator implements ITaskOperator {
 			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
 
 			// running job
-			runJobHandler.handle(context, job);
-			
+			try {
+				runJobHandler.handle(context, job);
+			} catch (Exception e) {
+				logger.warn("Catched exception running job", e);
+			}
 			
 			// reading page-source ready to re-use
 			String pageSource = null;

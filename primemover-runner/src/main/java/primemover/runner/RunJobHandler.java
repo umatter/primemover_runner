@@ -86,6 +86,7 @@ public class RunJobHandler {
 		logger.trace("creating VisitJob-Handler");
 		dispatch.put(VisitJob.class, new Handler() {
 			public void handle(OperatorContext context, IJob job) {
+				boolean success = false;
 				WebDriver driver = context.getDriver();
 				VisitJob typedJob = (VisitJob) job;
 				NavigationHelper navHelper = new NavigationHelper(driver, 2*60*1000l); // 2 Minuten
@@ -100,15 +101,26 @@ public class RunJobHandler {
 				try {
 					navHelper.waitForPageLoad();
 				} catch (Exception e) {
-					logger.warn("simple page load wait (DOM) failed.");
+					logger.debug("simple page load wait (DOM) failed.");
 					// second chance below
 				}
 				
 				// wait for pending javascript triggered loads
-				primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 5, 12); // check every 5 seconds for 1 Minutes
+				try {
+					primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 5, 12); // check every 5 seconds for 1 Minutes
+					success = true;
+				} catch (Exception e) {
+					logger.debug("page ready load wait failed.");
+				}
 				
 				// captcha after
 				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
+				
+				if (!success) {
+					logger.warn("Timeout visiting page {} for job {}",  typedJob.getUrl(), typedJob.getId());
+					throw new TimeoutException("Timeout visiting page " + typedJob.getUrl() +  " for job " + typedJob.getId());
+				}
+				
 			}
 		});
 
