@@ -231,6 +231,8 @@ public class TaskOperator implements ITaskOperator {
 	}
 	
 	private Boolean runJob(IJob job, IpRecordingTiming ipRecording) {
+		boolean runJobResult = false;
+		
 		logger.info("Starting job {}", job.getId());
 
 		try {
@@ -254,6 +256,7 @@ public class TaskOperator implements ITaskOperator {
 				runJobHandler.handle(context, job);
 			} catch (Exception e) {
 				logger.warn("Catched exception running job", e);
+				runJobResult = false;
 			}
 			
 			// reading page-source ready to re-use
@@ -358,7 +361,7 @@ public class TaskOperator implements ITaskOperator {
 				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, ZonedDateTime.now()); // setting endtime
 			}
 
-			return true;
+			runJobResult = true;
 
 		} catch (Exception ex) {
 			logger.error("Exception executing job {}", job.getId(), ex);
@@ -369,9 +372,10 @@ public class TaskOperator implements ITaskOperator {
 				logger.error("Could not write Job-State for {}", job.getId(), ex); // FATAL!!!
 			}
 
-			return false;
+			runJobResult = false;
 		}
-
+		
+		return runJobResult;
 	}
 
 	private RecordingProxy setupRecorder(Crawler crawler) {
