@@ -113,6 +113,19 @@ public class RecordingProxy {
 		tearDown(false);
 	}
 	
+	/** finalizing the object
+	 * Backup just in case...
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		if (proxy != null) {
+			logger.warn("RecordingProxy was not closed properly.");
+		}
+		
+		this.tearDown(true);
+		super.finalize();
+	}
+	
 	/**
 	 * Will change the headers of the proxy
 	 * 
