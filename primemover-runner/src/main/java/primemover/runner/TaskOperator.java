@@ -255,7 +255,7 @@ public class TaskOperator implements ITaskOperator {
 			try {
 				runJobHandler.handle(context, job);
 			} catch (Exception e) {
-				logger.warn("Catched exception running job", e);
+				logger.warn("Catched exception running job {}", job.getId(), e);
 				runJobResult = false;
 			}
 			
@@ -565,9 +565,16 @@ public class TaskOperator implements ITaskOperator {
 					round++;
 				}
 			} catch (Exception e) {
-				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
-						e);
+				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(), e);
 			}
+		}
+		
+		
+		// quit the Webdriver (fallback in case of MultiLogin)
+		try {
+			context.getDriver().quit();
+		} catch (Exception e) {
+			logger.error("Error closing webdriver for agent {}", context.getCrawler().getAgent().getId(), e);
 		}
 
 		try {

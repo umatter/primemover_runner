@@ -15,8 +15,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import primemover.config.StartupMode;
@@ -109,10 +107,7 @@ public class JobService {
 	 	    	logger.warn("failure updating joblist {} ", queueId);
 	 	    	return false;
 	 	    }	    
-	    } catch (ResourceAccessException ex) {
-	    	logger.warn("failure updating joblist {} ", queueId, ex);
-	    	return false;
-	    } catch (HttpClientErrorException ex) {
+	    } catch (Exception ex) {
 	    	logger.warn("failure updating joblist {} ", queueId, ex);
 	    	return false;
 	    }
@@ -149,10 +144,7 @@ public class JobService {
 	 	    	logger.warn("failure updating job {} ", jobID);
 	 	    	return false;
 	 	    }	    
-	    } catch (ResourceAccessException ex) {
-	    	logger.warn("failure updating job {} ", jobID, ex);
-	    	return false;
-	    } catch (HttpClientErrorException ex) {
+	    } catch (Exception ex) {
 	    	logger.warn("failure updating job {} ", jobID, ex);
 	    	return false;
 	    }

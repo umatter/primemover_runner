@@ -1,8 +1,5 @@
 package primemover.captcha;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
@@ -15,9 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import primemover.util.SelectingHelper;
-
-import com.anti_captcha.api.NoCaptchaProxyless;
-import com.anti_captcha.api.response.TaskResultResponse.SolutionData;
 
 import primemover.model.IJob;
 import primemover.model.SelectorType;

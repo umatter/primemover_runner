@@ -130,6 +130,7 @@ public class SelectingHelper {
 		return (1 - beta_i * (r_j - 1)) + known * (alpha_tilde - tau_tilde * d_tilde_i_j_t * d_tilde_i_j_t);
 	}
 
+	@SuppressWarnings("unused")
 	private double result_utility_w_i_j_t(double r_j, double beta_i) {
 		return result_utility_w_i_j_t(r_j, beta_i, 0, 0, 1, 1);
 	}

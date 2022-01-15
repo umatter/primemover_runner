@@ -116,6 +116,7 @@ public class RecordingProxy {
 	/** finalizing the object
 	 * Backup just in case...
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void finalize() throws Throwable {
 		if (proxy != null) {
@@ -183,7 +184,8 @@ public class RecordingProxy {
             @Override
             public HttpFilters filterRequest(HttpRequest originalRequest) {
                 return new HttpFiltersAdapter(originalRequest) {
-                    @Override
+                    @SuppressWarnings("deprecation")
+					@Override
                     public HttpResponse proxyToServerRequest(HttpObject httpObject) {
                         if (httpObject instanceof HttpRequest) {
                             ((HttpRequest) httpObject).headers().remove(HttpHeaders.Names.VIA);
@@ -222,7 +224,6 @@ public class RecordingProxy {
 		            public HttpFilters filterRequest(HttpRequest originalRequest) {
 		                return new HttpFiltersAdapter(originalRequest) {
 		                	
-		                    @SuppressWarnings("deprecated")
 							@Override
 		                    public HttpResponse proxyToServerRequest(HttpObject httpObject) {
 		                        if (httpObject instanceof HttpRequest) {

@@ -38,19 +38,19 @@ public class AwsS3StorageService implements IStorageService {
 	@Override
 	public Boolean writeFixedJobData(IJob job, JobData data) {	
 		StorageHelper helper = new StorageHelper();
-		
-		logger.debug("Start writing fixed data to AWS S3 for job {}", job.getId());
-		AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
-				accessKey,
-			    secretKey);
-			
-        S3Client s3 = S3Client.builder()
-                .region(Region.EU_CENTRAL_1)
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .build();
-		
+				
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream(4048)) {
-			logger.trace("Start writing data for job " + job.getId().toString());
+			logger.debug("Prepare writing fixed data to AWS S3 for job {}", job.getId());
+			AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+					accessKey,
+				    secretKey);
+				
+	        S3Client s3 = S3Client.builder()
+	                .region(Region.EU_CENTRAL_1)
+	                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+	                .build();
+	        
+			logger.debug("Start writing data for job {}", job.getId());
 			if (helper.writeJobDataAsZip(os, job, data)) {
 				String identifier = helper.getIdentifier(job);
 				PutObjectRequest objectRequest = PutObjectRequest.builder()
@@ -81,16 +81,17 @@ public class AwsS3StorageService implements IStorageService {
 	@Override
 	public Boolean writeData(IJob job, IJobDataWriter writer) {
 		logger.debug("Start writing to AWS S3 for job {}", job.getId());
-		AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
-				accessKey,
-			    secretKey);
-			
-        S3Client s3 = S3Client.builder()
-                .region(Region.EU_CENTRAL_1)
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-                .build();
-
+		
         try {
+        	AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+    				accessKey,
+    			    secretKey);
+    			
+            S3Client s3 = S3Client.builder()
+                    .region(Region.EU_CENTRAL_1)
+                    .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+                    .build();
+            
         	PutObjectRequest objectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .contentType(writer.getContentType())

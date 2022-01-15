@@ -101,7 +101,7 @@ public class RunJobHandler {
 				try {
 					navHelper.waitForPageLoad();
 				} catch (Exception e) {
-					logger.debug("simple page load wait (DOM) failed.");
+					logger.debug("simple page load wait (DOM) failed for job {}.", typedJob.getId());
 					// second chance below
 				}
 				
@@ -110,7 +110,7 @@ public class RunJobHandler {
 					primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 5, 12); // check every 5 seconds for 1 Minutes
 					success = true;
 				} catch (Exception e) {
-					logger.debug("page ready load wait failed.");
+					logger.debug("page ready load wait failed for job {}.", typedJob.getId());
 				}
 				
 				// captcha after
@@ -243,8 +243,7 @@ public class RunJobHandler {
 						CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
 						
 						// provide WebElement dynamic for below functions. Google search will stale the element with the search suggestions
-						Supplier<WebElement> elementSup = () -> selectingHelper.getElementByWebdriver(driver, selectorType,
-								selector);
+						Supplier<WebElement> elementSup = () -> SelectingHelper.getElementByWebdriver(driver, selectorType, selector);
 						
 						TypingModeType typingMode = typedJob.getTypingMode();
 						
@@ -303,7 +302,7 @@ public class RunJobHandler {
 				Crawler crawler = context.getCrawler();
 				SingleSelectUrlJob typedJob = (SingleSelectUrlJob) job;
 
-				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements == null || elements.isEmpty()) {
@@ -359,7 +358,7 @@ public class RunJobHandler {
 				WebDriver driver = context.getDriver();
 				SwitchToJob typedJob = (SwitchToJob) job;
 				
-				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
@@ -387,7 +386,7 @@ public class RunJobHandler {
 				WebDriver driver = context.getDriver();
 				ClickJob typedJob = (ClickJob) job;
 				
-				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				if (elements.size() == 1) {
@@ -420,7 +419,7 @@ public class RunJobHandler {
 				WebDriver driver = context.getDriver();
 				AssertTextInFieldJob typedJob = (AssertTextInFieldJob) job;
 
-				WebElement element = selectingHelper.getElementByWebdriver(driver, typedJob.getType(),
+				WebElement element = SelectingHelper.getElementByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				String textFound = element.getAttribute("innerText");
@@ -472,7 +471,7 @@ public class RunJobHandler {
 				WebDriver driver = context.getDriver();
 				AssertElementExistsJob typedJob = (AssertElementExistsJob) job;
 				
-				List<WebElement> elements = selectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+				List<WebElement> elements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 						typedJob.getSelector());
 				
 				assertTrue(elements.size() > 0, "element(s) not found");

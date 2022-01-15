@@ -81,7 +81,7 @@ public class StorageHelper {
 	}
 	
 	public Boolean writeJobDataAsZip(OutputStream os, IJob job, JobData data) {
-		logger.info("writting jobdata as Zip");
+		logger.info("writting jobdata as Zip for job {}", job.getId());
 		
 		// json mapper
 		ObjectMapper mapper = new ObjectMapper();
@@ -167,9 +167,10 @@ public class StorageHelper {
 			zipOut.finish();
 			zipOut.flush();
 			
+			logger.debug("Done writing jobdata for job {}", job.getId());
 			return true;
 		} catch (IOException e) {
-			logger.warn("Error creating jobdata", e);
+			logger.warn("Error creating jobdata for job {}", job.getId(), e);
 			return false;
 		}
 	}

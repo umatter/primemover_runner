@@ -118,7 +118,7 @@ public class JobListRunner implements Callable<Boolean> {
 	
 	
 	@Override
-	public Boolean call() {	
+	public Boolean call() {		
 		// running joblist
 		try {	
 			SetupState setupRes = null;
@@ -133,12 +133,16 @@ public class JobListRunner implements Callable<Boolean> {
 			tearDown(setupRes, jobsRes);			
 			
 		} catch (Exception e) {
-			logger.error("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
-			jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
-			
-			// make sure to tear down!
-			logger.debug("tearing down crawler {} running joblistr {}", crawler.getId(), jobs.getId());
-			taskOperator.tearDown(false);
+			try {
+				logger.error("uncaught error during execution of joblist {} for crawler {}", crawler.getName(), crawler.getId(), e);
+				jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
+				
+				// make sure to tear down!
+				logger.debug("tearing down crawler {} running joblistr {}", crawler.getId(), jobs.getId());
+				taskOperator.tearDown(false);
+			} catch (Exception ex) {
+				logger.warn("error tearing down taskOperator after run-failure for crawler {}", crawler.getId(), ex);
+			}
 			
 			return false; // exit due to error
 		}
