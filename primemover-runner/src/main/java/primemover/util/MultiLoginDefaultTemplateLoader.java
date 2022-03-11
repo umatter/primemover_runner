@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +28,8 @@ public class MultiLoginDefaultTemplateLoader {
 	
 	private Map<String, String> defaultTokens = new HashMap<String, String>();
 	private Pattern pattern;
+	
+	private ObjectMapper mapper = new ObjectMapper();
 	
 	private MultiLoginDefaultTemplateLoader() {
 	}
@@ -90,7 +95,14 @@ public class MultiLoginDefaultTemplateLoader {
         			"}";
         }
  
-		// TODO verify if it is a JSON?
+		// ensure valid JSON
+		try {
+			mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+			mapper.readTree(template);
+		} catch (Exception e) {
+			logger.error("Failed to verify JSON-template.", e);
+        	throw new ExceptionInInitializerError("Failed to verify JSON-template.");
+		}
 		
 		
 		// set content
