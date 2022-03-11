@@ -1,7 +1,7 @@
 package hsg.bot.api;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -24,8 +24,8 @@ class CrawlerApiTest {
 	void receiveAllCrawlersFromApi() {
 		List<Pair<Crawler, Joblist>> crawlers = service.getCurrentTasks();
 		
-		assertNotNull("result is null", crawlers);
-		assertTrue("Empty result received", crawlers.size() > 0);
+		assertNotNull(crawlers, "result is null");
+		assertTrue(crawlers.size() > 0, "Empty result received");
 	}
 
 }

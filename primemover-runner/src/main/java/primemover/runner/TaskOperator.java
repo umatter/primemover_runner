@@ -35,6 +35,7 @@ import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
+import primemover.runner.jobHandling.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.IStorageService;
 import primemover.service.IpService;
@@ -74,7 +75,7 @@ public class TaskOperator implements ITaskOperator {
 	private MultiLoginBrowserProfileFactory browserProfileFactory;
 
 	@Autowired
-	private RunJobHandler runJobHandler;
+	private JobDispatcher runJobHandler;
 	
 	@Autowired
 	IpServiceFactory ipServiceFactory;

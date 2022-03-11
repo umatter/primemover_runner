@@ -19,8 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
-import primemover.runner.RunJobHandler;
 import primemover.runner.TaskOperatorFactory;
+import primemover.runner.jobHandling.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
@@ -119,8 +119,8 @@ public class TestConfig {
 	
 
 	@Bean(name="RunJobHandler")
-	public RunJobHandler getRunJobHandler() {
-		return new RunJobHandler();
+	public JobDispatcher getRunJobHandler() {
+		return new JobDispatcher();
 	}
 
 	@Bean(name="tokenGenerator")

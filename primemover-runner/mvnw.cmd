@@ -112,8 +112,7 @@ set MAVEN_PROJECTBASEDIR=%EXEC_DIR%
 cd "%EXEC_DIR%"
 
 :endDetectBaseDir
-@REM Hack to set the correct base directory
-set MAVEN_PROJECTBASEDIR="%MAVEN_PROJECTBASEDIR%/primemover-runner"
+set MAVEN_PROJECTBASEDIR="%MAVEN_PROJECTBASEDIR%"
 echo "MAVEN_PROJECTBASEDIR %MAVEN_PROJECTBASEDIR%"
 
 IF NOT EXIST "%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config" goto endReadAdditionalConfig

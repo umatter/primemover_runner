@@ -25,6 +25,7 @@
             "name": "Launch RunnerApplication",
             "request": "launch",
             "mainClass": "primemover.RunnerApplication",
+            "cwd": "${workspaceFolder}/primemover-runner/",
             "projectName": "primemover-runner"
         }
     ]

@@ -1,7 +1,7 @@
 package hsg.bot.api;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -23,8 +23,8 @@ class TermsApiTest {
 	void receiveOutletsFromAPI() {
 		List<Term> terms = service.getTerms();
 		
-		assertNotNull("result is null", terms);
-		assertTrue("Empty result received", terms.size() > 0);
+		assertNotNull(terms, "result is null");
+		assertTrue(terms.size() > 0, "Empty result received");
 	}
 
 }

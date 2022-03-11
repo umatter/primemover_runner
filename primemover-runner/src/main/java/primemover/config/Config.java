@@ -24,7 +24,8 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.runner.IJobManager;
 import primemover.runner.JobListRunnerFactory;
 import primemover.runner.JobManager;
-import primemover.runner.RunJobHandler;
+import primemover.runner.jobHandling.IJobDispatcher;
+import primemover.runner.jobHandling.JobDispatcher;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
@@ -212,8 +213,8 @@ public class Config {
 		return new SelectingHelper();
 	}
 	
-	@Bean(name="RunJobHandler")
-	public RunJobHandler getRunJobHandler() {
-		return new RunJobHandler();
+	@Bean(name="RunJobHandler", initMethod = "setup")
+	public IJobDispatcher getRunJobHandler() {
+		return new JobDispatcher();
 	}
 }
