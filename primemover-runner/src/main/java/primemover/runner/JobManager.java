@@ -170,7 +170,7 @@ public class JobManager implements IJobManager {
 		 if (executorService instanceof ThreadPoolExecutor) {
         	ThreadPoolExecutor implementation = (ThreadPoolExecutor) executorService;
             int size = implementation.getQueue().size();
-            logger.info("{} joblist are ready to execute; {} are actually executing", size, Math.min(size, maxThreads));    
+            logger.info("{} joblist are ready to execute; {} are currently executing", size, Math.min(size, maxThreads));    
         }
 	        
 		lastExecution = curRun;
