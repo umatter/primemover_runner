@@ -18,7 +18,7 @@
 	<description>Runner for the Botnet</description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>11</java.version> <!-- crosscheck with openjdk installed on server -->
 		<skipTests>true</skipTests>
 	</properties>
 	
