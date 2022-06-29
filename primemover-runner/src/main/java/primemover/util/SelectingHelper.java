@@ -25,7 +25,7 @@ import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.service.IStorageService;
-import primemover.service.jobdatawriter.SelectionJobDataWriter;
+import primemover.service.datawriter.SelectionWriter;
 
 public class SelectingHelper {
 
@@ -249,7 +249,7 @@ public class SelectingHelper {
 		// Writing data
 		boolean writeRes = true;
 		for (IStorageService storage : storages) {
-			writeRes = writeRes && storage.writeData(job, new SelectionJobDataWriter(job, selection));
+			writeRes = writeRes && storage.writeData(job, new SelectionWriter(job, selection));
 		}
 
 		return selectedElement;

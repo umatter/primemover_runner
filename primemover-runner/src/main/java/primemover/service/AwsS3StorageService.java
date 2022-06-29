@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.model.IJob;
-import primemover.service.jobdatawriter.IJobDataWriter;
-import primemover.service.jobdatawriter.StorageHelper;
+import primemover.service.datawriter.IDataWriter;
+import primemover.service.datawriter.StorageUtility;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -36,50 +36,7 @@ public class AwsS3StorageService implements IStorageService {
 	}
 
 	@Override
-	public Boolean writeFixedJobData(IJob job, JobData data) {	
-		StorageHelper helper = new StorageHelper();
-				
-		try (ByteArrayOutputStream os = new ByteArrayOutputStream(4048)) {
-			logger.debug("Prepare writing fixed data to AWS S3 for job {}", job.getId());
-			AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
-					accessKey,
-				    secretKey);
-				
-	        S3Client s3 = S3Client.builder()
-	                .region(Region.EU_CENTRAL_1)
-	                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-	                .build();
-	        
-			logger.debug("Start writing data for job {}", job.getId());
-			if (helper.writeJobDataAsZip(os, job, data)) {
-				String identifier = helper.getIdentifier(job);
-				PutObjectRequest objectRequest = PutObjectRequest.builder()
-	                    .bucket(bucketName)
-	                    .contentType("application/zip")
-	                    .key(subFolder + identifier)
-	                    .build();
-	            
-
-	            s3.putObject(objectRequest, RequestBody.fromBytes(os.toByteArray()));
-
-	            logger.debug("fixed data written so AWS S3 for job {}", job.getId());
-	            
-	            crawlerService.writeS3JobData(job.getId(), identifier, "s3://" + bucketName + "/" + subFolder + identifier, "fixed job data");
-	            logger.debug("wrote info to backend for job {}", job.getId());
-	            return true;
-			} else {
-				logger.warn("error creating zip for job {}", job.getId());
-				return false;
-			}
-			
-		} catch (Exception e) {
-			logger.error("error writing data to AWS S3 for job {}", job.getId(), e);
-			return false;
-		}
-	}
-
-	@Override
-	public Boolean writeData(IJob job, IJobDataWriter writer) {
+	public Boolean writeData(IJob job, IDataWriter writer) {
 		logger.debug("Start writing to AWS S3 for job {}", job.getId());
 		
         try {

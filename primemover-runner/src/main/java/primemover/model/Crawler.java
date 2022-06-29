@@ -1,5 +1,7 @@
 package primemover.model;
 
+import primemover.model.proxy.IProxy;
+
 public class Crawler {
 
 	private Long id;

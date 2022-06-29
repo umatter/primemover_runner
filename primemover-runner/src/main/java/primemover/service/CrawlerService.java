@@ -118,23 +118,23 @@ public class CrawlerService implements ICrawlerService {
 		jobs.setProcessing(false);
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", null, "https://www.google.ch");
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		EnterTextFieldJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist doof", TypingModeType.SIMULATED_KEEPINGTYPOS, true);
+		EnterTextFieldJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist doof", TypingModeType.SIMULATED_KEEPINGTYPOS, true);
 		jobs.appendJob(enterJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select random entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM);
+		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select random entry", "select first entry", null, SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
-		waitJob = new WaitJob(1l, "wait", "wait", 10);
+		waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 		
 		

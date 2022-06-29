@@ -42,10 +42,11 @@ import com.browserup.bup.mitm.KeyStoreFileCertificateSource;
 import com.browserup.bup.mitm.keys.ECKeyGenerator;
 import com.browserup.bup.mitm.manager.ImpersonatingMitmManager;
 
-import primemover.model.GeoSurfProxy;
-import primemover.model.HttpProxy;
-import primemover.model.IProxy;
+import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.HttpProxy;
+import primemover.model.proxy.IProxy;
 import primemover.service.IpService;
+import software.amazon.awssdk.utils.StringUtils;
 
 
 public class RecordingProxy {
@@ -198,7 +199,12 @@ public class RecordingProxy {
 
 		if (targetProxy != null) {
 			logger.debug("using chained proxy {}:{}", targetProxy.getPort(), targetProxy.getPort());
-			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
+			
+			// check for whitelisting
+			//if (!(StringUtils.isEmpty(targetProxy.getUsername()) && StringUtils.isEmpty(targetProxy.getPassword()))) {
+				proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
+			//}
+			
 			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
 			
 			if (targetProxy instanceof  HttpProxy) {

@@ -47,11 +47,11 @@ class ScrollingTestSuite {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.nzz.ch");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.nzz.ch", null);
 		jobs.appendJob(visitJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 		
 		// Assert page loaded
@@ -59,7 +59,7 @@ class ScrollingTestSuite {
 		jobs.appendJob(pageLoadedJob);
 		
 		// scroll down
-		ScrollByLengthJob scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 100% down", ScrollDirection.DOWN, 100);
+		ScrollByLengthJob scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 100% down", null, ScrollDirection.DOWN, 100);
 		jobs.appendJob(scrollJob);
 		
 		// Assert page loaded

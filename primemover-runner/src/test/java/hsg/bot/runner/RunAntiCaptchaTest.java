@@ -80,15 +80,15 @@ class RunAntiCaptchaTest {
 		Joblist jobs = new Joblist();
 		
 		// open page and aggree terms
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com/recaptcha/api2/demo");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.com/recaptcha/api2/demo", null);
 		jobs.appendJob(visitJob);
 		
-		ClickJob tryClickJob = new ClickJob(2l, "click accept aggreement", "google accept aggreement", SelectorType.XPATH, "//*[@id=\"recaptcha-demo-submit\"]", false); 
+		ClickJob tryClickJob = new ClickJob(2l, "click accept aggreement", "google accept aggreement", null, SelectorType.XPATH, "//*[@id=\"recaptcha-demo-submit\"]", false); 
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 				
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(3l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(3l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 					
 		operator.runJobList(jobs);

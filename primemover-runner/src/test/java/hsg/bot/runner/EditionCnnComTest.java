@@ -9,11 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import primemover.model.BasicAgent;
 import primemover.model.AgentType;
 import primemover.model.Crawler;
-import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
+import primemover.model.proxy.GeoSurfProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
@@ -45,11 +45,11 @@ class EditionCnnComTest {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit edition.cnn.com", "visit edition.cnn.com", "https://edition.cnn.com/");
+		VisitJob visitJob = new VisitJob(1l, "visit edition.cnn.com", "visit edition.cnn.com", "https://edition.cnn.com/", null);
 		jobs.appendJob(visitJob);
 	
 		// wait for search result
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);
@@ -69,11 +69,11 @@ class EditionCnnComTest {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit edition.cnn.com", "visit edition.cnn.com", "https://edition.cnn.com/");
+		VisitJob visitJob = new VisitJob(1l, "visit edition.cnn.com", "visit edition.cnn.com", "https://edition.cnn.com/", null);
 		jobs.appendJob(visitJob);
 	
 		// wait for search result
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 		
 		operator.runJobList(jobs);

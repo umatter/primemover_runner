@@ -1,34 +1,57 @@
-package primemover.service.jobdatawriter;
+package primemover.service.datawriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.openqa.selenium.Cookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.openqa.selenium.Cookie;
-
-import primemover.model.IJob;
 import primemover.service.JobData;
 
-public class StorageHelper {
-	private static Logger logger = LoggerFactory.getLogger(StorageHelper.class);
-
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-	public static String formatDateForFilePrefix(Date date) {
-		return dateFormat.format(date);
-	}
+public class JobDataWriter implements IDataWriter {
 	
-	private void writeCookies(OutputStream os, JobData data) throws IOException {
+	private final static Logger logger = LoggerFactory.getLogger(JobDataWriter.class);	
+	private JobData data;
+	private String fileName;
+	private String identifier;
+	
+	public JobDataWriter(JobData data) {
+		super();
+		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
+		this.data = data;
+		this.identifier = StorageUtility.getIdentifier("static-jobdata", data.getJob());
+		this.fileName = datePrefix + "-" + identifier + ".zip";
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	@Override
+	public String getFileName() {
+		return fileName;
+	}
+
+	@Override
+	public String getDescription() {
+		return "job data as zip";
+	}
+
+	@Override
+	public String getContentType() {
+		return "application/zip";
+	}
+
+	private static void writeCookies(OutputStream os, JobData data) throws IOException {
 		logger.debug("writting cookies");
 		
 		Integer cnt = 0;
@@ -72,23 +95,16 @@ public class StorageHelper {
 		os.write(tmp.toString().getBytes(StandardCharsets.UTF_8));
 	}
 	
-	public String getIdentifier(IJob job) {
-		return "static_jobdata_" + job.getId().toString();
-	}
-		
-	public String getFilenameAsZip(IJob job) {
-		return dateFormat.format(new Date()) + "_" + getIdentifier(job) + ".zip";
-	}
-	
-	public Boolean writeJobDataAsZip(OutputStream os, IJob job, JobData data) {
-		logger.info("writting jobdata as Zip for job {}", job.getId());
+	@Override
+	public boolean writeData(OutputStream os) {
+		logger.info("writting jobdata as Zip for job {}", data.getJob().getId());
 		
 		// json mapper
 		ObjectMapper mapper = new ObjectMapper();
 		
 		// create filename
-		String datePrefix = dateFormat.format(new Date());
-		String jobId = job.getId().toString();
+		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
+		String jobId = data.getJob().getId().toString();
 
 		// prepare streams
 		try (ZipOutputStream zipOut = new ZipOutputStream(os)) {
@@ -167,15 +183,12 @@ public class StorageHelper {
 			zipOut.finish();
 			zipOut.flush();
 			
-			logger.debug("Done writing jobdata for job {}", job.getId());
+			logger.debug("Done writing jobdata for job {}", data.getJob().getId());
 			return true;
 		} catch (IOException e) {
-			logger.warn("Error creating jobdata for job {}", job.getId(), e);
+			logger.warn("Error creating jobdata for job {}", data.getJob().getId(), e);
 			return false;
 		}
-	}
-	public StorageHelper() {
-
 	}
 
 }

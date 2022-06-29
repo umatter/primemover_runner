@@ -1,4 +1,4 @@
-package primemover.model;
+package primemover.model.proxy;
 
 public class HttpProxy implements IProxy {
 

@@ -11,8 +11,8 @@ public abstract class SelectorBaseJob extends BaseJob {
 		super();
 	}
 
-	public SelectorBaseJob(Long id, String name, String description, SelectorType type, String selector) {
-		super(id, name, description);
+	public SelectorBaseJob(Long id, String name, String description, String task, SelectorType type, String selector) {
+		super(id, name, description, task);
 		this.type = type;
 		this.selector = selector;
 	}

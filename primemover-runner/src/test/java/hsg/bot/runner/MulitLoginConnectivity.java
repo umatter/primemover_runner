@@ -43,11 +43,11 @@ class MulitLoginConnectivity {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit MulitLogin API", "visit MulitLogin API", "https://app.multiloginapp.com");
+		VisitJob visitJob = new VisitJob(1l, "visit MulitLogin API", "visit MulitLogin API", null, "https://app.multiloginapp.com");
 		jobs.appendJob(visitJob);
 	
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 		
 		service.runJobList(jobs);

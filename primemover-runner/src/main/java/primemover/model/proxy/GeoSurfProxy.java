@@ -1,4 +1,4 @@
-package primemover.model;
+package primemover.model.proxy;
 
 public class GeoSurfProxy extends HttpProxy {
 	private String location;

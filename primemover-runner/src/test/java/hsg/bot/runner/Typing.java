@@ -49,11 +49,11 @@ class Typing {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch", null);
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_NOTYPOS, false);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_NOTYPOS, false);
 		jobs.appendJob(enterJob);
 		
 		// verify search term
@@ -71,14 +71,14 @@ class Typing {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch", null);
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_KEEPINGTYPOS, false);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_KEEPINGTYPOS, false);
 		jobs.appendJob(enterJob);
 		
-		jobs.appendJob(new WaitJob(1l, "Wait", "Wait", 10));
+		jobs.appendJob(new WaitJob(1l, "Wait", "Wait", null, 10));
 		
 		// quick wait for search to finish
 
@@ -91,14 +91,14 @@ class Typing {
 		Joblist jobs = new Joblist();
 		
 		// open page
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch");
+		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.google.ch", null);
 		jobs.appendJob(visitJob);
 		
 		// enter search term
-		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_FIXINGTYPOS, false);
+		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field", null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_FIXINGTYPOS, false);
 		jobs.appendJob(enterJob);
 		
-		jobs.appendJob(new WaitJob(1l, "Wait", "Wait", 10));
+		jobs.appendJob(new WaitJob(1l, "Wait", "Wait", null, 10));
 		
 		// quick wait for search to finish
 

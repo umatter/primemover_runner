@@ -17,8 +17,8 @@ public class HandleAlertJob extends BaseJob {
 		super();
 	}
 
-	public HandleAlertJob(Long id, String name, String description, DialogHandleType action) {
-		super(id, name, description);
+	public HandleAlertJob(Long id, String name, String description, String task, DialogHandleType action) {
+		super(id, name, description, task);
 		
 		this.action = action;
 	}

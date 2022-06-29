@@ -29,9 +29,9 @@ public class SingleSelectUrlJob extends SelectorBaseJob {
 		super();
 	}
 
-	public SingleSelectUrlJob(Long id, String name, String description, SelectorType type, String selector,
+	public SingleSelectUrlJob(Long id, String name, String description, String task, SelectorType type, String selector,
 			DecisionType decision) {
-		super(id, name, description, type, selector);
+		super(id, name, description, task, type, selector);
 		this.decision = decision;
 	}
 	

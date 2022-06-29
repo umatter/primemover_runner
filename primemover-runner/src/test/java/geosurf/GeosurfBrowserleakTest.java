@@ -10,16 +10,16 @@ import primemover.model.AgentType;
 import primemover.model.BasicAgent;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
-import primemover.model.GeoSurfProxy;
-import primemover.model.HttpProxy;
 import primemover.model.IAgent;
-import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
 import primemover.model.MultiLoginAgent;
 import primemover.model.SelectionConfiguration;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
+import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.HttpProxy;
+import primemover.model.proxy.IProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
@@ -75,15 +75,15 @@ public class GeosurfBrowserleakTest {
 		Joblist jobs = new Joblist();
 		
 		// IP Test
-		VisitJob visitJob = new VisitJob(1l, "browserleak.com IP Test", "visit browserleak.com/ip", "https://browserleaks.com/ip");
+		VisitJob visitJob = new VisitJob(1l, "browserleak.com IP Test", "visit browserleak.com/ip", "https://browserleaks.com/ip", null);
 		jobs.appendJob(visitJob);
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 30);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 30);
 		jobs.appendJob(waitJob);
 		
 		// Ad-blocker and Proxy-Detection test
-		visitJob = new VisitJob(1l, "browserleak.com detector", "visit browserleak.com/proxy", "https://browserleaks.com/proxy");
+		visitJob = new VisitJob(1l, "browserleak.com detector", "visit browserleak.com/proxy", "https://browserleaks.com/proxy", null);
 		jobs.appendJob(visitJob);
-		waitJob = new WaitJob(1l, "wait", "wait", 30);
+		waitJob = new WaitJob(1l, "wait", "wait", null, 30);
 		jobs.appendJob(waitJob);
 		
 		return jobs;

@@ -8,15 +8,15 @@ public class EnterTextFieldJob extends SelectorBaseJob {
 	private Boolean appendReturn;
 	private String value;
 	
-	public EnterTextFieldJob(Long id, String name, String description, SelectorType type, String fieldSelector, String value, TypingModeType typingMode, Boolean appendEnter) {
-		super(id, name, description, type, fieldSelector);
+	public EnterTextFieldJob(Long id, String name, String description, String task, SelectorType type, String fieldSelector, String value, TypingModeType typingMode, Boolean appendEnter) {
+		super(id, name, description, task, type, fieldSelector);
 		this.value = value;
 		this.typingMode = typingMode;
 		this.appendReturn = appendEnter;
 	}
 	
-	public EnterTextFieldJob(Long id, String name, String description, SelectorType type, String fieldSelector, String value, TypingModeType typingMode) {
-		this(id, name, description, type, fieldSelector, value, typingMode, true);
+	public EnterTextFieldJob(Long id, String name, String description, String task, SelectorType type, String fieldSelector, String value, TypingModeType typingMode) {
+		this(id, name, description, task, type, fieldSelector, value, typingMode, true);
 	}
 	
 	public TypingModeType getTypingMode() {

@@ -10,10 +10,10 @@ import org.springframework.util.Assert;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.Crawler;
-import primemover.model.GeoSurfProxy;
-import primemover.model.HttpProxy;
 import primemover.model.IAgent;
 import primemover.model.MultiLoginAgent;
+import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.HttpProxy;
 import primemover.util.MulitLoginBrowserProfile;
 import primemover.util.MultiLoginBrowserProfileFactory;
 

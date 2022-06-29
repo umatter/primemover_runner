@@ -1,8 +1,8 @@
-package primemover.service.jobdatawriter;
+package primemover.service.datawriter;
 
 import java.io.OutputStream;
 
-public interface IJobDataWriter {
+public interface IDataWriter {
 
 	String getIdentifier();
 	String getFileName();

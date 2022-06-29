@@ -1,11 +1,8 @@
 package primemover.service;
 
 import primemover.model.IJob;
-import primemover.service.jobdatawriter.IJobDataWriter;
+import primemover.service.datawriter.IDataWriter;
 
 public interface IStorageService {
-
-	Boolean writeFixedJobData(IJob job, JobData data);
-	
-	Boolean writeData(IJob job, IJobDataWriter writer);
+	Boolean writeData(IJob job, IDataWriter writer);
 }

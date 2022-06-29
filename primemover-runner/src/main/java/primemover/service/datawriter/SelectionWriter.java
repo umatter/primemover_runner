@@ -1,19 +1,20 @@
-package primemover.service.jobdatawriter;
+package primemover.service.datawriter;
 
 import java.util.Date;
 
 import primemover.model.IJob;
 import primemover.util.Selection;
 
-public class SelectionJobDataWriter extends JsonAsZipJobDataWriter<Selection> {
+public class SelectionWriter extends JsonZippedDataWriterBase<Selection> {
 
 	private String identifier;
 	private String baseName;
 	private Selection data;
 	
 
-	public SelectionJobDataWriter(IJob job, Selection data) {
-		String datePrefix = StorageHelper.formatDateForFilePrefix(new Date());
+	public SelectionWriter(IJob job, Selection data) {
+		super();
+		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
 		this.identifier = "dynamic_jobdata_" + job.getId();
 		this.baseName = datePrefix + "_" + identifier; 
 		this.data = data;

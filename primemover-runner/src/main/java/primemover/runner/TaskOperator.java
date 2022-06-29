@@ -28,13 +28,13 @@ import com.browserup.harreader.model.Har;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.Crawler;
-import primemover.model.GeoSurfProxy;
 import primemover.model.IJob;
-import primemover.model.IProxy;
 import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
+import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.IProxy;
 import primemover.runner.jobHandling.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.IStorageService;
@@ -42,6 +42,10 @@ import primemover.service.IpService;
 import primemover.service.IpServiceFactory;
 import primemover.service.JobData;
 import primemover.service.JobService;
+import primemover.service.datawriter.DataWriterCachingDecorator;
+import primemover.service.datawriter.IDataWriter;
+import primemover.service.datawriter.JobDataWriter;
+import primemover.service.datawriter.PageSourceWriter;
 import primemover.util.MulitLoginBrowserProfile;
 import primemover.util.MultiLoginBrowserProfileFactory;
 
@@ -240,7 +244,7 @@ public class TaskOperator implements ITaskOperator {
 			jobService.updateJobState(job, JobState.RUNNING, ZonedDateTime.now(), null); // setting starttime
 
 			// init data recording
-			JobData data = new JobData();
+			JobData data = new JobData(job);
 
 			// IP-Checking
 			try {
@@ -343,11 +347,19 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId());
 			}
 
-			// Writing data
+			// Prepare writers
 			boolean writeRes = true;
+			IDataWriter jobDataWriter = new JobDataWriter(data);
+			jobDataWriter = new DataWriterCachingDecorator(jobDataWriter);
+			
+			IDataWriter pageSourceWriter = new PageSourceWriter(data);
+			pageSourceWriter = new DataWriterCachingDecorator(pageSourceWriter);
+			
+			// writing data
 			for (IStorageService storage : storages) {
 				try {
-					writeRes = writeRes && storage.writeFixedJobData(job, data);
+					writeRes = writeRes && storage.writeData(job, jobDataWriter);
+					writeRes = writeRes && storage.writeData(job, pageSourceWriter);
 				} catch (Exception e) {
 					logger.warn("Error writing to job-data to storage for job {}", job.getId(), e);
 					writeRes = false;
@@ -410,7 +422,7 @@ public class TaskOperator implements ITaskOperator {
 				if (curRetry < 3) {
 					logger.warn("setting up recorder for {} failed ({} of {})", crawler.getId(), curRetry, 3);
 				} else {
-					logger.error("could not set up recorder for {}", crawler.getId(), ex);
+					logger.error("could not set up recorder for crawler {}", crawler.getId(), ex);
 					throw ex;
 				}
 			}

@@ -1,4 +1,4 @@
-package primemover.model;
+package primemover.model.proxy;
 
 /**
  * Proxy interface to prepare for special treatment of certain global proxy providers to be implemented in specialiced classes

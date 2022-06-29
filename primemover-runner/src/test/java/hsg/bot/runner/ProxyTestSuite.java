@@ -9,12 +9,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import primemover.model.BasicAgent;
 import primemover.model.AgentType;
 import primemover.model.Crawler;
-import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
 import primemover.model.jobs.WaitJob;
-import primemover.model.HttpProxy;
+import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.HttpProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
@@ -62,7 +62,7 @@ class ProxyTestSuite {
 		// Verify city and country
 		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "New York");
 		jobs.appendJob(assertProxyJob);		
-		jobs.appendJob(new WaitJob(2l, "Wait", "", 10));
+		jobs.appendJob(new WaitJob(2l, "Wait", "", null, 10));
 		
 		service.setup(crawler);
 		service.runJobList(jobs);
@@ -80,7 +80,7 @@ class ProxyTestSuite {
 		// Verify city and country
 		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "New York");
 		jobs.appendJob(assertProxyJob);
-		jobs.appendJob(new WaitJob(2l, "Wait", "", 10));
+		jobs.appendJob(new WaitJob(2l, "Wait", "", null, 10));
 		
 		service.setup(crawler);
 		service.runJobList(jobs);
@@ -98,7 +98,7 @@ class ProxyTestSuite {
 		// Verify city and country
 		AssertProxyByGeosurfJob assertProxyJob = new AssertProxyByGeosurfJob(1l, "Assert New York", "Assert New York", null, "US", "Fremont");
 		jobs.appendJob(assertProxyJob);
-		jobs.appendJob(new WaitJob(2l, "Wait", "", 10));
+		jobs.appendJob(new WaitJob(2l, "Wait", "", null, 10));
 		
 		service.setup(crawler);
 		service.runJobList(jobs);

@@ -13,7 +13,7 @@ import primemover.model.MultiLoginAgent;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
-import primemover.model.HttpProxy;
+import primemover.model.proxy.HttpProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
@@ -55,11 +55,11 @@ class MultiLoginTestSuite {
 		
 		// open page
 		 
-		VisitJob visitJob = new VisitJob(1l, "visit geosurf", "visit geosurf", "https://geo.geosurf.io");
+		VisitJob visitJob = new VisitJob(1l, "visit geosurf", "visit geosurf", null, "https://geo.geosurf.io");
 		jobs.appendJob(visitJob);
 		
 		// quick wait for search to finish
-		WaitJob waitJob = new WaitJob(1l, "wait", "wait", 10);
+		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 		
 		// Verify city and country

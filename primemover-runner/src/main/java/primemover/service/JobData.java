@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 import com.browserup.harreader.model.Har;
 
+import primemover.model.IJob;
 import primemover.model.LocationInfo;
 
 public class JobData {
@@ -18,7 +19,17 @@ public class JobData {
 	private String sessionStorage;
 	private String localStorage;
 	private LocationInfo location;
+	private IJob job;
 	
+	public JobData(IJob job) {
+		super();
+		this.job = job;
+	}
+	
+	public IJob getJob() {
+		return job;
+	}
+
 	public Har getHar() {
 		return har;
 	}

@@ -25,7 +25,7 @@ public abstract class AssertProxyJob extends BaseJob {
 	 * @param city
 	 */
 	public AssertProxyJob(Long id, String name, String description, String ip, String country, String city) {
-		super(id, name, description);
+		super(id, name, description, null);
 		
 		if (!StringUtils.hasText(ip) && !StringUtils.hasText(country) && !StringUtils.hasText(city)) {
 			throw new IllegalArgumentException("pass at least one value not null and empty in ip, country or city");

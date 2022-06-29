@@ -21,8 +21,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
-import primemover.model.GeoSurfProxy;
 import primemover.model.LocationInfo;
+import primemover.model.proxy.GeoSurfProxy;
 import primemover.service.IpService;
 import primemover.service.IpServiceFactory;
 
@@ -69,7 +69,8 @@ class GeosurfIpVerificationTest {
 	 */
 	void verifyIpIOverXRunsForCity(String city, Integer numRuns, Integer waitMillis) {		
 		String failIP = "(fail)";
-		GeoSurfProxy targetProxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", city);		
+		//GeoSurfProxy targetProxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", city);
+		GeoSurfProxy targetProxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "$SyntheticUsersLimbo2022", city);
 		RecordingProxy rec = recFac.createRecordingProxy();
 		rec.setup(targetProxy);
 		
@@ -131,6 +132,12 @@ class GeosurfIpVerificationTest {
 	        () -> {
 	        	verifyIpIOverXRunsForCity(city, numRuns, waitMillisInBetween);
 	    }));  
+	}
+	
+	@TestFactory
+	@Execution(ExecutionMode.CONCURRENT)
+	Stream<DynamicTest> dynamicGeosurfTestsOver1RunsWith90SecondsWait() {
+	    return createTests (1, 90000); 
 	}
 	
 	@TestFactory

@@ -17,9 +17,7 @@ import primemover.model.Configuration;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.DialogHandleType;
-import primemover.model.GeoSurfProxy;
 import primemover.model.IAgent;
-import primemover.model.IProxy;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MediaOutlet;
@@ -30,7 +28,6 @@ import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.Term;
 import primemover.model.TypingModeType;
-import primemover.model.HttpProxy;
 import primemover.model.api.ConfigurationParam;
 import primemover.model.api.CrawlerResult;
 import primemover.model.api.IpResult;
@@ -47,6 +44,9 @@ import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
+import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.HttpProxy;
+import primemover.model.proxy.IProxy;
 import primemover.model.IJob;
 
 public class PrimemoverApiConverter {
@@ -139,22 +139,23 @@ public class PrimemoverApiConverter {
 		return map;
 	}
 		
-	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean isFailsave) {
+	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean isFailsave, Map<String, String> behaviours) {
 		job.setId(id);
 		job.setName(name);
 		job.setDescription(description);
 		job.setCaptchaSolving(captchaSolving);
 		job.setIsFailsave(isFailsave);
+		job.setTask(behaviours.get("task"));
 	}
 
-	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description, CaptchaSolvingType captchaSolving) {
-		setBaseFields(job, id, name, description, captchaSolving, false);
+	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		setBaseFields(job, id, name, description, captchaSolving, false, behaviours);
 	}	
 	
 	
 	private static VisitJob convertApiVisitJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		VisitJob job = new VisitJob();
-		setBaseFields(job, id, name, description, captchaSolving);
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		job.setUrl(behaviours.get("url"));
 	
 		return job;
@@ -162,7 +163,7 @@ public class PrimemoverApiConverter {
 	
 	private static HandleAlertJob convertApiHandleAlertJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		HandleAlertJob job = new HandleAlertJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		if (behaviours.containsKey("seconds")) {
 			job.setAction(DialogHandleType.valueOf(behaviours.get("action")));
 		} else {
@@ -174,7 +175,7 @@ public class PrimemoverApiConverter {
 
 	private static WaitJob convertApiWaitJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		WaitJob job = new WaitJob();
-		setBaseFields(job, id, name, description, captchaSolving);
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		if (behaviours.containsKey("seconds")) {
 			job.setSeconds(Integer.valueOf(behaviours.get("seconds")));
 		} else {
@@ -186,7 +187,7 @@ public class PrimemoverApiConverter {
 	
 	private static EnterTextFieldJob convertApiEnterTextFieldJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		EnterTextFieldJob job = new EnterTextFieldJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setValue(behaviours.get("text"));
@@ -218,7 +219,7 @@ public class PrimemoverApiConverter {
 		
 	private static ClickJob convertApiClickJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		ClickJob job = new ClickJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 
@@ -233,7 +234,7 @@ public class PrimemoverApiConverter {
 	
 	private static SwitchToJob convertApiSwitchJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		SwitchToJob job = new SwitchToJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 
@@ -242,7 +243,7 @@ public class PrimemoverApiConverter {
 		
 	private static SingleSelectUrlJob convertApiSingleSelectUrlJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		SingleSelectUrlJob job = new SingleSelectUrlJob();
-		setBaseFields(job, id, name, description, captchaSolving);
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setDecisionType(DecisionType.valueOf(behaviours.get("decisionType")));
@@ -256,7 +257,7 @@ public class PrimemoverApiConverter {
 	
 	private static ScrollByDurationJob convertApiScrollByDurationJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		ScrollByDurationJob job = new ScrollByDurationJob();
-		setBaseFields(job, id, name, description, captchaSolving);
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		
 		if (behaviours.containsKey("scrollDuration")) {
 			job.setDuration(Double.valueOf(behaviours.get("scrollDuration")).intValue());
@@ -272,7 +273,7 @@ public class PrimemoverApiConverter {
 	
 	private static ScrollByLengthJob convertApiScrollByLengthJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		ScrollByLengthJob job = new ScrollByLengthJob();
-		setBaseFields(job, id, name, description, captchaSolving);
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		job.setLength(Integer.valueOf(behaviours.get("length")));
 		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
 	
