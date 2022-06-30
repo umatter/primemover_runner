@@ -39,6 +39,9 @@ import primemover.service.TermsService;
 import primemover.service.TokenGenerator;
 import primemover.service.TokenRequestInterceptor;
 import primemover.service.anticaptcha.AntiCaptchaService;
+import primemover.service.datawriter.IDataWriter;
+import primemover.service.datawriter.JobDataWriter;
+import primemover.service.datawriter.PageSourceWriter;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.MultiLoginDefaultTemplateLoader;
 import primemover.util.OutletsProvider;
@@ -144,10 +147,28 @@ public class Config {
 	IStorageService getBackendStorageServices() {
 		return new BackendStorageService();
 	}*/
+	@Value("${awsS3.jobdata.bucketName}")
+	private String awsJobDataBucketName;
+	@Value("${awsS3.jobdata.subFolder}")
+	private String awsJobDataSubfolder;
 	
-	@Bean(name="AwsS3StorageService")
-	IStorageService getAwsS3StorageServices() {
-		return new AwsS3StorageService();
+	@Bean(name="AwsS3PageDataStorageService", initMethod = "init")
+	IStorageService getAwsS3PageDataStorageServices() {
+		AwsS3StorageService jobDataSerivce = new AwsS3StorageService(awsJobDataBucketName, awsJobDataSubfolder);
+		jobDataSerivce.setWriteSelector((writer) -> !(writer instanceof PageSourceWriter)); // don't write PageSource-data
+		return jobDataSerivce;
+	}
+	
+	@Value("${awsS3.finalsource.bucketName}")
+	private String awsFinalSourceBucketName;
+	@Value("${awsS3.finalsource.subFolder}")
+	private String awsFinalSourceSubfolder;
+	
+	@Bean(name="AwsS3FinalSourceStorageService", initMethod = "init")
+	IStorageService getAwsS3FinalSourceStorageServices() {
+		AwsS3StorageService jobDataSerivce = new AwsS3StorageService(awsFinalSourceBucketName, awsFinalSourceSubfolder);
+		jobDataSerivce.setWriteSelector((writer) -> writer instanceof PageSourceWriter); // only write PageSource-data
+		return jobDataSerivce;
 	}
 	
 	@Bean(name="AgentService")
