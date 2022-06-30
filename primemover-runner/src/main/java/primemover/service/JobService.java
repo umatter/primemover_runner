@@ -113,18 +113,34 @@ public class JobService {
 	    }
 	}
 	
-	public Boolean updateJobState(IJob job, JobState state, ZonedDateTime startTime, ZonedDateTime endTime) {
-		return updateJobState(job.getId(), state, startTime, endTime);
+	public Boolean updateCaptchaStateOnJob(final IJob job, Boolean captchaFound, Boolean captchaSolved) {
+		return updateJobState(job.getId(), null, captchaFound, captchaSolved, null, null);	
 	}
 	
-	public Boolean updateJobState(Long jobID, JobState state, ZonedDateTime startTime, ZonedDateTime endTime) {
+	public Boolean updateJobState(final IJob job, final JobState state, Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
+		return updateJobState(job.getId(), state, captchaFound, captchaSolved, startTime, endTime);
+	}
+	
+	public Boolean updateJobState(final Long jobID, final JobState state, final Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
 		String url = calculateJobUrl(jobID);
 
 		HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_JSON);
 	    JSONObject data = new JSONObject();
+	    
+	    // state data
 	    data.put("status_code", state.getCode());
 	    data.put("status_message", state.getText());
+	    
+	    // captcha recording and solving
+	    if (!(captchaFound == null)) {
+	    	data.put("captcha_found", captchaFound);
+	    }
+	    if (!(captchaSolved == null)) {
+	    	data.put("captcha_solved", captchaSolved);
+	    }
+	    
+	    // start and end timing
 	    if (!(startTime == null)) {
 	    	data.put("started_at", dateFormater.format(startTime));
 	    }

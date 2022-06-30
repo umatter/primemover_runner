@@ -136,17 +136,6 @@ public class Config {
 		return new IpServiceFactory();
 	}
 	
-	/*
-	@Bean(name="fileStorageService")
-	IStorageService getFileStorageServices() {
-		return new FileStorageService();
-	}
-	
-	
-	@Bean(name="backendStorageService")
-	IStorageService getBackendStorageServices() {
-		return new BackendStorageService();
-	}*/
 	@Value("${awsS3.jobdata.bucketName}")
 	private String awsJobDataBucketName;
 	@Value("${awsS3.jobdata.subFolder}")

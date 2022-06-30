@@ -241,7 +241,7 @@ public class TaskOperator implements ITaskOperator {
 		logger.info("Starting job {}", job.getId());
 
 		try {
-			jobService.updateJobState(job, JobState.RUNNING, ZonedDateTime.now(), null); // setting starttime
+			jobService.updateJobState(job, JobState.RUNNING, null, null, ZonedDateTime.now(), null); // setting starttime
 
 			// init data recording
 			JobData data = new JobData(job);
@@ -280,18 +280,22 @@ public class TaskOperator implements ITaskOperator {
 			
 			
 			// captcha verification
+			Boolean captchaFound = null;
 			if (this.runCaptchaChecks) {
 				if (StringUtils.isNotEmpty(pageSource)) {
 					String lowerPageSource = pageSource.toLowerCase();
 					if (StringUtils.contains(lowerPageSource, "captcha")) {
+						captchaFound = true;
 						logger.warn("captcha found in job {}", job.getId());
+					} else {
+						captchaFound = false;
 					}
 				} else {
 					logger.warn("no page source available for captcha-check for job {}", job.getId());
 				}
 			}
 
-			jobService.updateJobState(job, JobState.STORINGDATA, null, null);
+			jobService.updateJobState(job, JobState.STORINGDATA, captchaFound, null, null, null);
 
 			// save capturing screenshot
 			try {
@@ -368,10 +372,10 @@ public class TaskOperator implements ITaskOperator {
 
 			if (writeRes) {
 				logger.info("Done running job {}", job.getId());
-				jobService.updateJobState(job, JobState.SUCCESS, null, ZonedDateTime.now()); // setting endtime
+				jobService.updateJobState(job, JobState.SUCCESS, null, null, null, ZonedDateTime.now()); // setting endtime
 			} else {
 				logger.warn("Done running job with warning {}", job.getId());
-				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, ZonedDateTime.now()); // setting endtime
+				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, null, null, ZonedDateTime.now()); // setting endtime
 			}
 
 			runJobResult = true;
@@ -380,7 +384,7 @@ public class TaskOperator implements ITaskOperator {
 			logger.error("Exception executing job {}", job.getId(), ex);
 
 			try {
-				jobService.updateJobState(job, JobState.FAILURE, null, ZonedDateTime.now()); // setting endtime
+				jobService.updateJobState(job, JobState.FAILURE, null, null, null, ZonedDateTime.now()); // setting endtime
 			} catch (Exception e) {
 				logger.error("Could not write Job-State for {}", job.getId(), ex); // FATAL!!!
 			}
@@ -461,7 +465,7 @@ public class TaskOperator implements ITaskOperator {
 				} else {
 					logger.warn("skipping job ({}) due to error in previous job ({})", item.getId(),
 							previousJob == null ? -1 : previousJob.getId());
-					jobService.updateJobState(item, JobState.SKIPPED, ZonedDateTime.now(), ZonedDateTime.now());
+					jobService.updateJobState(item, JobState.SKIPPED, null, null, ZonedDateTime.now(), ZonedDateTime.now());
 				}
 			}
 
