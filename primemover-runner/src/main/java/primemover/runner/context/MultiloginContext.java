@@ -1,8 +1,8 @@
-package primemover.runner;
+package primemover.runner.context;
 
 import primemover.util.MulitLoginBrowserProfile;
 
-public class MultiloginContext extends OperatorContext {
+public class MultiloginContext extends ContextBase {
 	private MulitLoginBrowserProfile profile;
 
 	public MultiloginContext() {

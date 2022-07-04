@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
-import primemover.runner.IJobManager;
-import primemover.runner.JobListRunnerFactory;
-import primemover.runner.JobManager;
-import primemover.runner.jobHandling.IJobDispatcher;
-import primemover.runner.jobHandling.JobDispatcher;
+import primemover.runner.ITaskManager;
+import primemover.runner.TaskManager;
 import primemover.runner.TaskOperatorFactory;
+import primemover.runner.joblist.JobListRunnerFactory;
+import primemover.runner.jobs.IJobDispatcher;
+import primemover.runner.jobs.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
@@ -201,8 +201,8 @@ public class Config {
 	}	
 	
 	@Bean(name="jobmanager", initMethod = "setup")
-	IJobManager getManager() {
-		IJobManager jobManager = new JobManager();
+	ITaskManager getManager() {
+		ITaskManager jobManager = new TaskManager();
 	
 		// jobManager will be called with spring's scheduler
 		return jobManager;		

@@ -1,4 +1,4 @@
-package primemover.runner.jobHandling;
+package primemover.runner.jobs;
 
 
 import java.util.HashMap;
@@ -28,22 +28,22 @@ import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.jobHandlers.ScrollByLengthJobHandler;
-import primemover.runner.jobHandling.jobHandlers.SingleSelectUrlJobHandler;
-import primemover.runner.jobHandling.jobHandlers.SwitchToJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AlertJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AssertElementExistsJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AssertPageLoadedJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AssertProxyByGeosurfJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AssertProxyByPrimemoverApiJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AssertScrolledMaxJobHandler;
-import primemover.runner.jobHandling.jobHandlers.AssertTextInFieldJobHandler;
-import primemover.runner.jobHandling.jobHandlers.ClickJobHandler;
-import primemover.runner.jobHandling.jobHandlers.EnterTextFieldJobHandler;
-import primemover.runner.jobHandling.jobHandlers.ScrollByDurationJobHandler;
-import primemover.runner.jobHandling.jobHandlers.VisitJobHandler;
-import primemover.runner.jobHandling.jobHandlers.WaitJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.handler.AlertJobHandler;
+import primemover.runner.jobs.handler.AssertElementExistsJobHandler;
+import primemover.runner.jobs.handler.AssertPageLoadedJobHandler;
+import primemover.runner.jobs.handler.AssertProxyByGeosurfJobHandler;
+import primemover.runner.jobs.handler.AssertProxyByPrimemoverApiJobHandler;
+import primemover.runner.jobs.handler.AssertScrolledMaxJobHandler;
+import primemover.runner.jobs.handler.AssertTextInFieldJobHandler;
+import primemover.runner.jobs.handler.ClickJobHandler;
+import primemover.runner.jobs.handler.EnterTextFieldJobHandler;
+import primemover.runner.jobs.handler.ScrollByDurationJobHandler;
+import primemover.runner.jobs.handler.ScrollByLengthJobHandler;
+import primemover.runner.jobs.handler.SingleSelectUrlJobHandler;
+import primemover.runner.jobs.handler.SwitchToJobHandler;
+import primemover.runner.jobs.handler.VisitJobHandler;
+import primemover.runner.jobs.handler.WaitJobHandler;
 
 public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 
@@ -163,7 +163,7 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 	}
 
 	// Call the job specific handler
-	public void handle(OperatorContext context, IJob job) {
+	public void handle(ContextBase context, IJob job) {
 		IJobHandler h = dispatch.get(job.getClass());
 		if (h == null) {
 			throw new UnsupportedOperationException("This type is not yet supported");

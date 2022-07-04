@@ -1,10 +1,11 @@
-package primemover.runner.jobHandling.jobHandlers;
+package primemover.runner.jobs.handler;
 
 import primemover.model.IJob;
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.IJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.IJobHandler;
+
 import org.springframework.util.StringUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,7 +26,7 @@ public class AssertProxyByPrimemoverApiJobHandler implements IJobHandler {
     private ObjectMapper mapper = new ObjectMapper();
     
     // TODO effectively change to primemover API. Below is a quick hack to get running due to timeconstraint.
-    public void handle(OperatorContext context, IJob job) {
+    public void handle(ContextBase context, IJob job) {
         logger.debug("running job");
 
         WebDriver driver = context.getDriver();

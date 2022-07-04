@@ -1,4 +1,4 @@
-package primemover.runner;
+package primemover.runner.joblist;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContextAware;
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
+import primemover.runner.TaskOperatorFactory;
 
 public class JobListRunnerFactory  implements ApplicationContextAware {
 

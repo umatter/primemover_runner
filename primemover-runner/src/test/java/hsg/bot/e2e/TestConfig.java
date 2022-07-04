@@ -19,9 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
-import primemover.runner.JobListRunnerFactory;
-import primemover.runner.MockJobManager;
+import primemover.runner.MockTaskManager;
 import primemover.runner.TaskOperatorFactory;
+import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.AgentService;
 import primemover.service.BackendStorageService;
 import primemover.service.CrawlerService;
@@ -39,8 +39,8 @@ import primemover.util.MultiLoginBrowserProfileFactory;
 @SpringBootConfiguration
 public class TestConfig {
 	@Bean(name="jobmanager", initMethod = "setup")
-	MockJobManager getManager() {
-		return new MockJobManager();	
+	MockTaskManager getManager() {
+		return new MockTaskManager();	
 	}
 	
 	@Value("${backend.requestTimeoutSeconds:60}")

@@ -1,4 +1,4 @@
-package primemover.runner.jobHandling.jobHandlers;
+package primemover.runner.jobs.handler;
 
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -8,8 +8,8 @@ import primemover.captcha.CaptchaSolver;
 import primemover.captcha.CaptchaJobHelper.JobPosition;
 import primemover.model.IJob;
 import primemover.model.jobs.VisitJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.IJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.IJobHandler;
 import primemover.util.NavigationHelper;
 
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class VisitJobHandler implements IJobHandler {
     
 	private static Logger logger = LoggerFactory.getLogger(VisitJobHandler.class);
 
-    public void handle(OperatorContext context, IJob job) {
+    public void handle(ContextBase context, IJob job) {
         boolean success = false;
         WebDriver driver = context.getDriver();
         VisitJob typedJob = (VisitJob) job;

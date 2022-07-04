@@ -1,12 +1,12 @@
-package primemover.runner.jobHandling.jobHandlers;
+package primemover.runner.jobs.handler;
 
 import primemover.captcha.CaptchaJobHelper;
 import primemover.captcha.CaptchaSolver;
 import primemover.captcha.CaptchaJobHelper.JobPosition;
 import primemover.model.IJob;
 import primemover.model.jobs.WaitJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.IJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.IJobHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public class WaitJobHandler implements IJobHandler {
     
 	private static Logger logger = LoggerFactory.getLogger(WaitJobHandler.class);
 
-    public void handle(OperatorContext context, IJob job) {
+    public void handle(ContextBase context, IJob job) {
         logger.debug("running job");
 
         WaitJob typedJob = (WaitJob) job;

@@ -1,10 +1,10 @@
-package primemover.runner.jobHandling.jobHandlers;
+package primemover.runner.jobs.handler;
 
 import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.jobs.SingleSelectUrlJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.IJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.IJobHandler;
 import primemover.util.SelectingHelper;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class SingleSelectUrlJobHandler implements IJobHandler {
 	@Autowired
 	private SelectingHelper selectingHelper;
 	
-    public void handle(OperatorContext context, IJob job) {
+    public void handle(ContextBase context, IJob job) {
         logger.debug("running job");
 
         WebDriver driver = context.getDriver();

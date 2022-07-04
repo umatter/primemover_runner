@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import primemover.model.IJob;
-import primemover.runner.OperatorContext;
+import primemover.runner.context.ContextBase;
 
 public class CaptchaJobHelper {
 	private static Logger logger = LoggerFactory.getLogger(CaptchaJobHelper.class);
@@ -20,7 +20,7 @@ public class CaptchaJobHelper {
 		AFTER
 	}
 	
-	public static Optional<CaptchaSolverResult> solveCaptcha(OperatorContext context, IJob job, JobPosition position, CaptchaSolver solver) {
+	public static Optional<CaptchaSolverResult> solveCaptcha(ContextBase context, IJob job, JobPosition position, CaptchaSolver solver) {
 
 		if (job.getCaptchaSolving() == CaptchaSolvingType.NEVER) {
 			logger.debug("not running captcha (NEVER) for job {}", job.getId());

@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import primemover.model.Joblist;
 import primemover.model.Crawler;
 import primemover.runner.ITaskOperator;
-import primemover.runner.MockJobManager;
+import primemover.runner.MockTaskManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.ICrawlerService;
 
@@ -30,7 +30,7 @@ class LoadTasksFromServiceAndRunJobs {
 	
 	
 	@Autowired
-	private MockJobManager jobManager;
+	private MockTaskManager jobManager;
 	
 	@BeforeEach
 	public void setup() {

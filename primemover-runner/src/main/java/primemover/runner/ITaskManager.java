@@ -1,6 +1,6 @@
 package primemover.runner;
 
-public interface IJobManager {
+public interface ITaskManager {
 
 	void setup();
 

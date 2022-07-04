@@ -1,9 +1,9 @@
-package primemover.runner.jobHandling.jobHandlers;
+package primemover.runner.jobs.handler;
 
 import primemover.model.IJob;
 import primemover.model.jobs.AssertTextInFieldJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.IJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.IJobHandler;
 import primemover.util.SelectingHelper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +17,7 @@ public class AssertTextInFieldJobHandler implements IJobHandler {
    
 	private static Logger logger = LoggerFactory.getLogger(AssertTextInFieldJobHandler.class);
 
-    public void handle(OperatorContext context, IJob job) {
+    public void handle(ContextBase context, IJob job) {
         logger.debug("running job");
 
         WebDriver driver = context.getDriver();

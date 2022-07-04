@@ -1,8 +1,8 @@
-package primemover.runner;
+package primemover.runner.context;
 
 import org.openqa.selenium.chrome.ChromeOptions;
 
-public class ChromeContext extends OperatorContext {
+public class ChromeContext extends ContextBase {
 
 	private ChromeOptions options;
 	

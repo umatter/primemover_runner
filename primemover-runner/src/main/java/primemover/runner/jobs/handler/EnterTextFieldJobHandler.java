@@ -1,4 +1,4 @@
-package primemover.runner.jobHandling.jobHandlers;
+package primemover.runner.jobs.handler;
 
 import primemover.captcha.CaptchaJobHelper;
 import primemover.captcha.CaptchaSolver;
@@ -7,8 +7,8 @@ import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
-import primemover.runner.OperatorContext;
-import primemover.runner.jobHandling.IJobHandler;
+import primemover.runner.context.ContextBase;
+import primemover.runner.jobs.IJobHandler;
 import primemover.util.SelectingHelper;
 import primemover.util.Typing;
 
@@ -28,7 +28,7 @@ public class EnterTextFieldJobHandler implements IJobHandler {
     
 	private static Logger logger = LoggerFactory.getLogger(EnterTextFieldJobHandler.class);
 
-    public void handle(OperatorContext context, IJob job) {
+    public void handle(ContextBase context, IJob job) {
         logger.debug("running job");
         
         WebDriver driver = context.getDriver();

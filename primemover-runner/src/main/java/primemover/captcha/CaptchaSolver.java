@@ -14,7 +14,7 @@ import org.springframework.util.StringUtils;
 
 import primemover.model.IJob;
 import primemover.model.SelectorType;
-import primemover.runner.OperatorContext;
+import primemover.runner.context.ContextBase;
 import primemover.service.JobService;
 import primemover.service.anticaptcha.AntiCaptchaService;
 import primemover.service.anticaptcha.SolvingResponse;
@@ -41,7 +41,7 @@ public class CaptchaSolver {
 	@Autowired
 	private JobService jobService;
 
-	private CaptchaSolverResult trySolveGoogleRecaptchaV2(OperatorContext context, IJob job, Boolean submit) {
+	private CaptchaSolverResult trySolveGoogleRecaptchaV2(ContextBase context, IJob job, Boolean submit) {
 		WebDriver driver = context.getDriver();
 
 		try {
@@ -165,7 +165,7 @@ public class CaptchaSolver {
 		return CaptchaSolverResult.NOTFOUND;
 	}
 
-	public CaptchaSolverResult solve(OperatorContext context, IJob job, Boolean submit) {
+	public CaptchaSolverResult solve(ContextBase context, IJob job, Boolean submit) {
 
 		CaptchaSolverResult tmp = trySolveGoogleRecaptchaV2(context, job, submit);
 		if (!(tmp == CaptchaSolverResult.NOTFOUND)) {

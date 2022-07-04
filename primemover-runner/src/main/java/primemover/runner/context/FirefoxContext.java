@@ -1,8 +1,8 @@
-package primemover.runner;
+package primemover.runner.context;
 
 import org.openqa.selenium.firefox.FirefoxOptions;
 
-public class FirefoxContext extends OperatorContext {
+public class FirefoxContext extends ContextBase {
 
 	private FirefoxOptions firefoxOptions;
 	

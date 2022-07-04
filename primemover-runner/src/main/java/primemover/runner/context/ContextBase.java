@@ -1,17 +1,17 @@
-package primemover.runner;
+package primemover.runner.context;
 
 import org.openqa.selenium.WebDriver;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 
-public abstract class OperatorContext {
+public abstract class ContextBase {
 	
 	private RecordingProxy recorder;
 	private WebDriver driver;
 	private Crawler crawler;
 
-	public OperatorContext() {
+	public ContextBase() {
 	}
 
 	public RecordingProxy getRecorder() {

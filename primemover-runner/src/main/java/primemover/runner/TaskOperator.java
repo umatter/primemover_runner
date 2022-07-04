@@ -35,7 +35,11 @@ import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.IProxy;
-import primemover.runner.jobHandling.JobDispatcher;
+import primemover.runner.context.ChromeContext;
+import primemover.runner.context.ContextBase;
+import primemover.runner.context.FirefoxContext;
+import primemover.runner.context.MultiloginContext;
+import primemover.runner.jobs.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.IStorageService;
 import primemover.service.IpService;
@@ -49,6 +53,15 @@ import primemover.service.datawriter.PageSourceWriter;
 import primemover.util.MulitLoginBrowserProfile;
 import primemover.util.MultiLoginBrowserProfileFactory;
 
+/**
+ * Entry point for a task run. The operator will first setup the running context
+ * (browser, proxy, anti-captcha) and run some checks. Then the containing
+ * joblist will execute job by job. Data is gathered along the execution and
+ * stored.
+ * 
+ * @author dburkolter
+ *
+ */
 public class TaskOperator implements ITaskOperator {
 	private static Logger logger = LoggerFactory.getLogger(TaskOperator.class);
 
@@ -60,8 +73,8 @@ public class TaskOperator implements ITaskOperator {
 	private Integer maxRetryCountInit;
 	@Value("${anticaptcha.check.enabled:true}")
 	private Boolean runCaptchaChecks;
-	
-	private OperatorContext context = null;
+
+	private ContextBase context = null;
 
 	@Autowired
 	private JobService jobService;
@@ -80,10 +93,10 @@ public class TaskOperator implements ITaskOperator {
 
 	@Autowired
 	private JobDispatcher runJobHandler;
-	
+
 	@Autowired
 	IpServiceFactory ipServiceFactory;
-	
+
 	private IpService ipService;
 
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
@@ -179,7 +192,7 @@ public class TaskOperator implements ITaskOperator {
 
 				// apply proxy
 				logger.debug("updating proxy");
-				bp.updateProxy(recorder);		
+				bp.updateProxy(recorder);
 				logger.debug("starting remote MultiLogin driver");
 				URL remoteUrl = new URL(bp.startProfile());
 				RemoteWebDriver driver = new RemoteWebDriver(remoteUrl, capabilities);
@@ -217,16 +230,16 @@ public class TaskOperator implements ITaskOperator {
 	/**
 	 * 
 	 * @param currentTiming: current timing to compare against
-	 * @param comparee: compare currentTiming to this value
-	 * @param data: JobData to store captured location info
-	 * @param job: current job
+	 * @param comparee:      compare currentTiming to this value
+	 * @param data:          JobData to store captured location info
+	 * @param job:           current job
 	 */
 	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, JobData data, IJob job) {
 		if (currentTiming == IpRecordingTiming.NONE) {
 			logger.debug("Found {} as current ip-recording timing", currentTiming);
 			return;
 		}
-		
+
 		// grab ip-location if matching above
 		if (currentTiming == comparee || currentTiming == IpRecordingTiming.ALWAYS) {
 			LocationInfo loc = ipService.getLocationInfo();
@@ -234,14 +247,15 @@ public class TaskOperator implements ITaskOperator {
 			data.setLocation(loc);
 		}
 	}
-	
+
 	private Boolean runJob(IJob job, IpRecordingTiming ipRecording) {
 		boolean runJobResult = false;
-		
+
 		logger.info("Starting job {}", job.getId());
 
 		try {
-			jobService.updateJobState(job, JobState.RUNNING, null, null, ZonedDateTime.now(), null); // setting starttime
+			jobService.updateJobState(job, JobState.RUNNING, null, null, ZonedDateTime.now(), null); // setting
+																										// starttime
 
 			// init data recording
 			JobData data = new JobData(job);
@@ -263,22 +277,24 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("Catched exception running job {}", job.getId(), e);
 				runJobResult = false;
 			}
-			
+
 			// reading page-source ready to re-use
 			String pageSource = null;
 			try {
 				pageSource = primemover.util.Page.getBodyeFromJavascript(context.getDriver());
 			} catch (Exception ex) {
-				logger.debug("Could not read page source for job via Javascript. Falling back to direct driver read. jobid {}", job.getId(), ex);
-				
+				logger.debug(
+						"Could not read page source for job via Javascript. Falling back to direct driver read. jobid {}",
+						job.getId(), ex);
+
 				try {
 					pageSource = context.getDriver().getPageSource();
 				} catch (Exception e) {
-					logger.warn("Could not read page source from driver. No more Fallback possible. jobid {}", job.getId(), ex);
+					logger.warn("Could not read page source from driver. No more Fallback possible. jobid {}",
+							job.getId(), ex);
 				}
 			}
-			
-			
+
 			// captcha verification
 			Boolean captchaFound = null;
 			if (this.runCaptchaChecks) {
@@ -355,10 +371,10 @@ public class TaskOperator implements ITaskOperator {
 			boolean writeRes = true;
 			IDataWriter jobDataWriter = new JobDataWriter(data);
 			jobDataWriter = new DataWriterCachingDecorator(jobDataWriter);
-			
+
 			IDataWriter pageSourceWriter = new PageSourceWriter(data);
 			pageSourceWriter = new DataWriterCachingDecorator(pageSourceWriter);
-			
+
 			// writing data
 			for (IStorageService storage : storages) {
 				try {
@@ -372,10 +388,12 @@ public class TaskOperator implements ITaskOperator {
 
 			if (writeRes) {
 				logger.info("Done running job {}", job.getId());
-				jobService.updateJobState(job, JobState.SUCCESS, null, null, null, ZonedDateTime.now()); // setting endtime
+				jobService.updateJobState(job, JobState.SUCCESS, null, null, null, ZonedDateTime.now()); // setting
+																											// endtime
 			} else {
 				logger.warn("Done running job with warning {}", job.getId());
-				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, null, null, ZonedDateTime.now()); // setting endtime
+				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, null, null, ZonedDateTime.now()); // setting
+																													// endtime
 			}
 
 			runJobResult = true;
@@ -384,14 +402,15 @@ public class TaskOperator implements ITaskOperator {
 			logger.error("Exception executing job {}", job.getId(), ex);
 
 			try {
-				jobService.updateJobState(job, JobState.FAILURE, null, null, null, ZonedDateTime.now()); // setting endtime
+				jobService.updateJobState(job, JobState.FAILURE, null, null, null, ZonedDateTime.now()); // setting
+																											// endtime
 			} catch (Exception e) {
 				logger.error("Could not write Job-State for {}", job.getId(), ex); // FATAL!!!
 			}
 
 			runJobResult = false;
 		}
-		
+
 		return runJobResult;
 	}
 
@@ -465,7 +484,8 @@ public class TaskOperator implements ITaskOperator {
 				} else {
 					logger.warn("skipping job ({}) due to error in previous job ({})", item.getId(),
 							previousJob == null ? -1 : previousJob.getId());
-					jobService.updateJobState(item, JobState.SKIPPED, null, null, ZonedDateTime.now(), ZonedDateTime.now());
+					jobService.updateJobState(item, JobState.SKIPPED, null, null, ZonedDateTime.now(),
+							ZonedDateTime.now());
 				}
 			}
 
@@ -542,14 +562,13 @@ public class TaskOperator implements ITaskOperator {
 		return done;
 	}
 
-
 	@Override
 	public void tearDown(boolean immediate) {
-		
+
 		if (context == null) {
 			return; // nothing to do
 		}
-		
+
 		logger.info("Tearing down crawler {}", context.getCrawler().getId());
 
 		isSetup.set(false);
@@ -582,11 +601,11 @@ public class TaskOperator implements ITaskOperator {
 					round++;
 				}
 			} catch (Exception e) {
-				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(), e);
+				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
+						e);
 			}
 		}
-		
-		
+
 		// quit the Webdriver (fallback in case of MultiLogin)
 		try {
 			context.getDriver().quit();

@@ -13,9 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.model.Crawler;
 import primemover.model.Joblist;
+import primemover.runner.joblist.JobListRunner;
 
-public class MockJobManager implements IJobManager {
-	private static Logger logger = LoggerFactory.getLogger(MockJobManager.class);
+public class MockTaskManager implements ITaskManager {
+	private static Logger logger = LoggerFactory.getLogger(MockTaskManager.class);
 
 	private Integer maxThreads = 2; // maximum parallel executions of joblists
 	
@@ -26,7 +27,7 @@ public class MockJobManager implements IJobManager {
 	@Autowired
 	TaskOperatorFactory taskServiceFactory;
 	
-	public MockJobManager() {
+	public MockTaskManager() {
 	}
 
 	@Override

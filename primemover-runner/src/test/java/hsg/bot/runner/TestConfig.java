@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
-import primemover.runner.jobHandling.JobDispatcher;
+import primemover.runner.jobs.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
