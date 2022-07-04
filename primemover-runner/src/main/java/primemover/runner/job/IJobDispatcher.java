@@ -1,4 +1,4 @@
-package primemover.runner.jobs;
+package primemover.runner.job;
 
 import primemover.model.IJob;
 import primemover.runner.context.ContextBase;

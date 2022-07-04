@@ -1,4 +1,4 @@
-package primemover.runner.jobs.handler;
+package primemover.runner.job.handler;
 
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -9,7 +9,7 @@ import primemover.captcha.CaptchaJobHelper.JobPosition;
 import primemover.model.IJob;
 import primemover.model.jobs.VisitJob;
 import primemover.runner.context.ContextBase;
-import primemover.runner.jobs.IJobHandler;
+import primemover.runner.job.IJobHandler;
 import primemover.util.NavigationHelper;
 
 import org.slf4j.Logger;

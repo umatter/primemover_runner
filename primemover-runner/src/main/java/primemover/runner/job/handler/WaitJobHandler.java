@@ -1,4 +1,4 @@
-package primemover.runner.jobs.handler;
+package primemover.runner.job.handler;
 
 import primemover.captcha.CaptchaJobHelper;
 import primemover.captcha.CaptchaSolver;
@@ -6,7 +6,7 @@ import primemover.captcha.CaptchaJobHelper.JobPosition;
 import primemover.model.IJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.context.ContextBase;
-import primemover.runner.jobs.IJobHandler;
+import primemover.runner.job.IJobHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

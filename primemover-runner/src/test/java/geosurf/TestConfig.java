@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import primemover.captcha.CaptchaSolver;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
-import primemover.runner.jobs.JobDispatcher;
+import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.FileStorageService;
 import primemover.service.IStorageService;

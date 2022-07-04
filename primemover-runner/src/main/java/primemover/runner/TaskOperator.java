@@ -39,7 +39,7 @@ import primemover.runner.context.ChromeContext;
 import primemover.runner.context.ContextBase;
 import primemover.runner.context.FirefoxContext;
 import primemover.runner.context.MultiloginContext;
-import primemover.runner.jobs.JobDispatcher;
+import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
 import primemover.service.IStorageService;
 import primemover.service.IpService;

@@ -1,10 +1,10 @@
-package primemover.runner.jobs.handler;
+package primemover.runner.job.handler;
 
 import primemover.model.IJob;
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
 import primemover.runner.context.ContextBase;
-import primemover.runner.jobs.IJobHandler;
+import primemover.runner.job.IJobHandler;
 
 import org.springframework.util.StringUtils;
 
@@ -19,12 +19,13 @@ import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AssertProxyByGeosurfJobHandler implements IJobHandler {
+public class AssertProxyByPrimemoverApiJobHandler implements IJobHandler {
 
-	private static Logger logger = LoggerFactory.getLogger(AssertProxyByGeosurfJobHandler.class);
+	private static Logger logger = LoggerFactory.getLogger(AssertProxyByPrimemoverApiJobHandler.class);
 
     private ObjectMapper mapper = new ObjectMapper();
     
+    // TODO effectively change to primemover API. Below is a quick hack to get running due to timeconstraint.
     public void handle(ContextBase context, IJob job) {
         logger.debug("running job");
 

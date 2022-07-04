@@ -1,9 +1,9 @@
-package primemover.runner.jobs.handler;
+package primemover.runner.job.handler;
 
 import primemover.model.IJob;
 import primemover.model.jobs.AssertScrolledMaxJob;
 import primemover.runner.context.ContextBase;
-import primemover.runner.jobs.IJobHandler;
+import primemover.runner.job.IJobHandler;
 import primemover.util.Scrolling;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -1,4 +1,4 @@
-package primemover.runner.jobs;
+package primemover.runner.job;
 
 
 import java.util.HashMap;
@@ -29,21 +29,21 @@ import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.context.ContextBase;
-import primemover.runner.jobs.handler.AlertJobHandler;
-import primemover.runner.jobs.handler.AssertElementExistsJobHandler;
-import primemover.runner.jobs.handler.AssertPageLoadedJobHandler;
-import primemover.runner.jobs.handler.AssertProxyByGeosurfJobHandler;
-import primemover.runner.jobs.handler.AssertProxyByPrimemoverApiJobHandler;
-import primemover.runner.jobs.handler.AssertScrolledMaxJobHandler;
-import primemover.runner.jobs.handler.AssertTextInFieldJobHandler;
-import primemover.runner.jobs.handler.ClickJobHandler;
-import primemover.runner.jobs.handler.EnterTextFieldJobHandler;
-import primemover.runner.jobs.handler.ScrollByDurationJobHandler;
-import primemover.runner.jobs.handler.ScrollByLengthJobHandler;
-import primemover.runner.jobs.handler.SingleSelectUrlJobHandler;
-import primemover.runner.jobs.handler.SwitchToJobHandler;
-import primemover.runner.jobs.handler.VisitJobHandler;
-import primemover.runner.jobs.handler.WaitJobHandler;
+import primemover.runner.job.handler.AlertJobHandler;
+import primemover.runner.job.handler.AssertElementExistsJobHandler;
+import primemover.runner.job.handler.AssertPageLoadedJobHandler;
+import primemover.runner.job.handler.AssertProxyByGeosurfJobHandler;
+import primemover.runner.job.handler.AssertProxyByPrimemoverApiJobHandler;
+import primemover.runner.job.handler.AssertScrolledMaxJobHandler;
+import primemover.runner.job.handler.AssertTextInFieldJobHandler;
+import primemover.runner.job.handler.ClickJobHandler;
+import primemover.runner.job.handler.EnterTextFieldJobHandler;
+import primemover.runner.job.handler.ScrollByDurationJobHandler;
+import primemover.runner.job.handler.ScrollByLengthJobHandler;
+import primemover.runner.job.handler.SingleSelectUrlJobHandler;
+import primemover.runner.job.handler.SwitchToJobHandler;
+import primemover.runner.job.handler.VisitJobHandler;
+import primemover.runner.job.handler.WaitJobHandler;
 
 public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 

@@ -1,4 +1,4 @@
-package primemover.runner.jobs.handler;
+package primemover.runner.job.handler;
 
 import primemover.captcha.CaptchaJobHelper;
 import primemover.captcha.CaptchaSolver;
@@ -8,7 +8,7 @@ import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.runner.context.ContextBase;
-import primemover.runner.jobs.IJobHandler;
+import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
 import primemover.util.Typing;
 
