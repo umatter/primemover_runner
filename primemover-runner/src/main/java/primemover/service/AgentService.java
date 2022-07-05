@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.api.model.Agent;
 import primemover.config.StartupMode;
 import primemover.model.MultiLoginAgent;
-import primemover.model.api.Agent;
 
 @Service
 public class AgentService {

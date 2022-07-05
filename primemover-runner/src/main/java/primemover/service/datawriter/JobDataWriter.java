@@ -14,16 +14,16 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.service.JobData;
+import primemover.runner.RecordedJobData;
 
 public class JobDataWriter implements IDataWriter {
 	
 	private final static Logger logger = LoggerFactory.getLogger(JobDataWriter.class);	
-	private JobData data;
+	private RecordedJobData data;
 	private String fileName;
 	private String identifier;
 	
-	public JobDataWriter(JobData data) {
+	public JobDataWriter(RecordedJobData data) {
 		super();
 		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
 		this.data = data;
@@ -51,7 +51,7 @@ public class JobDataWriter implements IDataWriter {
 		return "application/zip";
 	}
 
-	private static void writeCookies(OutputStream os, JobData data) throws IOException {
+	private static void writeCookies(OutputStream os, RecordedJobData data) throws IOException {
 		logger.debug("writting cookies");
 		
 		Integer cnt = 0;

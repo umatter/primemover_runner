@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.api.model.OutletResult;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Outlet;
-import primemover.model.api.OutletResult;
 
 public class OutletService {
 	

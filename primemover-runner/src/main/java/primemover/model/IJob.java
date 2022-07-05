@@ -1,6 +1,6 @@
 package primemover.model;
 
-import primemover.captcha.CaptchaSolvingType;
+import primemover.anticaptcha.CaptchaSolvingType;
 
 public interface IJob {	
 	Long getId();

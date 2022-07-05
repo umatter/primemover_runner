@@ -18,11 +18,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.captcha.CaptchaSolvingType;
+import primemover.anticaptcha.CaptchaSolvingType;
+import primemover.api.model.CrawlerResult;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
-import primemover.model.api.CrawlerResult;
 
 public class MockCrawlerService implements ICrawlerService {
 	

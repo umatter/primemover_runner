@@ -11,9 +11,10 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.api.model.IpResult;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.LocationInfo;
-import primemover.model.api.IpResult;
+import primemover.service.token.TokenRequestInterceptor;
 
 /**
  * Service to grab the current IP via a proxy

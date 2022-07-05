@@ -10,7 +10,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.openqa.selenium.InvalidArgumentException;
 
-import primemover.captcha.CaptchaSolvingType;
+import primemover.anticaptcha.CaptchaSolvingType;
+import primemover.api.model.ConfigurationParam;
+import primemover.api.model.CrawlerResult;
+import primemover.api.model.IpResult;
+import primemover.api.model.IpResultData;
+import primemover.api.model.OutletResult;
+import primemover.api.model.TermResult;
 import primemover.model.AgentType;
 import primemover.model.BasicAgent;
 import primemover.model.Configuration;
@@ -28,12 +34,6 @@ import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.Term;
 import primemover.model.TypingModeType;
-import primemover.model.api.ConfigurationParam;
-import primemover.model.api.CrawlerResult;
-import primemover.model.api.IpResult;
-import primemover.model.api.IpResultData;
-import primemover.model.api.OutletResult;
-import primemover.model.api.TermResult;
 import primemover.model.jobs.BaseJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
@@ -54,7 +54,7 @@ public class PrimemoverApiConverter {
 	public PrimemoverApiConverter() {
 	}
 		
-	private static IProxy convertApiProxy(primemover.model.api.Proxy item, Crawler crawler) {
+	private static IProxy convertApiProxy(primemover.api.model.Proxy item, Crawler crawler) {
 		
 		if (item == null) {
 			return null;
@@ -99,7 +99,7 @@ public class PrimemoverApiConverter {
 		return res;
 	}
 	
-	private static IAgent convertApiAgent(primemover.model.api.Agent item) {
+	private static IAgent convertApiAgent(primemover.api.model.Agent item) {
 		IAgent agent;
 		
 		String ident = item.getIdentification();
@@ -127,10 +127,10 @@ public class PrimemoverApiConverter {
 		return agent;
 	}
 	
-	private static Map<String, String> convertApiBehaviourList(List<primemover.model.api.Behaviour> behaviours) {
+	private static Map<String, String> convertApiBehaviourList(List<primemover.api.model.Behaviour> behaviours) {
 		HashMap<String, String> map = new HashMap<String, String>();
 		
-		for (primemover.model.api.Behaviour item : behaviours) {
+		for (primemover.api.model.Behaviour item : behaviours) {
 			String key = item.getName();
 			String value = item.getValue();			
 			map.put(key, value);
@@ -280,7 +280,7 @@ public class PrimemoverApiConverter {
 		return job;
 	}
 	
-	private static IJob convertApiJob(primemover.model.api.Job job, CaptchaSolvingType defaultCaptchaSolving) {
+	private static IJob convertApiJob(primemover.api.model.Job job, CaptchaSolvingType defaultCaptchaSolving) {
 		IJob res;
 		
 		// grab behavior list
@@ -340,7 +340,7 @@ public class PrimemoverApiConverter {
 	}
 
 	
-	private static Configuration convertApiConfiguration(primemover.model.api.Configuration item) {
+	private static Configuration convertApiConfiguration(primemover.api.model.Configuration item) {
 		if (item == null) {
 			return null;
 		}
@@ -364,7 +364,7 @@ public class PrimemoverApiConverter {
 			selectConfig.setTau(param.getTau());
 			
 			HashMap<String, MediaOutlet> outlets = new HashMap<>();
-			for (primemover.model.api.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
+			for (primemover.api.model.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
 				MediaOutlet modelOutlet = new MediaOutlet();
 				modelOutlet.setDomain(apiOutlet.getDomain());
 				modelOutlet.setPi(apiOutlet.getPi());
@@ -381,7 +381,7 @@ public class PrimemoverApiConverter {
 		return config;
 	}
 
-	private static Joblist convertApiQueue(primemover.model.api.Queue item, CaptchaSolvingType defaultCaptchaSolving) {
+	private static Joblist convertApiQueue(primemover.api.model.Queue item, CaptchaSolvingType defaultCaptchaSolving) {
 		Joblist jobList = new Joblist();
 		
 		jobList.setId(item.getId().longValue());
@@ -391,14 +391,14 @@ public class PrimemoverApiConverter {
 		jobList.setStartTime(item.getStart_at());
 		jobList.setProcessing(item.isProcessing());
 		
-		List<primemover.model.api.Job> list = item.getJobs();
+		List<primemover.api.model.Job> list = item.getJobs();
 		
 		if (list.isEmpty()) {
 			throw new InvalidArgumentException("A joblist must contain at least one job.");
 		}
 		
 		List<IJob> jobs = new ArrayList<IJob>();
-		for (primemover.model.api.Job job : list) {
+		for (primemover.api.model.Job job : list) {
 			jobs.add(convertApiJob(job, defaultCaptchaSolving));
 		}
 		jobList.setJobs(jobs);
@@ -407,7 +407,7 @@ public class PrimemoverApiConverter {
 	}
 	
 	
-	private static List<Pair<Crawler, Joblist>> convertApiCrawler(primemover.model.api.Crawler item, CaptchaSolvingType defaultCaptchaSolving) {
+	private static List<Pair<Crawler, Joblist>> convertApiCrawler(primemover.api.model.Crawler item, CaptchaSolvingType defaultCaptchaSolving) {
 		
 		List<Pair<Crawler, Joblist>> out = new ArrayList<Pair<Crawler, Joblist>>();
 		
@@ -422,9 +422,9 @@ public class PrimemoverApiConverter {
 		crawler.setConfig(convertApiConfiguration(item.getConfiguration()));
 		
 		// grab joblists
-		List<primemover.model.api.Queue> queues = item.getQueues();
+		List<primemover.api.model.Queue> queues = item.getQueues();
 		
-		for (primemover.model.api.Queue queue : queues) {
+		for (primemover.api.model.Queue queue : queues) {
 			Joblist jobList = convertApiQueue(queue, defaultCaptchaSolving);
 			
 			out.add(Pair.of(crawler, jobList));
@@ -435,11 +435,11 @@ public class PrimemoverApiConverter {
 	
 	public static List<Pair<Crawler, Joblist>> convertFromApi(CrawlerResult input, CaptchaSolvingType defaultCaptchaSolving) {
 		List<Pair<Crawler, Joblist>> res = new ArrayList<Pair<Crawler, Joblist>>();
-		List<primemover.model.api.Crawler> data = input.getData();
+		List<primemover.api.model.Crawler> data = input.getData();
 		
 		if (!data.isEmpty()) {
 			
-			for (primemover.model.api.Crawler item : data) {
+			for (primemover.api.model.Crawler item : data) {
 				res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
 			}
 		}
@@ -468,10 +468,10 @@ public class PrimemoverApiConverter {
 
 	public static List<Term> convertFromApi(TermResult apiRes) {
 
-		List<primemover.model.api.Term> inItems = apiRes.getData();
+		List<primemover.api.model.Term> inItems = apiRes.getData();
 		ArrayList<Term> res = new ArrayList<Term>(inItems.size());
 		
-		for (primemover.model.api.Term inItem : inItems) {
+		for (primemover.api.model.Term inItem : inItems) {
 			Term outItem = new Term();
 			outItem.setBigram(inItem.getBigram());
 			outItem.setBigramStem(inItem.getBigram_stem());
@@ -488,10 +488,10 @@ public class PrimemoverApiConverter {
 	
 	public static List<Outlet> convertFromApi(OutletResult apiRes) {
 
-		List<primemover.model.api.Outlet> inItems = apiRes.getData();
+		List<primemover.api.model.Outlet> inItems = apiRes.getData();
 		ArrayList<Outlet> res = new ArrayList<Outlet>(inItems.size());
 		
-		for (primemover.model.api.Outlet inItem : inItems) {
+		for (primemover.api.model.Outlet inItem : inItems) {
 			Outlet outItem = new Outlet();
 			
 			outItem.setCreatedAt(inItem.getCreated_at());

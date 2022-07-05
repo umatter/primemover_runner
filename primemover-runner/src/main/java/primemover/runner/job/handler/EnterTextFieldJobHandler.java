@@ -1,8 +1,8 @@
 package primemover.runner.job.handler;
 
-import primemover.captcha.CaptchaJobHelper;
-import primemover.captcha.CaptchaSolver;
-import primemover.captcha.CaptchaJobHelper.JobPosition;
+import primemover.anticaptcha.CaptchaJobHelper;
+import primemover.anticaptcha.CaptchaSolver;
+import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
 import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;

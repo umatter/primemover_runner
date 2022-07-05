@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import primemover.model.BasicAgent;
 import primemover.model.Configuration;
-import primemover.captcha.CaptchaSolvingType;
+import primemover.anticaptcha.CaptchaSolvingType;
 import primemover.model.AgentType;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;

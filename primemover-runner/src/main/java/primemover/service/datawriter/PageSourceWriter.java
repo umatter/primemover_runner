@@ -3,14 +3,14 @@ package primemover.service.datawriter;
 import java.util.Date;
 
 import primemover.model.IJob;
-import primemover.service.JobData;
+import primemover.runner.RecordedJobData;
 
 public class PageSourceWriter extends HtmlZippedDataWriterBase {
 
 	private String identifier;
 	private String baseName;
 	
-	public PageSourceWriter(JobData data) {		
+	public PageSourceWriter(RecordedJobData data) {		
 		this(data.getJob(), data.getPageSource());	
 	}
 	

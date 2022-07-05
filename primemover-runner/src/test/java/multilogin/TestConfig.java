@@ -17,7 +17,8 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.captcha.CaptchaSolver;
+import primemover.anticaptcha.CaptchaSolver;
+import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
@@ -25,9 +26,8 @@ import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
-import primemover.service.TokenGenerator;
-import primemover.service.TokenRequestInterceptor;
-import primemover.service.anticaptcha.AntiCaptchaService;
+import primemover.service.token.TokenGenerator;
+import primemover.service.token.TokenRequestInterceptor;
 import primemover.util.MultiLoginBrowserProfileFactory;
 import primemover.util.MultiLoginDefaultTemplateLoader;
 

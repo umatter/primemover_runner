@@ -44,7 +44,6 @@ import primemover.service.AgentService;
 import primemover.service.IStorageService;
 import primemover.service.IpService;
 import primemover.service.IpServiceFactory;
-import primemover.service.JobData;
 import primemover.service.JobService;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
@@ -234,7 +233,7 @@ public class TaskOperator implements ITaskOperator {
 	 * @param data:          JobData to store captured location info
 	 * @param job:           current job
 	 */
-	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, JobData data, IJob job) {
+	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, RecordedJobData data, IJob job) {
 		if (currentTiming == IpRecordingTiming.NONE) {
 			logger.debug("Found {} as current ip-recording timing", currentTiming);
 			return;
@@ -258,7 +257,7 @@ public class TaskOperator implements ITaskOperator {
 																										// starttime
 
 			// init data recording
-			JobData data = new JobData(job);
+			RecordedJobData data = new RecordedJobData(job);
 
 			// IP-Checking
 			try {

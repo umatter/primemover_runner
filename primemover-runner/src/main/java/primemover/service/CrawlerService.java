@@ -19,7 +19,8 @@ import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import primemover.captcha.CaptchaSolvingType;
+import primemover.anticaptcha.CaptchaSolvingType;
+import primemover.api.model.CrawlerResult;
 import primemover.config.StartupMode;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
@@ -28,7 +29,6 @@ import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
-import primemover.model.api.CrawlerResult;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.SingleSelectUrlJob;
 import primemover.model.jobs.VisitJob;

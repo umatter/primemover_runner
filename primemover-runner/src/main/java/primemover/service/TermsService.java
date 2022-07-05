@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
+import primemover.api.model.TermResult;
 import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Term;
-import primemover.model.api.TermResult;
 
 public class TermsService {
 	

@@ -1,6 +1,6 @@
 package primemover.model.jobs;
 
-import primemover.captcha.CaptchaSolvingType;
+import primemover.anticaptcha.CaptchaSolvingType;
 import primemover.model.IJob;
 
 public abstract class BaseJob implements IJob {
