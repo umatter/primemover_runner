@@ -1,6 +1,5 @@
 package primemover.runner.job;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.HandleAlertJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
-import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.SingleSelectJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
@@ -48,12 +47,12 @@ import primemover.runner.job.handler.WaitJobHandler;
 public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 
 	private static Logger logger = LoggerFactory.getLogger(JobDispatcher.class);
-			
+
 	@Value("${global.mode}")
 	private StartupMode mode;
-	
+
 	private ApplicationContext ctx;
-	
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.ctx = applicationContext;
@@ -71,7 +70,6 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 	// populate
 	public void setup() {
 		logger.trace("populating handlers");
-		logger.trace("creating VisitJob-Handler");
 
 		IJobHandler tmp;
 
@@ -88,7 +86,7 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		logger.trace("creating ScrollByLengthJob-Handler");
 		tmp = new ScrollByLengthJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
-		addHandler(ScrollByLengthJob.class, tmp);		
+		addHandler(ScrollByLengthJob.class, tmp);
 
 		logger.trace("creating ScrollByDurationJob-Handler");
 		tmp = new ScrollByDurationJobHandler();
@@ -104,11 +102,11 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		tmp = new EnterTextFieldJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(EnterTextFieldJob.class, tmp);
-		
+
 		logger.trace("creating SingleSelectUrlJob-Handler");
 		tmp = new SingleSelectUrlJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
-		addHandler(SingleSelectUrlJob.class, tmp);
+		addHandler(SingleSelectJob.class, tmp);
 
 		logger.trace("creating SwitchToJob-Handler");
 		tmp = new SwitchToJobHandler();
@@ -119,19 +117,19 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		tmp = new ClickJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(ClickJob.class, tmp);
-		
+
 		// ---------------------------------------------------------------
 		// add assert-jobs only for develop and integration
 		// ---------------------------------------------------------------
 		if (!(mode == StartupMode.DEVELOP || mode == StartupMode.INTEGRATION)) {
 			return;
 		}
-		
+
 		logger.trace("creating AssertTextInFieldJob-Handler");
 		tmp = new AssertTextInFieldJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(AssertTextInFieldJob.class, tmp);
-		
+
 		logger.trace("creating AssertPageLoadedJob-Handler");
 		tmp = new AssertPageLoadedJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
@@ -141,12 +139,12 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		tmp = new AssertScrolledMaxJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(AssertScrolledMaxJob.class, tmp);
-				
+
 		logger.trace("creating AssertElementExistsJob-Handler");
 		tmp = new AssertElementExistsJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(AssertElementExistsJob.class, tmp);
-				
+
 		logger.trace("creating AssertProxyByGeosurf-Handler");
 		tmp = new AssertProxyByGeosurfJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);

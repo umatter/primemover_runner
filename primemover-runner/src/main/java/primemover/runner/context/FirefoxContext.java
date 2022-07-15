@@ -2,20 +2,18 @@ package primemover.runner.context;
 
 import org.openqa.selenium.firefox.FirefoxOptions;
 
-public class FirefoxContext extends ContextBase {
+public class FirefoxContext extends ContextBase<FirefoxOptions> {
 
-	private FirefoxOptions firefoxOptions;
-	
 	public FirefoxContext() {
 		super();
 	}
 
 	public FirefoxOptions getFirefoxOptions() {
-		return firefoxOptions;
+		return this.getOptions();
 	}
 
 	public void setFirefoxOptions(FirefoxOptions firefoxOptions) {
-		this.firefoxOptions = firefoxOptions;
+		this.setOptions(firefoxOptions);
 	}
 
 }

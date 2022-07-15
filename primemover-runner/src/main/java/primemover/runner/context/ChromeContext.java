@@ -2,20 +2,18 @@ package primemover.runner.context;
 
 import org.openqa.selenium.chrome.ChromeOptions;
 
-public class ChromeContext extends ContextBase {
+public class ChromeContext extends ContextBase<ChromeOptions> {
 
-	private ChromeOptions options;
-	
 	public ChromeContext() {
 		super();
 	}
 
 	public ChromeOptions getChromeOptions() {
-		return options;
+		return this.getOptions();
 	}
 
 	public void setChromeOptions(ChromeOptions options) {
-		this.options = options;
+		this.setOptions(options);
 	}
 
 }

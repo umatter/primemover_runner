@@ -1,17 +1,27 @@
 package primemover.runner.context;
 
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 
-public abstract class ContextBase {
-	
+public abstract class ContextBase<OptionsType extends MutableCapabilities> {
+
+	private OptionsType options;
 	private RecordingProxy recorder;
 	private WebDriver driver;
 	private Crawler crawler;
 
 	public ContextBase() {
+	}
+
+	public OptionsType getOptions() {
+		return options;
+	}
+
+	public void setOptions(OptionsType options) {
+		this.options = options;
 	}
 
 	public RecordingProxy getRecorder() {

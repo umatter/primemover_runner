@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.browserup.harreader.model.Har;
 
+import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.Crawler;
@@ -96,6 +97,9 @@ public class TaskOperator implements ITaskOperator {
 	@Autowired
 	IpServiceFactory ipServiceFactory;
 
+	@Autowired
+	ICaptchaSolver captchaSolver;
+
 	private IpService ipService;
 
 	private AtomicBoolean isSetup = new AtomicBoolean(false);
@@ -112,8 +116,9 @@ public class TaskOperator implements ITaskOperator {
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
 		firefoxOptions.merge(capabilities);
 		firefoxOptions.setAcceptInsecureCerts(true);
-		ffContext.setFirefoxOptions(firefoxOptions);
+		captchaSolver.setOptions(crawler, firefoxOptions, recorder);
 
+		ffContext.setFirefoxOptions(firefoxOptions);
 		ffContext.setDriver(new FirefoxDriver(firefoxOptions));
 
 		// remember
@@ -133,6 +138,8 @@ public class TaskOperator implements ITaskOperator {
 		// https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec
 		chromeOptions.addArguments("--disable-blink-features");
 		chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+
+		captchaSolver.setOptions(crawler, chromeOptions, recorder);
 
 		chContext.setChromeOptions(chromeOptions);
 
@@ -233,7 +240,8 @@ public class TaskOperator implements ITaskOperator {
 	 * @param data:          JobData to store captured location info
 	 * @param job:           current job
 	 */
-	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, RecordedJobData data, IJob job) {
+	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, RecordedJobData data,
+			IJob job) {
 		if (currentTiming == IpRecordingTiming.NONE) {
 			logger.debug("Found {} as current ip-recording timing", currentTiming);
 			return;
@@ -550,6 +558,8 @@ public class TaskOperator implements ITaskOperator {
 							crawler.getAgent().getId());
 					throw new UnsupportedOperationException("type not supported: " + crawler.getAgent().getType());
 				}
+
+				captchaSolver.setupDriver(context);
 
 				isSetup.set(true);
 				done = true;

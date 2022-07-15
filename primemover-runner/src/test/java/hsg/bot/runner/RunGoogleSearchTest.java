@@ -25,7 +25,7 @@ import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.HandleAlertJob;
 import primemover.model.jobs.SelectorBaseJob;
-import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.SingleSelectJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
@@ -188,7 +188,7 @@ class RunGoogleSearchTest {
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.FIRST);
+		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.FIRST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
@@ -213,7 +213,7 @@ class RunGoogleSearchTest {
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(7l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
+		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(7l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
@@ -241,7 +241,7 @@ class RunGoogleSearchTest {
 		// select url
 		//SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.CSS, "#rso > div > div > div.yuRUbf > a", DecisionType.CALCULATED);
 		//SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select first entry", "select first entry", SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a | .//div[@id='rso']/div/div/div/div/a", DecisionType.CALCULATED);
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select calculated entry", "select calculated entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.CALCULATED);
+		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select calculated entry", "select calculated entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.CALCULATED);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
@@ -267,7 +267,7 @@ class RunGoogleSearchTest {
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
+		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result
@@ -293,7 +293,7 @@ class RunGoogleSearchTest {
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(6l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
+		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select first entry", "select first entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result

@@ -19,13 +19,13 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.anticaptcha.CaptchaSolver;
+import primemover.anticaptcha.ICaptchaSolver;
+import primemover.anticaptcha.PluginCaptchaSolver;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
-import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
@@ -44,122 +44,116 @@ import primemover.util.SelectingHelper;
 
 @SpringBootConfiguration
 public class TestConfig {
-	
+
 	@Value("${global.mode}")
 	private String mode;
-	
+
 	@Value("${backend.requestTimeoutSeconds:60}")
 	private Long requestTimeoutSeconds;
-	
+
 	@Value("${backend.connectionTimeoutSeconds:10}")
 	private Long connectionTimeoutSeconds;
-	
-	@Bean(name="JobService")
+
+	@Bean(name = "JobService")
 	JobService getJobService() {
 		return new JobService();
 	}
 
-	@Bean(name="IpServiceFactory")
+	@Bean(name = "IpServiceFactory")
 	public IpServiceFactory getIpServiceFactory() {
 		return new IpServiceFactory();
 	}
-	
-	@Bean(name="AgentService")
+
+	@Bean(name = "AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
 	}
-	
-	@Bean(name="CaptchaSolver")
-	public CaptchaSolver getCaptchaSolver() {
-		return new CaptchaSolver();
+
+	@Bean(name = "CaptchaSolver")
+	public ICaptchaSolver getCaptchaSolver() {
+		return new PluginCaptchaSolver();
 	}
-	
+
 	@Bean("CrawlerService")
 	ICrawlerService getCrawlerService() {
 		return new CrawlerService();
 	}
-	
+
 	@Bean("TermsService")
 	TermsService getTermsService() {
 		return new TermsService();
 	}
-	
-	@Bean(name="storageService")
+
+	@Bean(name = "storageService")
 	IStorageService getStorageService() {
 		return new FileStorageService();
 	}
-	
-	@Bean(name="AwsS3StorageService")
-	IStorageService getAwsS3StorageServices() {
-		return new AwsS3StorageService();
-	}
 
-	@Bean(name="TaskServiceFactory")
+	@Bean(name = "TaskServiceFactory")
 	TaskOperatorFactory getTaskServiceFactory() {
 		return new TaskOperatorFactory();
 	}
-	
-	@Bean(name="RecordingProxyFactory")
+
+	@Bean(name = "RecordingProxyFactory")
 	RecordingProxyFactory getRecorderFactory() {
 		return new RecordingProxyFactory();
-	}	
-	
-	/*
-	@Bean(name="jobmanager", initMethod = "setup")
-	JobManager getManager() {
-		JobManager jobManager = new JobManager();
-	
-		// jobManager will be called with spring's scheduler
-		return jobManager;		
 	}
-	*/
+
+	/*
+	 * @Bean(name="jobmanager", initMethod = "setup") JobManager getManager() {
+	 * JobManager jobManager = new JobManager();
+	 * 
+	 * // jobManager will be called with spring's scheduler return jobManager; }
+	 */
 	@Bean("OutletService")
 	OutletService getOutletService() {
 		return new OutletService();
 	}
-	
-	@Bean(name="OutletsProvider", initMethod = "refresh")
+
+	@Bean(name = "OutletsProvider", initMethod = "refresh")
 	OutletsProvider getOutletsProvider() {
 		return new OutletsProvider();
 	}
-	
-	@Bean(name="SelectingHelper")
+
+	@Bean(name = "SelectingHelper")
 	public SelectingHelper getSelectingHelper() {
 		return new SelectingHelper();
 	}
-	
 
-	@Bean(name="RunJobHandler")
+	@Bean(name = "RunJobHandler", initMethod = "setup")
 	public JobDispatcher getRunJobHandler() {
 		return new JobDispatcher();
 	}
-	
-	@Bean(name="MultiLoginDefaultTemplateLoader", initMethod="init")
+
+	@Bean(name = "MultiLoginDefaultTemplateLoader", initMethod = "init")
 	MultiLoginDefaultTemplateLoader getMultiLoginDefaultTemplateLoader() {
 		return MultiLoginDefaultTemplateLoader.getInstance();
 	}
-	
-	@Bean(name="MultiLoginBrowserProfileFactory")
+
+	@Bean(name = "MultiLoginBrowserProfileFactory")
 	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
 		return new MultiLoginBrowserProfileFactory();
 	}
 
-	@Bean(name="tokenGenerator")
+	@Bean(name = "tokenGenerator")
 	TokenGenerator getTokenGenerator() {
 		return new TokenGenerator();
 	}
-	
-	@Bean(name="TokenRequestInterceptor")	
+
+	@Bean(name = "TokenRequestInterceptor")
 	TokenRequestInterceptor requestInterceptor() {
 		return new TokenRequestInterceptor();
 	}
+
 	@Bean("ServiceRestTemplate")
 	public RestTemplate restTemplate(TokenRequestInterceptor requestInterceptor) {
-		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		
+		// In Java code, it is like this:
+		// objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+		// false);
+
 		RestTemplate restTemplate = new RestTemplateBuilder().build();
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-		
+
 		for (Object converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
@@ -167,22 +161,24 @@ public class TestConfig {
 				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-		
+
 		List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
 		if (CollectionUtils.isEmpty(interceptors)) {
-		    interceptors = new ArrayList<>();
+			interceptors = new ArrayList<>();
 		}
 		interceptors.add(requestInterceptor);
 		restTemplate.setInterceptors(interceptors);
-		
-        return restTemplate; 
+
+		return restTemplate;
 	}
-	
-	@Bean(name="AntiCaptchaRestTemplate")
+
+	@Bean(name = "AntiCaptchaRestTemplate")
 	public RestTemplate antiCaptchaRestTemplate() {
-		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		// In Java code, it is like this:
+		// objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+		// false);
 		RestTemplate restTemplate = new RestTemplateBuilder()
-				//.setBufferRequestBody(true)
+				// .setBufferRequestBody(true)
 				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
 				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
 				.requestFactory(() -> new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()))
@@ -190,9 +186,9 @@ public class TestConfig {
 		// enable
 		// logging.level.org.apache.http=DEBUG
 		// logging.level.httpclient.wire=DEBUG
-		//restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
-		
-		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();		
+		// restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		for (Object converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
@@ -200,18 +196,18 @@ public class TestConfig {
 				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-		
+
 		List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
 		if (CollectionUtils.isEmpty(interceptors)) {
-		    interceptors = new ArrayList<>();
+			interceptors = new ArrayList<>();
 		}
 		interceptors.add(new LoggingInterceptor()); // will read the buffer, so only first request is logged
 		restTemplate.setInterceptors(interceptors);
-				
-        return restTemplate; 
+
+		return restTemplate;
 	}
-	
-	@Bean(name="AntiCaptchaService")
+
+	@Bean(name = "AntiCaptchaService")
 	public AntiCaptchaService getAntiCaptchaService() {
 		return new AntiCaptchaService();
 	}

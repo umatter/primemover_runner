@@ -30,7 +30,7 @@ import primemover.model.MultiLoginAgent;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
-import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.SingleSelectJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 
@@ -130,7 +130,7 @@ public class CrawlerService implements ICrawlerService {
 		jobs.appendJob(waitJob);
 			
 		// select url
-		SingleSelectUrlJob singleSelectUrlJob = new SingleSelectUrlJob(1l, "select random entry", "select first entry", null, SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM);
+		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(1l, "select random entry", "select first entry", null, SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM);
 		jobs.appendJob(singleSelectUrlJob);
 		
 		// wait for search result

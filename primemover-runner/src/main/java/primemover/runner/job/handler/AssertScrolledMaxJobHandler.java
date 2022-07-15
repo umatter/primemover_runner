@@ -1,39 +1,39 @@
 package primemover.runner.job.handler;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import primemover.model.IJob;
 import primemover.model.jobs.AssertScrolledMaxJob;
 import primemover.runner.context.ContextBase;
 import primemover.runner.job.IJobHandler;
 import primemover.util.Scrolling;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.openqa.selenium.WebDriver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class AssertScrolledMaxJobHandler implements IJobHandler {
 
 	private static Logger logger = LoggerFactory.getLogger(AssertScrolledMaxJobHandler.class);
 
-    public void handle(ContextBase context, IJob job) {
-        logger.debug("running job");
+	public void handle(ContextBase<?> context, IJob job) {
+		logger.debug("running job");
 
-        WebDriver driver = context.getDriver();
-        AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) job;
-        Boolean res;
-        
-        switch (typedJob.getDirection()) {
-        case DOWN:
-            res = Scrolling.isScrolledToBootom(driver);
-            assertTrue(res, "page is not scrolled to bottom");
-            break;
-        case UP:
-            res = Scrolling.isScrolledToTop(driver);
-            assertTrue(res, "page is not scrolled to Top");
-            break;
-        default:
-            throw new UnsupportedOperationException("Not implemented yet");
-        }
-    }
+		WebDriver driver = context.getDriver();
+		AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) job;
+		Boolean res;
+
+		switch (typedJob.getDirection()) {
+		case DOWN:
+			res = Scrolling.isScrolledToBootom(driver);
+			assertTrue(res, "page is not scrolled to bottom");
+			break;
+		case UP:
+			res = Scrolling.isScrolledToTop(driver);
+			assertTrue(res, "page is not scrolled to Top");
+			break;
+		default:
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
+	}
 }

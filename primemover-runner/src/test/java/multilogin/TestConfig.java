@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.anticaptcha.CaptchaSolver;
+import primemover.anticaptcha.ICaptchaSolver;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
 import primemover.runner.TaskOperatorFactory;
@@ -59,7 +60,7 @@ public class TestConfig {
 	}
 	
 	@Bean(name="CaptchaSolver")
-	public CaptchaSolver getCaptchaSolver() {
+	public ICaptchaSolver getCaptchaSolver() {
 		return new CaptchaSolver();
 	}
 	

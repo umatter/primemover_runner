@@ -3,7 +3,7 @@ package primemover.model.jobs;
 import primemover.model.DecisionType;
 import primemover.model.SelectorType;
 
-public class SingleSelectUrlJob extends SelectorBaseJob {
+public class SingleSelectJob extends SelectorBaseJob {
 	
 	private DecisionType decision;
 	
@@ -25,11 +25,11 @@ public class SingleSelectUrlJob extends SelectorBaseJob {
 		this.criterionSelector = newVal;
 	}
 	
-	public SingleSelectUrlJob() {
+	public SingleSelectJob() {
 		super();
 	}
 
-	public SingleSelectUrlJob(Long id, String name, String description, String task, SelectorType type, String selector,
+	public SingleSelectJob(Long id, String name, String description, String task, SelectorType type, String selector,
 			DecisionType decision) {
 		super(id, name, description, task, type, selector);
 		this.decision = decision;

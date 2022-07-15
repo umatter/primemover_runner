@@ -2,6 +2,7 @@ package primemover.anticaptcha;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -15,6 +16,8 @@ import org.springframework.util.StringUtils;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.anticaptcha.service.SolvingResponse;
 import primemover.anticaptcha.service.SolvingSolution;
+import primemover.capture.RecordingProxy;
+import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.runner.context.ContextBase;
@@ -23,8 +26,8 @@ import primemover.util.SelectingHelper;
 
 // find the captcha: https://gist.github.com/2captcha/2ee70fa1130e756e1693a5d4be4d8c70
 
-public class CaptchaSolver {
-	private static Logger logger = LoggerFactory.getLogger(CaptchaSolver.class);
+public class CaptchaSolver implements ICaptchaSolver {
+	private static final Logger logger = LoggerFactory.getLogger(CaptchaSolver.class);
 
 	public CaptchaSolver() {
 	}
@@ -165,7 +168,8 @@ public class CaptchaSolver {
 		return CaptchaSolverResult.NOTFOUND;
 	}
 
-	public CaptchaSolverResult solve(ContextBase context, IJob job, Boolean submit) {
+	@Override
+	public CaptchaSolverResult solve(ContextBase<?> context, IJob job, Boolean submit) {
 
 		CaptchaSolverResult tmp = trySolveGoogleRecaptchaV2(context, job, submit);
 		if (!(tmp == CaptchaSolverResult.NOTFOUND)) {
@@ -180,5 +184,17 @@ public class CaptchaSolver {
 		jobService.updateCaptchaStateOnJob(job, CaptchaSolverResult.NOTFOUND.wasCaptchaFound(),
 				CaptchaSolverResult.NOTFOUND.wasCaptchaSolved());
 		return CaptchaSolverResult.NOTFOUND;
+	}
+
+	@Override
+	public boolean setOptions(Crawler crawler, MutableCapabilities options, RecordingProxy recorder) {
+		// nothing to do
+		return true;
+	}
+
+	@Override
+	public boolean setupDriver(ContextBase<?> context) {
+		// nothing to do
+		return true;
 	}
 }

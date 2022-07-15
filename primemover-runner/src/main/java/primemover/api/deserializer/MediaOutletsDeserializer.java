@@ -17,11 +17,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.api.model.MediaOutlet;
 
-
 public class MediaOutletsDeserializer extends JsonDeserializer<List<MediaOutlet>> {
 
-	private static Logger logger = LoggerFactory.getLogger(MediaOutletsDeserializer.class);
-	
+	private final static Logger LOGGER = LoggerFactory.getLogger(MediaOutletsDeserializer.class);
+
 	public MediaOutletsDeserializer() {
 	}
 
@@ -31,30 +30,30 @@ public class MediaOutletsDeserializer extends JsonDeserializer<List<MediaOutlet>
 	public List<MediaOutlet> deserialize(JsonParser p, DeserializationContext ctxt)
 			throws IOException, JsonProcessingException {
 		String text = p.getText();
-        ObjectMapper mapper = (ObjectMapper) p.getCodec();
-                
-        if (StringUtils.isEmpty(text)) {
-        	return emptyResult;
-        }
-        
-        if (StringUtils.isWhitespace(text)) {
-        	return emptyResult;
-        }
-        
-        if ("[]".equals(text)) {
-        	return emptyResult;
-        }
-        
-        MediaOutlet[] res = null;
-        try {
-        	res = mapper.readValue(text, MediaOutlet[].class);
+		ObjectMapper mapper = (ObjectMapper) p.getCodec();
 
-            return Arrays.asList(res);
+		if (StringUtils.isEmpty(text)) {
+			return emptyResult;
+		}
+
+		if (StringUtils.isWhitespace(text)) {
+			return emptyResult;
+		}
+
+		if ("[]".equals(text)) {
+			return emptyResult;
+		}
+
+		MediaOutlet[] res = null;
+		try {
+			res = mapper.readValue(text, MediaOutlet[].class);
+
+			return Arrays.asList(res);
 		} catch (Exception e) {
-			logger.warn("error deserializing: {}", text, e);
-		}        
-        
-        return emptyResult;
+			LOGGER.warn("error deserializing: {}", text, e);
+		}
+
+		return emptyResult;
 	}
 
 }
