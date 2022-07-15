@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.openqa.selenium.InvalidArgumentException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import primemover.anticaptcha.CaptchaSolvingType;
 import primemover.api.model.ConfigurationParam;
@@ -24,6 +26,7 @@ import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.DialogHandleType;
 import primemover.model.IAgent;
+import primemover.model.IJob;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MediaOutlet;
@@ -40,28 +43,29 @@ import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.HandleAlertJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
-import primemover.model.jobs.SingleSelectUrlJob;
+import primemover.model.jobs.SingleSelectJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
-import primemover.model.IJob;
 
 public class PrimemoverApiConverter {
+	private static final Logger LOGGER = LoggerFactory.getLogger(PrimemoverApiConverter.class);
 
 	public PrimemoverApiConverter() {
 	}
-		
+
 	private static IProxy convertApiProxy(primemover.api.model.Proxy item, Crawler crawler) {
-		
+		LOGGER.debug("converting proxy {} for crawler {}", item, crawler);
+
 		if (item == null) {
 			return null;
 		}
 
-		HttpProxy res;	
-		
+		HttpProxy res;
+
 		String type = item.getType();
 		if (StringUtils.isEmpty(type)) {
 			res = new HttpProxy();
@@ -71,75 +75,84 @@ public class PrimemoverApiConverter {
 				GeoSurfProxy geoProxy = new GeoSurfProxy();
 				geoProxy.setLocation(crawler.getAgent().getLocation());
 				res = geoProxy;
-				
+
 			} else if (type.contains("http")) {
 				res = new HttpProxy();
-				
+
 				if (type.equals("https")) {
 					res.setUseHttps(true);
 				}
 			} else {
 				throw new InvalidArgumentException("Unknown proxy type");
 			}
-		}		
-		
+		}
+
 		if (StringUtils.isEmpty(item.getHostname())) {
 			throw new InvalidArgumentException("Hostname must not be empty");
 		}
-		
+
 		if (item.getPort() <= 0) {
-			throw new InvalidArgumentException("No valid port: " + item.getPort());			
+			throw new InvalidArgumentException("No valid port: " + item.getPort());
 		}
-		
+
 		res.setUrl(item.getHostname());
 		res.setPort(item.getPort());
 		res.setUsername(item.getUsername());
 		res.setPassword(item.getPassword());
-	
+
 		return res;
 	}
-	
+
 	private static IAgent convertApiAgent(primemover.api.model.Agent item) {
+		LOGGER.debug("converting agent {}", item);
+
 		IAgent agent;
-		
+
 		String ident = item.getIdentification();
-		
+
 		if (StringUtils.isEmpty(ident)) {
 			ident = "multilogin";
 		}
-		
+
 		ident = ident.toLowerCase();
-		
+
 		if (ident.contains("firefox")) {
-			agent = new BasicAgent(item.getId(), AgentType.FIREFOX, item.getName(), item.getDescription(), item.getLocation());
-		} else if(ident.contains("chrome")) {
-			agent = new BasicAgent(item.getId(), AgentType.CHROME, item.getName(), item.getDescription(), item.getLocation());
-		} else if(ident.contains("multilogin") || ident.contains("multlogin")) {
+			agent = new BasicAgent(item.getId(), AgentType.FIREFOX, item.getName(), item.getDescription(),
+					item.getLocation());
+		} else if (ident.contains("chrome")) {
+			agent = new BasicAgent(item.getId(), AgentType.CHROME, item.getName(), item.getDescription(),
+					item.getLocation());
+		} else if (ident.contains("multilogin") || ident.contains("multlogin")) {
 			String validatedJson = StringEscapeUtils.unescapeJson(item.getMultilogin_profile());
 			if (validatedJson.startsWith("\"")) {
 				validatedJson = validatedJson.substring(1, validatedJson.length() - 1);
 			}
-			agent = new MultiLoginAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation(), item.getMultilogin_id(), validatedJson);
+			agent = new MultiLoginAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation(),
+					item.getMultilogin_id(), validatedJson);
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
 		}
-		
+
 		return agent;
 	}
-	
+
 	private static Map<String, String> convertApiBehaviourList(List<primemover.api.model.Behaviour> behaviours) {
+		LOGGER.debug("converting api behaviour list {}", behaviours);
+
 		HashMap<String, String> map = new HashMap<String, String>();
-		
+
 		for (primemover.api.model.Behaviour item : behaviours) {
 			String key = item.getName();
-			String value = item.getValue();			
+			String value = item.getValue();
 			map.put(key, value);
 		}
-		
+
 		return map;
 	}
-		
-	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean isFailsave, Map<String, String> behaviours) {
+
+	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Boolean isFailsave, Map<String, String> behaviours) {
+		LOGGER.debug("setting base fields for job {}", id);
 		job.setId(id);
 		job.setName(name);
 		job.setDescription(description);
@@ -148,77 +161,88 @@ public class PrimemoverApiConverter {
 		job.setTask(behaviours.get("task"));
 	}
 
-	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		setBaseFields(job, id, name, description, captchaSolving, false, behaviours);
-	}	
-	
-	
-	private static VisitJob convertApiVisitJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+	}
+
+	private static VisitJob convertApiVisitJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		LOGGER.debug("converting VisitJob {}", id);
 		VisitJob job = new VisitJob();
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		job.setUrl(behaviours.get("url"));
-	
+
 		return job;
 	}
-	
-	private static HandleAlertJob convertApiHandleAlertJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+
+	private static HandleAlertJob convertApiHandleAlertJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+		LOGGER.debug("converting HandleAlertJob {}", id);
 		HandleAlertJob job = new HandleAlertJob();
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		if (behaviours.containsKey("seconds")) {
 			job.setAction(DialogHandleType.valueOf(behaviours.get("action")));
 		} else {
 			job.setAction(DialogHandleType.ACCEPT);
-		}		
-	
+		}
+
 		return job;
 	}
 
-	private static WaitJob convertApiWaitJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+	private static WaitJob convertApiWaitJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		LOGGER.debug("converting WaitJob {}", id);
 		WaitJob job = new WaitJob();
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		if (behaviours.containsKey("seconds")) {
 			job.setSeconds(Integer.valueOf(behaviours.get("seconds")));
 		} else {
 			job.setSeconds(30);
-		}		
-	
+		}
+
 		return job;
 	}
-	
-	private static EnterTextFieldJob convertApiEnterTextFieldJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+
+	private static EnterTextFieldJob convertApiEnterTextFieldJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+		LOGGER.debug("converting EnterTextFieldJob {}", id);
 		EnterTextFieldJob job = new EnterTextFieldJob();
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setValue(behaviours.get("text"));
-		
+
 		// optional fields
 		Boolean appendReturn = true;
 		if (behaviours.containsKey("appendReturn")) {
 			String val = behaviours.get("appendReturn");
-			
+
 			if ("1".equals(val)) {
 				appendReturn = true;
 			} else if ("0".equals(val)) {
 				appendReturn = false;
 			} else {
-				appendReturn = Boolean.valueOf(val);	
+				appendReturn = Boolean.valueOf(val);
 			}
 		}
-		
+
 		TypingModeType typingMode = TypingModeType.SIMULATED_NOTYPOS;
 		if (behaviours.containsKey("typingMode")) {
 			typingMode = TypingModeType.valueOf(behaviours.get("typingMode"));
 		}
-		
+
 		job.setAppendReturn(appendReturn);
-		job.setTypingMode(typingMode);		
-	
+		job.setTypingMode(typingMode);
+
 		return job;
 	}
-		
-	private static ClickJob convertApiClickJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+
+	private static ClickJob convertApiClickJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+		LOGGER.debug("converting ClickJob {}", id);
 		ClickJob job = new ClickJob();
+
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
@@ -228,11 +252,13 @@ public class PrimemoverApiConverter {
 		} else {
 			job.setExpectsPageReload(Boolean.FALSE);
 		}
-	
+
 		return job;
 	}
-	
-	private static SwitchToJob convertApiSwitchJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+
+	private static SwitchToJob convertApiSwitchJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
+		LOGGER.debug("converting SwitchJob {}", id);
 		SwitchToJob job = new SwitchToJob();
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
@@ -240,25 +266,29 @@ public class PrimemoverApiConverter {
 
 		return job;
 	}
-		
-	private static SingleSelectUrlJob convertApiSingleSelectUrlJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
-		SingleSelectUrlJob job = new SingleSelectUrlJob();
+
+	private static SingleSelectJob convertApiSingleSelectJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		LOGGER.debug("converting SingleSelectJob {}", id);
+		SingleSelectJob job = new SingleSelectJob();
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setDecisionType(DecisionType.valueOf(behaviours.get("decisionType")));
-		
+
 		if (job.getDecisionType() == DecisionType.CALCULATED) {
 			job.setCriterionSelector(behaviours.get("criterionExtractor"));
 		}
-	
+
 		return job;
 	}
-	
-	private static ScrollByDurationJob convertApiScrollByDurationJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+
+	private static ScrollByDurationJob convertApiScrollByDurationJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		LOGGER.debug("converting ScrollByDurationJob {}", id);
 		ScrollByDurationJob job = new ScrollByDurationJob();
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
-		
+
 		if (behaviours.containsKey("scrollDuration")) {
 			job.setDuration(Double.valueOf(behaviours.get("scrollDuration")).intValue());
 		} else if (behaviours.containsKey("duration")) {
@@ -267,31 +297,34 @@ public class PrimemoverApiConverter {
 			throw new IllegalStateException("no duration or scrollDuration found");
 		}
 		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
-	
+
 		return job;
 	}
-	
-	private static ScrollByLengthJob convertApiScrollByLengthJob(Long id, String name, String description, CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+
+	private static ScrollByLengthJob convertApiScrollByLengthJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		LOGGER.debug("converting ApiScrollByLengthJob {}", id);
 		ScrollByLengthJob job = new ScrollByLengthJob();
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 		job.setLength(Integer.valueOf(behaviours.get("length")));
 		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
-	
+
 		return job;
 	}
-	
+
 	private static IJob convertApiJob(primemover.api.model.Job job, CaptchaSolvingType defaultCaptchaSolving) {
+		LOGGER.debug("start converting API-Job {} with captcha default {}", job.getId(), defaultCaptchaSolving);
 		IJob res;
-		
+
 		// grab behavior list
 		Map<String, String> behaviors = convertApiBehaviourList(job.getBehaviors());
-		
+
 		// Anti-Captcha
 		CaptchaSolvingType captchaSolving = defaultCaptchaSolving;
 		if (behaviors.containsKey("captchaMode")) {
 			captchaSolving = CaptchaSolvingType.valueOf(behaviors.get("captchaMode").toUpperCase());
 		}
-		
+
 		switch (job.getType().toLowerCase()) {
 		case "visitjob":
 			res = convertApiVisitJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
@@ -300,61 +333,73 @@ public class PrimemoverApiConverter {
 			res = convertApiWaitJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
 			break;
 		case "tryentertextfieldjob":
-			res = convertApiEnterTextFieldJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true, behaviors);
-			break;						
-		case "entertextfieldjob":
-			res = convertApiEnterTextFieldJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false, behaviors);
+			res = convertApiEnterTextFieldJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true,
+					behaviors);
 			break;
-		case "singleselecturljob":
-			res = convertApiSingleSelectUrlJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+		case "entertextfieldjob":
+			res = convertApiEnterTextFieldJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false,
+					behaviors);
+			break;
+		case "singleselecturljob": // old API
+		case "singleselectjob":
+			res = convertApiSingleSelectJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
+					behaviors);
 			break;
 		case "tryswitchjob":
-			res = convertApiSwitchJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true, behaviors);
+			res = convertApiSwitchJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true,
+					behaviors);
 			break;
 		case "switchjob":
-			res = convertApiSwitchJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false, behaviors);
+			res = convertApiSwitchJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false,
+					behaviors);
 			break;
 		case "tryclickjob":
 			res = convertApiClickJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true, behaviors);
 			break;
 		case "clickjob":
-			res = convertApiClickJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false, behaviors);
+			res = convertApiClickJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false,
+					behaviors);
 			break;
 		case "scrollbydurationjob":
-			res = convertApiScrollByDurationJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+			res = convertApiScrollByDurationJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
+					behaviors);
 			break;
 		case "scrollbylengthjob":
-			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, behaviors);
+			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
+					behaviors);
 			break;
 		case "handlealertjob":
-			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false, behaviors);
+			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false,
+					behaviors);
 			break;
 		case "tryhandlealertjob":
-			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true, behaviors);
+			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true,
+					behaviors);
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid Job type found: " + job.getType());
-		}		
-				
+		}
+
 		return res;
 	}
 
-	
 	private static Configuration convertApiConfiguration(primemover.api.model.Configuration item) {
+		LOGGER.debug("converting Cofiguration {}", item);
+
 		if (item == null) {
 			return null;
 		}
-		
+
 		Configuration config = new Configuration();
 		config.setId(item.getId());
 		config.setName(item.getName());
 		config.setDescription(item.getDescription());
-		
+
 		if (item.getParams().size() > 0) {
 			ConfigurationParam param = item.getParams().get(0);
-			
+
 			SelectionConfiguration selectConfig = new SelectionConfiguration();
-			
+
 			selectConfig.setAlpha(param.getAlpha());
 			selectConfig.setBeta(param.getBeta());
 			selectConfig.setId(param.getId());
@@ -362,7 +407,7 @@ public class PrimemoverApiConverter {
 			selectConfig.setPi(param.getPi());
 			selectConfig.setPsi(param.getPsi());
 			selectConfig.setTau(param.getTau());
-			
+
 			HashMap<String, MediaOutlet> outlets = new HashMap<>();
 			for (primemover.api.model.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
 				MediaOutlet modelOutlet = new MediaOutlet();
@@ -372,87 +417,103 @@ public class PrimemoverApiConverter {
 				outlets.put(modelOutlet.getDomain(), modelOutlet);
 			}
 			selectConfig.setOutlets(outlets);
-			
+
 			config.setSelectionConfiguration(selectConfig);
 		} else {
 			config.setSelectionConfiguration(null);
 		}
-			
+
 		return config;
 	}
 
 	private static Joblist convertApiQueue(primemover.api.model.Queue item, CaptchaSolvingType defaultCaptchaSolving) {
+		LOGGER.debug("converting JobList {} with defaultCaptchaSolving", item, defaultCaptchaSolving);
+
+		// verify
+		List<primemover.api.model.Job> list = item.getJobs();
+
+		if (list.isEmpty()) {
+			LOGGER.warn("Jiblist was empty for queeue {}", item.getId());
+			return null;
+		}
+
+		// convert
 		Joblist jobList = new Joblist();
-		
+
 		jobList.setId(item.getId().longValue());
 		jobList.setActive(item.isActive());
 		jobList.setProcessed(item.isProcessed());
 		jobList.setReviewed(item.isReviewed());
 		jobList.setStartTime(item.getStart_at());
 		jobList.setProcessing(item.isProcessing());
-		
-		List<primemover.api.model.Job> list = item.getJobs();
-		
-		if (list.isEmpty()) {
-			throw new InvalidArgumentException("A joblist must contain at least one job.");
-		}
-		
+
 		List<IJob> jobs = new ArrayList<IJob>();
 		for (primemover.api.model.Job job : list) {
 			jobs.add(convertApiJob(job, defaultCaptchaSolving));
 		}
 		jobList.setJobs(jobs);
-		
+
 		return jobList;
 	}
-	
-	
-	private static List<Pair<Crawler, Joblist>> convertApiCrawler(primemover.api.model.Crawler item, CaptchaSolvingType defaultCaptchaSolving) {
-		
+
+	private static List<Pair<Crawler, Joblist>> convertApiCrawler(primemover.api.model.Crawler item,
+			CaptchaSolvingType defaultCaptchaSolving) {
+		LOGGER.debug("converting Crawler {} with defaultCaptchaSolving", item, defaultCaptchaSolving);
+
 		List<Pair<Crawler, Joblist>> out = new ArrayList<Pair<Crawler, Joblist>>();
-		
+
 		// grab crawler
 		Crawler crawler = new Crawler();
-		
+
 		crawler.setId(item.getId().longValue());
 		crawler.setName(item.getName());
 		crawler.setDescription(item.getDescription());
 		crawler.setAgent(convertApiAgent(item.getAgent()));
-		crawler.setProxy(convertApiProxy(item.getProxy(), crawler)); // needs to go after agent as agent contains required location input
+		crawler.setProxy(convertApiProxy(item.getProxy(), crawler)); // needs to go after agent as agent contains
+																		// required location input
 		crawler.setConfig(convertApiConfiguration(item.getConfiguration()));
-		
+
 		// grab joblists
 		List<primemover.api.model.Queue> queues = item.getQueues();
-		
+
 		for (primemover.api.model.Queue queue : queues) {
 			Joblist jobList = convertApiQueue(queue, defaultCaptchaSolving);
-			
+
+			if (jobList == null) {
+				continue;
+			}
+
+			LOGGER.debug("adding joblist {} to crawler {}", jobList.getId(), crawler.getId());
 			out.add(Pair.of(crawler, jobList));
 		}
-		
+
 		return out;
 	}
-	
-	public static List<Pair<Crawler, Joblist>> convertFromApi(CrawlerResult input, CaptchaSolvingType defaultCaptchaSolving) {
+
+	public static List<Pair<Crawler, Joblist>> convertFromApi(CrawlerResult input,
+			CaptchaSolvingType defaultCaptchaSolving) {
+		LOGGER.debug("converting Crawler with joblist {} with defaultCaptchaSolving", input, defaultCaptchaSolving);
+
 		List<Pair<Crawler, Joblist>> res = new ArrayList<Pair<Crawler, Joblist>>();
 		List<primemover.api.model.Crawler> data = input.getData();
-		
+
 		if (!data.isEmpty()) {
-			
+
 			for (primemover.api.model.Crawler item : data) {
 				res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
 			}
 		}
-		
+
 		return res;
 	}
-	
-	
+
 	public static LocationInfo convertFromApi(IpResult input) {
+		LOGGER.debug("converting LocationInfo from {}", input);
+
 		IpResultData data = input.getResult();
-		
+
 		LocationInfo res = new LocationInfo();
-		
+
 		res.setCity(data.getCity());
 		res.setCountryCode(data.getCountry_code());
 		res.setCountryName(data.getCountry_name());
@@ -467,10 +528,11 @@ public class PrimemoverApiConverter {
 	}
 
 	public static List<Term> convertFromApi(TermResult apiRes) {
+		LOGGER.debug("converting terms from {}", apiRes);
 
 		List<primemover.api.model.Term> inItems = apiRes.getData();
 		ArrayList<Term> res = new ArrayList<Term>(inItems.size());
-		
+
 		for (primemover.api.model.Term inItem : inItems) {
 			Term outItem = new Term();
 			outItem.setBigram(inItem.getBigram());
@@ -478,22 +540,23 @@ public class PrimemoverApiConverter {
 			outItem.setId(inItem.getId());
 			outItem.setRefTerm(inItem.getRefterm());
 			outItem.setSearchTerm(inItem.getSearch_term());
-			
+
 			res.add(outItem);
-			
+
 		}
-		
+
 		return res;
 	}
-	
+
 	public static List<Outlet> convertFromApi(OutletResult apiRes) {
+		LOGGER.debug("converting outlets from {}", apiRes);
 
 		List<primemover.api.model.Outlet> inItems = apiRes.getData();
 		ArrayList<Outlet> res = new ArrayList<Outlet>(inItems.size());
-		
+
 		for (primemover.api.model.Outlet inItem : inItems) {
 			Outlet outItem = new Outlet();
-			
+
 			outItem.setCreatedAt(inItem.getCreated_at());
 			outItem.setDomain(inItem.getDomain());
 			outItem.setId(inItem.getId());
@@ -506,11 +569,11 @@ public class PrimemoverApiConverter {
 			outItem.setYhat_n(inItem.getYhat_n());
 			outItem.setAvgReachPermillion(inItem.getAvg_reach_permillion());
 			outItem.setAvgReachRank(inItem.getAvg_reach_rank());
-			
+
 			res.add(outItem);
-			
+
 		}
-		
+
 		return res;
 	}
 
