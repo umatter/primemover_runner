@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class KeepAliveHelper implements AutoCloseable {
-	private static final Logger LOGGER = LoggerFactory.getLogger(UrlVerificator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(KeepAliveHelper.class);
 
 	private UrlVerificator verificator;
 	private int intervalSeconds;
@@ -58,9 +58,10 @@ public class KeepAliveHelper implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		LOGGER.debug("stopping ping", intervalSeconds);
+		LOGGER.debug("stopping ping");
 		timer.cancel();
 		timer = null;
+		verificator = null;
 	}
 
 }

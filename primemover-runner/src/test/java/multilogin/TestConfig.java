@@ -21,71 +21,79 @@ import primemover.anticaptcha.CaptchaSolver;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
+import primemover.multilogin.MultiLoginBrowserProfileFactory;
+import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
+import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
-import primemover.util.MultiLoginBrowserProfileFactory;
-import primemover.util.MultiLoginDefaultTemplateLoader;
 
 @SpringBootConfiguration
 public class TestConfig {
-	
+
 	@Value("${global.mode}")
 	private String mode;
-	
+
 	@Value("${backend.requestTimeoutSeconds:60}")
 	private Long requestTimeoutSeconds;
-	
+
 	@Value("${backend.connectionTimeoutSeconds:10}")
 	private Long connectionTimeoutSeconds;
-	
-	@Bean(name="AgentService")
+
+	@Bean(name = "AgentService")
 	AgentService getAgentService() {
 		return new AgentService();
 	}
-	
+
+	@Bean(name = "JobService")
+	JobService getJobService() {
+		return new JobService();
+	}
+
 	@Bean("CrawlerService")
 	ICrawlerService getCrawlerService() {
 		return new CrawlerService();
 	}
-	
+
 	@Bean("OutletService")
 	OutletService getOutletService() {
 		return new OutletService();
 	}
-	
-	@Bean(name="CaptchaSolver")
+
+	@Bean(name = "CaptchaSolver")
 	public ICaptchaSolver getCaptchaSolver() {
 		return new CaptchaSolver();
 	}
-	
+
 	@Bean("TermsService")
 	TermsService getTermsService() {
 		return new TermsService();
 	}
-	
-	@Bean(name="tokenGenerator")
+
+	@Bean(name = "tokenGenerator")
 	TokenGenerator getTokenGenerator() {
 		return new TokenGenerator();
 	}
-	
-	@Bean(name="TokenRequestInterceptor")	
+
+	@Bean(name = "TokenRequestInterceptor")
 	TokenRequestInterceptor requestInterceptor() {
 		return new TokenRequestInterceptor();
 	}
-	
+
 	@Bean("ServiceRestTemplate")
 	public RestTemplate restTemplate(TokenRequestInterceptor requestInterceptor) {
-		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		
+		// In Java code, it is like this:
+		// objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+		// false);
+
 		RestTemplate restTemplate = new RestTemplateBuilder().build();
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
-		
+
 		for (Object converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
@@ -93,46 +101,47 @@ public class TestConfig {
 				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-		
+
 		List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
 		if (CollectionUtils.isEmpty(interceptors)) {
-		    interceptors = new ArrayList<>();
+			interceptors = new ArrayList<>();
 		}
 		interceptors.add(requestInterceptor);
 		restTemplate.setInterceptors(interceptors);
-		
-        return restTemplate; 
+
+		return restTemplate;
 	}
-	
-	@Bean(name="RecordingProxyFactory")
+
+	@Bean(name = "RecordingProxyFactory")
 	RecordingProxyFactory getRecorderFactory() {
 		return new RecordingProxyFactory();
-	}	
-	
-	@Bean(name="MultiLoginDefaultTemplateLoader", initMethod="init")
+	}
+
+	@Bean(name = "MultiLoginDefaultTemplateLoader", initMethod = "init")
 	MultiLoginDefaultTemplateLoader getMultiLoginDefaultTemplateLoader() {
 		return MultiLoginDefaultTemplateLoader.getInstance();
 	}
-	
-	@Bean(name="MultiLoginBrowserProfileFactory")
+
+	@Bean(name = "MultiLoginBrowserProfileFactory")
 	MultiLoginBrowserProfileFactory getMultiLoginBrowserProfileFactory() {
 		return new MultiLoginBrowserProfileFactory();
 	}
 
-	@Bean(name="TaskServiceFactory")
+	@Bean(name = "TaskServiceFactory")
 	TaskOperatorFactory getTaskServiceFactory() {
 		return new TaskOperatorFactory();
 	}
-	
-	@Bean(name="AntiCaptchaRestTemplate")
+
+	@Bean(name = "AntiCaptchaRestTemplate")
 	public RestTemplate antiCaptchaRestTemplate() {
-		//In Java code, it is like this: objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		// In Java code, it is like this:
+		// objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+		// false);
 		RestTemplate restTemplate = new RestTemplateBuilder()
 				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
-				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds))
-				.build();
-		
-		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();		
+				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
+
+		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		for (Object converter : converters) {
 			if (converter instanceof MappingJackson2HttpMessageConverter) {
 				MappingJackson2HttpMessageConverter jconverter = (MappingJackson2HttpMessageConverter) converter;
@@ -140,11 +149,11 @@ public class TestConfig {
 				mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 			}
 		}
-				
-        return restTemplate; 
+
+		return restTemplate;
 	}
-	
-	@Bean(name="AntiCaptchaService")
+
+	@Bean(name = "AntiCaptchaService")
 	public AntiCaptchaService getAntiCaptchaService() {
 		return new AntiCaptchaService();
 	}

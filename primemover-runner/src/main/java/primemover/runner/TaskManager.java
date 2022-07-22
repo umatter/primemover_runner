@@ -124,10 +124,15 @@ public class TaskManager implements ITaskManager {
 
 		// loop all available joblists
 		for (Pair<Crawler, Joblist> task : taskList) {
+			Crawler crawler = task.getLeft();
 			Joblist jobs = task.getRight();
 
 			// has jobs to do?
 			if (jobs == null) {
+				logger.info("empty queue for crawler {}", crawler.getId());
+				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBLIST_EMPTY, ZonedDateTime.now(),
+						ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE); // set execution time
+
 				continue;
 			}
 

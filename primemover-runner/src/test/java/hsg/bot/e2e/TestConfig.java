@@ -21,6 +21,7 @@ import primemover.anticaptcha.CaptchaSolver;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
+import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.MockTaskManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.joblist.JobListRunnerFactory;
@@ -35,7 +36,6 @@ import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
-import primemover.util.MultiLoginBrowserProfileFactory;
 
 @SpringBootConfiguration
 public class TestConfig {

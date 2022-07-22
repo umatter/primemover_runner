@@ -1,4 +1,4 @@
-package primemover.util;
+package primemover.multilogin;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;

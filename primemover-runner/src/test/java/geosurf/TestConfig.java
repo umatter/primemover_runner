@@ -21,6 +21,8 @@ import primemover.anticaptcha.CaptchaSolver;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
+import primemover.multilogin.MultiLoginBrowserProfileFactory;
+import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
@@ -32,8 +34,6 @@ import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
-import primemover.util.MultiLoginBrowserProfileFactory;
-import primemover.util.MultiLoginDefaultTemplateLoader;
 import primemover.util.OutletsProvider;
 import primemover.util.SelectingHelper;
 

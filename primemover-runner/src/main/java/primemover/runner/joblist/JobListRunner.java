@@ -35,10 +35,18 @@ public class JobListRunner implements Callable<Boolean> {
 	private JobService jobService;
 
 	private enum SetupState {
-		SUCCESS, FAILURE, SKIPPED
+		SUCCESS, FAILURE, SKIPPED, NO_JOBS
 	}
 
 	private SetupState setup() {
+		// check for empty joblist
+		if (jobs == null) {
+			logger.warn("failure running jobs for {} ({}), joblist is empty", crawler.getId(), crawler.getName());
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null,
+					Boolean.TRUE);
+			return SetupState.NO_JOBS;
+		}
+
 		// Check for max delay
 		long diff = ChronoUnit.MINUTES.between(jobs.getStartTime(), ZonedDateTime.now());
 		logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
@@ -58,12 +66,15 @@ public class JobListRunner implements Callable<Boolean> {
 
 		if (isStartedUp) {
 			logger.debug("setup completed successfully for crawler {} for joblist {}", crawler.getId(), jobs.getId());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, null, null, null, null); // set new state
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, ZonedDateTime.now(), null, null, null); // set
+																														// new
+																														// state
 			return SetupState.SUCCESS;
 		} else {
 			logger.warn("setup failure for crawler {} for joblist {}", crawler.getId(), jobs.getId());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, null, null, null, null); // set new
-																											// state
+			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, ZonedDateTime.now(), null, null, null); // set
+																															// new
+			// state
 			return SetupState.FAILURE;
 		}
 	}
@@ -74,14 +85,14 @@ public class JobListRunner implements Callable<Boolean> {
 
 	private RunningState runJoblist() {
 		logger.trace("running joblist {} for crawler {}", jobs.getId(), crawler.getId());
-		// run jobs
+
 		Boolean jobsRes = taskOperator.runJobList(jobs);
 		if (jobsRes) {
-			logger.trace("success running jobs for {} ({})", crawler.getId(), crawler.getName());
+			logger.debug("success running jobs for {} ({})", crawler.getId(), crawler.getName());
 			jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null, null);
 			return RunningState.SUCCESS;
 		} else {
-			logger.trace("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
+			logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
 			jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null, null);
 			return RunningState.FAILURE;
 		}
@@ -101,6 +112,10 @@ public class JobListRunner implements Callable<Boolean> {
 		case SKIPPED:
 			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, null, ZonedDateTime.now(), Boolean.TRUE,
 					Boolean.FALSE); // set execution end time
+			break;
+		case NO_JOBS:
+			jobService.updateJoblistState(jobs, JoblistState.DONE_JOBLIST_EMPTY, null, ZonedDateTime.now(),
+					Boolean.TRUE, Boolean.FALSE); // set execution end time
 			break;
 
 		case SUCCESS:
@@ -131,7 +146,6 @@ public class JobListRunner implements Callable<Boolean> {
 			if (setupRes == SetupState.SUCCESS) {
 				jobsRes = runJoblist();
 			}
-			;
 
 			tearDown(setupRes, jobsRes);
 

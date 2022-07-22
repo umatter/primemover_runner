@@ -36,6 +36,8 @@ import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.IProxy;
+import primemover.multilogin.MulitLoginBrowserProfile;
+import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.ChromeContext;
 import primemover.runner.context.ContextBase;
 import primemover.runner.context.FirefoxContext;
@@ -50,8 +52,6 @@ import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.JobDataWriter;
 import primemover.service.datawriter.PageSourceWriter;
-import primemover.util.MulitLoginBrowserProfile;
-import primemover.util.MultiLoginBrowserProfileFactory;
 
 /**
  * Entry point for a task run. The operator will first setup the running context

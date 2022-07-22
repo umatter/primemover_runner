@@ -429,14 +429,6 @@ public class PrimemoverApiConverter {
 	private static Joblist convertApiQueue(primemover.api.model.Queue item, CaptchaSolvingType defaultCaptchaSolving) {
 		LOGGER.debug("converting JobList {} with defaultCaptchaSolving", item, defaultCaptchaSolving);
 
-		// verify
-		List<primemover.api.model.Job> list = item.getJobs();
-
-		if (list.isEmpty()) {
-			LOGGER.warn("Jiblist was empty for queeue {}", item.getId());
-			return null;
-		}
-
 		// convert
 		Joblist jobList = new Joblist();
 
@@ -447,10 +439,18 @@ public class PrimemoverApiConverter {
 		jobList.setStartTime(item.getStart_at());
 		jobList.setProcessing(item.isProcessing());
 
+		// verify
+		List<primemover.api.model.Job> list = item.getJobs();
 		List<IJob> jobs = new ArrayList<IJob>();
-		for (primemover.api.model.Job job : list) {
-			jobs.add(convertApiJob(job, defaultCaptchaSolving));
+
+		if (!list.isEmpty()) {
+			for (primemover.api.model.Job job : list) {
+				jobs.add(convertApiJob(job, defaultCaptchaSolving));
+			}
+		} else {
+			LOGGER.warn("Joblist was empty for queue {}", item.getId());
 		}
+
 		jobList.setJobs(jobs);
 
 		return jobList;
@@ -480,10 +480,11 @@ public class PrimemoverApiConverter {
 			Joblist jobList = convertApiQueue(queue, defaultCaptchaSolving);
 
 			if (jobList == null) {
-				continue;
+				LOGGER.debug("adding empty joblist to crawler {}", crawler.getId());
+			} else {
+				LOGGER.debug("adding joblist {} to crawler {}", jobList.getId(), crawler.getId());
 			}
 
-			LOGGER.debug("adding joblist {} to crawler {}", jobList.getId(), crawler.getId());
 			out.add(Pair.of(crawler, jobList));
 		}
 

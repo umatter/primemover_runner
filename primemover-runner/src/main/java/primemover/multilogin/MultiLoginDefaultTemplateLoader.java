@@ -1,4 +1,4 @@
-package primemover.util;
+package primemover.multilogin;
 
 import java.io.IOException;
 import java.nio.file.Files;
