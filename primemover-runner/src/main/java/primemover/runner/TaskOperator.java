@@ -156,6 +156,9 @@ public class TaskOperator implements ITaskOperator {
 		mlContext.setCrawler(crawler);
 		mlContext.setRecorder(recorder);
 
+		// setup anticaptcha
+		captchaSolver.setOptions(crawler, capabilities, recorder);
+
 		Boolean done = false;
 		Integer retryCount = 0;
 
@@ -201,6 +204,7 @@ public class TaskOperator implements ITaskOperator {
 				// apply proxy
 				logger.debug("updating proxy");
 				bp.updateProxy(recorder);
+
 				logger.debug("starting remote MultiLogin driver");
 				URL remoteUrl = new URL(bp.startProfile());
 				RemoteWebDriver driver = new RemoteWebDriver(remoteUrl, capabilities);
@@ -560,10 +564,11 @@ public class TaskOperator implements ITaskOperator {
 					throw new UnsupportedOperationException("type not supported: " + crawler.getAgent().getType());
 				}
 
-				captchaSolver.setupDriver(context);
-
 				// apply captcha solver to context
 				context.setCaptchaSolver(captchaSolver);
+
+				// setup driver in running browser
+				captchaSolver.setupDriver(context);
 
 				isSetup.set(true);
 				done = true;

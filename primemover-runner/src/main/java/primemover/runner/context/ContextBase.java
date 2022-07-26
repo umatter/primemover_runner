@@ -59,6 +59,6 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 	}
 
 	public boolean isValid() {
-		return options != null && recorder != null && driver != null && crawler != null && captchaSolver != null;
+		return recorder != null && driver != null && crawler != null && captchaSolver != null;
 	}
 }

@@ -278,7 +278,7 @@ public class MulitLoginBrowserProfile {
 		 * Please make sure that you have Multilogin listening port set to 35000.
 		 * Otherwise please change the port value in the url string
 		 */
-		String url = MULTILOGIN_API_V1_BASE_URL + "/v1/profile/start?profileId=" + this.profileId + "&automation=true";
+		String url = MULTILOGIN_API_V1_BASE_URL + "/profile/start?profileId=" + this.profileId + "&automation=true";
 
 		logger.debug("Starting profile {}", this.profileId);
 
@@ -304,9 +304,12 @@ public class MulitLoginBrowserProfile {
 			// Get JSON text from the response and return the value by key "value"
 			JSONObject jsonResponse = new JSONObject(response.toString());
 			runApiWait();
+
+			// success
 			return jsonResponse.getString("value");
 		}
 
+		// failure handling
 		String responseMessage = "";
 		try {
 			responseMessage = con.getResponseMessage();
@@ -392,8 +395,9 @@ public class MulitLoginBrowserProfile {
 	public void createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) {
 		try {
 			// setup method
-			logger.debug("creating profile for agent {}", agent.getId());
-			String url = MULTILOGIN_API_V2_BASE_URL + "/v2/profile";
+			String url = MULTILOGIN_API_V2_BASE_URL + "/profile";
+
+			logger.debug("creating profile for agent {} at {}", agent.getId(), url);
 
 			String template = getTemplate(agent);
 			String jsonInput = replaceTemplatePlaceholders(agent, proxy, template);
@@ -409,6 +413,7 @@ public class MulitLoginBrowserProfile {
 			try (OutputStream os = con.getOutputStream()) {
 				byte[] input = jsonInput.getBytes("utf-8");
 				os.write(input, 0, input.length);
+				os.flush();
 			}
 
 			if (con.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -441,6 +446,7 @@ public class MulitLoginBrowserProfile {
 			runApiWait();
 
 			this.profileId = newProfileId;
+			agent.setMultiLoginId(newProfileId); // set to avoid recalling the API
 		} catch (IllegalStateException ex) {
 			throw ex;
 		} catch (Exception ex) {

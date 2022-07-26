@@ -50,20 +50,20 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 	@Override
 	public boolean setOptions(Crawler crawler, MutableCapabilities options, RecordingProxy recorder) {
-		// Multilogin -> nothing to do
+		// Multilogin
 		if (crawler.getAgent() instanceof MultiLoginAgent) {
 			LOGGER.debug("Checking for Multilogin-Plugin");
-			MultiLoginAgent agent = (MultiLoginAgent) crawler.getAgent();
 
 			// FIXME check for already installed plugin, fixed extension settings and used
 			// browser (currently fixed to mimic) with newer Multilogin-API
 
 			// Update to current plugin
 			MulitLoginBrowserProfile mlProfile = mlProfileFactory.getItem(crawler, recorder);
-			boolean pluginUpdated = mlProfile.updateExtensions(Arrays.asList(chromeExtensionPath));
+			String multiloginExtension = chromeExtensionPath.substring(chromeExtensionPath.lastIndexOf("/") + 1);
+			pluginAvailable = mlProfile.updateExtensions(Arrays.asList(multiloginExtension));
 
 			LOGGER.debug("Multilogin-Plugin available: {}", this.pluginAvailable);
-			return pluginUpdated;
+			return pluginAvailable;
 		}
 
 		// Firefox

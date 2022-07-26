@@ -3,7 +3,6 @@ package hsg.bot.runner;
 import java.util.HashMap;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +15,7 @@ import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
+import primemover.model.MultiLoginAgent;
 import primemover.model.SelectionConfiguration;
 import primemover.model.SelectorType;
 import primemover.model.jobs.ClickJob;
@@ -34,10 +34,8 @@ class RunAntiCaptchaTest {
 	private IAgent agent;
 	Crawler crawler;
 
-	@BeforeEach
 	public void setup() {
 		operator = operatorFactory.getItem();
-		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 
@@ -74,8 +72,7 @@ class RunAntiCaptchaTest {
 		operator.setup(crawler);
 	}
 
-	@Test
-	void openRecaptchaV2() {
+	private void runJobList() {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
 
@@ -99,6 +96,30 @@ class RunAntiCaptchaTest {
 		jobs.appendJob(waitJob);
 
 		operator.runJobList(jobs);
+	}
+
+	@Test
+	void openRecaptchaV2WithChrome() {
+		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
+		setup();
+
+		runJobList();
+	}
+
+	@Test
+	void openRecaptchaV2WithFirefox() {
+		agent = new BasicAgent(1l, AgentType.FIREFOX, "Chrome", "Chrome", "");
+		setup();
+
+		runJobList();
+	}
+
+	@Test
+	void openRecaptchaV2WithMultilogin() {
+		agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", "", "");
+		setup();
+
+		runJobList();
 	}
 
 	@AfterEach
