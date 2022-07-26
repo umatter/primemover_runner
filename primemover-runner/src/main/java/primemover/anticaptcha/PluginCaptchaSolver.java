@@ -1,6 +1,6 @@
 package primemover.anticaptcha;
 
-import java.io.File;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import org.json.JSONObject;
@@ -14,23 +14,32 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.MultiLoginAgent;
-import primemover.runner.context.ChromeContext;
+import primemover.multilogin.MulitLoginBrowserProfile;
+import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.ContextBase;
-import primemover.runner.context.FirefoxContext;
 import primemover.util.NavigationHelper;
 
 public class PluginCaptchaSolver implements ICaptchaSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CaptchaSolver.class);
 
-	private String firefoxExtensionPath = "anticaptcha/anticaptcha-plugin_v0.60.xpi";
-	private String chromeExtensionPath = "anticaptcha/anticaptcha-plugin_v0.62.crx";
-	private String apiKey = "00000000000000000000000000000000";
-	private String emptyPageUrl = "https://antcpt.com/blank.html";
+	@Autowired
+	MultiLoginBrowserProfileFactory mlProfileFactory;
+
+	@Value("${anticaptcha.extension.firefox}")
+	private String firefoxExtensionPath;
+	@Value("${anticaptcha.extension.chrome}")
+	private String chromeExtensionPath;
+	@Value("${anticaptcha.api.key}")
+	private String apiKey;
+	@Value("${anticaptcha.api.blankPage}")
+	private String emptyPageUrl;
 	private int maxSolvingSeconds = 120;
 
 	private boolean pluginAvailable = false;
@@ -44,14 +53,17 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 		// Multilogin -> nothing to do
 		if (crawler.getAgent() instanceof MultiLoginAgent) {
 			LOGGER.debug("Checking for Multilogin-Plugin");
-			// check for Plugin
 			MultiLoginAgent agent = (MultiLoginAgent) crawler.getAgent();
 
-			// FIXME: this is only a hack!
-			this.pluginAvailable = agent.getMultiLoginCreationJson().contains("anticaptcha-plugin");
+			// FIXME check for already installed plugin, fixed extension settings and used
+			// browser (currently fixed to mimic) with newer Multilogin-API
+
+			// Update to current plugin
+			MulitLoginBrowserProfile mlProfile = mlProfileFactory.getItem(crawler, recorder);
+			boolean pluginUpdated = mlProfile.updateExtensions(Arrays.asList(chromeExtensionPath));
 
 			LOGGER.debug("Multilogin-Plugin available: {}", this.pluginAvailable);
-			return pluginAvailable;
+			return pluginUpdated;
 		}
 
 		// Firefox
@@ -60,7 +72,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 			FirefoxOptions ffOptions = (FirefoxOptions) options;
 
 			FirefoxProfile profile = new FirefoxProfile();
-			profile.addExtension(new File(firefoxExtensionPath));
+			profile.addExtension(new java.io.File(firefoxExtensionPath));
 			ffOptions.setProfile(profile);
 
 			this.pluginAvailable = true;
@@ -71,7 +83,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 		if (options instanceof ChromeOptions) {
 			LOGGER.debug("Setting options for Chrome");
 			ChromeOptions chOptions = (ChromeOptions) options;
-			chOptions.addExtensions(new File(chromeExtensionPath));
+			chOptions.addExtensions(new java.io.File(chromeExtensionPath));
 
 			this.pluginAvailable = true;
 			return true;
@@ -109,12 +121,12 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 	@Override
 	public boolean setupDriver(ContextBase<?> context) {
-
+		LOGGER.debug("initialising plugin in open browser for crawler {}", context.getCrawler().getId());
 		if (!this.pluginAvailable) {
 			return true; // Plugin not available
 		}
 
-		if (context instanceof FirefoxContext || context instanceof ChromeContext) {
+		try {
 			// load empty page
 			NavigationHelper navHelper = new NavigationHelper(context.getDriver(), 10000);
 			context.getDriver().get(emptyPageUrl);
@@ -135,9 +147,11 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 			this.pluginInitialised = true;
 
 			return true;
+		} catch (Exception e) {
+			LOGGER.warn("failed to setup the anticaptcha plugin", e);
 		}
 
-		// not implemented or not possible
+		// not implemented or failed
 		return false;
 	}
 
@@ -148,11 +162,24 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 			return CaptchaSolverResult.ERROR; // Plugin not working
 		}
 
+		// check to see if the plugin is working, allow 5 seconds for setup
+		try {
+			new WebDriverWait(context.getDriver(), 5)
+					.until(driver -> driver.findElement(By.cssSelector(".antigate_solver")));
+		} catch (Exception e) {
+			// ignore -> plugin inactive
+			LOGGER.debug("no captcha found");
+			return CaptchaSolverResult.NOTFOUND;
+		}
+
 		// Most important part: we wait upto 120 seconds until the AntiCaptcha plugin
 		// indicator with antigate_solver class
 		// gets the solved class, which means that the captcha was successfully solved
 		LOGGER.debug("waiting for captcha being solved for {} seconds", maxSolvingSeconds);
-		try {
+
+		try
+
+		{
 			new WebDriverWait(context.getDriver(), maxSolvingSeconds)
 					.until(driver -> driver.findElement(By.cssSelector(".antigate_solver.solved")));
 

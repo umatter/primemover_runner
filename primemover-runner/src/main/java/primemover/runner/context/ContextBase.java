@@ -3,6 +3,7 @@ package primemover.runner.context;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 
+import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 
@@ -12,6 +13,7 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 	private RecordingProxy recorder;
 	private WebDriver driver;
 	private Crawler crawler;
+	private ICaptchaSolver captchaSolver;
 
 	public ContextBase() {
 	}
@@ -46,5 +48,17 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 
 	public void setCrawler(Crawler crawler) {
 		this.crawler = crawler;
+	}
+
+	public ICaptchaSolver getCaptchaSolver() {
+		return captchaSolver;
+	}
+
+	public void setCaptchaSolver(ICaptchaSolver captchaSolver) {
+		this.captchaSolver = captchaSolver;
+	}
+
+	public boolean isValid() {
+		return options != null && recorder != null && driver != null && crawler != null && captchaSolver != null;
 	}
 }

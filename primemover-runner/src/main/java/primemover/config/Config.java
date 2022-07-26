@@ -23,8 +23,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
-import primemover.anticaptcha.CaptchaSolver;
-import primemover.anticaptcha.ICaptchaSolver;
+import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.api.deserializer.RelaxedZonedDateTimeDeserializer;
 import primemover.capture.RecordingProxyFactory;
@@ -138,9 +137,9 @@ public class Config {
 		return new AntiCaptchaService();
 	}
 
-	@Bean(name = "CaptchaSolver")
-	public ICaptchaSolver getCaptchaSolver() {
-		return new CaptchaSolver();
+	@Bean(name = "CaptchaSolverFactory")
+	public CaptchaSolverFactory getCaptchaSolverFactory() {
+		return new CaptchaSolverFactory();
 	}
 
 	@Bean(name = "IpServiceFactory")

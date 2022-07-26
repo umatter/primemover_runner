@@ -18,8 +18,7 @@ public class CaptchaJobHelper {
 		BEFORE, AFTER
 	}
 
-	public static Optional<CaptchaSolverResult> solveCaptcha(ContextBase<?> context, IJob job, JobPosition position,
-			ICaptchaSolver solver) {
+	public static Optional<CaptchaSolverResult> solveCaptcha(ContextBase<?> context, IJob job, JobPosition position) {
 
 		if (job.getCaptchaSolving() == CaptchaSolvingType.NEVER) {
 			logger.debug("not running captcha (NEVER) for job {}", job.getId());
@@ -30,24 +29,24 @@ public class CaptchaJobHelper {
 		case AFTER:
 			if (job.getCaptchaSolving() == CaptchaSolvingType.ALWAYS) {
 				logger.debug("running captcha (AFTER) for job {}", job.getId());
-				return Optional.of(solver.solve(context, job, true));
+				return Optional.of(context.getCaptchaSolver().solve(context, job, true));
 			}
 
 			if (job.getCaptchaSolving() == CaptchaSolvingType.AFTER) {
 				logger.debug("running captcha (AFTER) for job {}", job.getId());
-				return Optional.of(solver.solve(context, job, true));
+				return Optional.of(context.getCaptchaSolver().solve(context, job, true));
 			}
 
 			break;
 		case BEFORE:
 			if (job.getCaptchaSolving() == CaptchaSolvingType.ALWAYS) {
 				logger.debug("running captcha (BEFORE) for job {}", job.getId());
-				return Optional.of(solver.solve(context, job, true));
+				return Optional.of(context.getCaptchaSolver().solve(context, job, true));
 			}
 
 			if (job.getCaptchaSolving() == CaptchaSolvingType.BEFORE) {
 				logger.debug("running captcha (BEFORE) for job {}", job.getId());
-				return Optional.of(solver.solve(context, job, true));
+				return Optional.of(context.getCaptchaSolver().solve(context, job, true));
 			}
 			break;
 		}

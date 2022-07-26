@@ -7,11 +7,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.anticaptcha.ICaptchaSolver;
 import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
@@ -22,10 +20,6 @@ import primemover.util.SelectingHelper;
 import primemover.util.Typing;
 
 public class EnterTextFieldJobHandler implements IJobHandler {
-
-	@Autowired
-	private ICaptchaSolver captchaSolver;
-
 	private static Logger logger = LoggerFactory.getLogger(EnterTextFieldJobHandler.class);
 
 	public void handle(ContextBase<?> context, IJob job) {
@@ -48,7 +42,7 @@ public class EnterTextFieldJobHandler implements IJobHandler {
 				String selector = typedJob.getSelector();
 
 				// captcha before
-				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE);
 
 				// provide WebElement dynamic for below functions. Google search will stale the
 				// element with the search suggestions
@@ -77,7 +71,7 @@ public class EnterTextFieldJobHandler implements IJobHandler {
 				logger.debug("done typing text");
 
 				// captcha after
-				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
+				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER);
 
 				done = true;
 			} catch (StaleElementReferenceException e) {

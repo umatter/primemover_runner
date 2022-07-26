@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import primemover.anticaptcha.CaptchaSolvingType;
 import primemover.model.AgentType;
 import primemover.model.BasicAgent;
 import primemover.model.Configuration;
@@ -79,12 +80,13 @@ class RunAntiCaptchaTest {
 		Joblist jobs = new Joblist();
 
 		// open page and aggree terms
-		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google",
-				"https://www.google.com/recaptcha/api2/demo", null);
+		VisitJob visitJob = new VisitJob(1l, "visit recaptcha test", "visit recaptcha test", "",
+				"https://www.google.com/recaptcha/api2/demo");
+		visitJob.setCaptchaSolving(CaptchaSolvingType.ALWAYS);
 		jobs.appendJob(visitJob);
 
 		// temp wait
-		WaitJob waitJob = new WaitJob(2l, "wait", "wait", null, 1000);
+		WaitJob waitJob = new WaitJob(2l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 
 		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", null,

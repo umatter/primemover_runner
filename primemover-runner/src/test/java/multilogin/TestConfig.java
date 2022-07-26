@@ -17,8 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.anticaptcha.CaptchaSolver;
-import primemover.anticaptcha.ICaptchaSolver;
+import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.RecordingProxyFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
@@ -65,9 +64,9 @@ public class TestConfig {
 		return new OutletService();
 	}
 
-	@Bean(name = "CaptchaSolver")
-	public ICaptchaSolver getCaptchaSolver() {
-		return new CaptchaSolver();
+	@Bean(name = "CaptchaSolverFactory")
+	public CaptchaSolverFactory getCaptchaSolverFactory() {
+		return new CaptchaSolverFactory();
 	}
 
 	@Bean("TermsService")

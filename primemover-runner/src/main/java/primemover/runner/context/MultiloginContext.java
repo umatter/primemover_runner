@@ -17,4 +17,9 @@ public class MultiloginContext extends ContextBase {
 		this.profile = profile;
 	}
 
+	@Override
+	public boolean isValid() {
+		return super.isValid() && profile != null;
+	}
+
 }

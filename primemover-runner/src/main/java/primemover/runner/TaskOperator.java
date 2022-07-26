@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.browserup.harreader.model.Har;
 
+import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
@@ -74,7 +75,7 @@ public class TaskOperator implements ITaskOperator {
 	@Value("${anticaptcha.check.enabled:true}")
 	private Boolean runCaptchaChecks;
 
-	private ContextBase context = null;
+	private ContextBase<?> context = null;
 
 	@Autowired
 	private JobService jobService;
@@ -98,7 +99,7 @@ public class TaskOperator implements ITaskOperator {
 	IpServiceFactory ipServiceFactory;
 
 	@Autowired
-	ICaptchaSolver captchaSolver;
+	CaptchaSolverFactory captchaSolverFac;
 
 	private IpService ipService;
 
@@ -108,7 +109,8 @@ public class TaskOperator implements ITaskOperator {
 		ipService = ipServiceFactory.getInstance(recorder);
 	}
 
-	private void startupFirefox(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder) {
+	private ContextBase<?> startupFirefox(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
+			ICaptchaSolver captchaSolver) {
 		FirefoxContext ffContext = new FirefoxContext();
 		ffContext.setCrawler(crawler);
 		ffContext.setRecorder(recorder);
@@ -121,11 +123,11 @@ public class TaskOperator implements ITaskOperator {
 		ffContext.setFirefoxOptions(firefoxOptions);
 		ffContext.setDriver(new FirefoxDriver(firefoxOptions));
 
-		// remember
-		this.context = ffContext;
+		return ffContext;
 	}
 
-	private void startupChrome(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder) {
+	private ContextBase<?> startupChrome(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
+			ICaptchaSolver captchaSolver) {
 		ChromeContext chContext = new ChromeContext();
 		chContext.setCrawler(crawler);
 		chContext.setRecorder(recorder);
@@ -145,11 +147,11 @@ public class TaskOperator implements ITaskOperator {
 
 		chContext.setDriver(new ChromeDriver(chromeOptions));
 
-		// remember
-		this.context = chContext;
+		return chContext;
 	}
 
-	private void startupMultilogin(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder) {
+	private ContextBase<?> startupMultilogin(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
+			ICaptchaSolver captchaSolver) {
 		MultiloginContext mlContext = new MultiloginContext();
 		mlContext.setCrawler(crawler);
 		mlContext.setRecorder(recorder);
@@ -206,10 +208,6 @@ public class TaskOperator implements ITaskOperator {
 
 				mlContext.setProfile(bp);
 				mlContext.setDriver(driver);
-
-				// remember
-				this.context = mlContext;
-
 			} catch (MalformedURLException e) {
 				logger.error("catched exception starting profile", e);
 			} catch (Exception e) {
@@ -231,6 +229,8 @@ public class TaskOperator implements ITaskOperator {
 			logger.error("Could not start MulitLogin-Profile for agent {}", typedAgent.getId());
 			throw new IllegalStateException("Could not start MulitLogin-Profile");
 		}
+
+		return mlContext;
 	}
 
 	/**
@@ -540,17 +540,18 @@ public class TaskOperator implements ITaskOperator {
 				// setup IpService
 				setupIpService(recorder);
 
+				// setup anti-captcha
+				ICaptchaSolver captchaSolver = captchaSolverFac.getCaptchaSolver();
+
 				switch (crawler.getAgent().getType()) {
 				case CHROME:
-					startupChrome(crawler, capabilities, recorder);
-
+					this.context = startupChrome(crawler, capabilities, recorder, captchaSolver);
 					break;
 				case FIREFOX:
-					startupFirefox(crawler, capabilities, recorder);
-
+					this.context = startupFirefox(crawler, capabilities, recorder, captchaSolver);
 					break;
 				case MULTILOGIN:
-					startupMultilogin(crawler, capabilities, recorder);
+					this.context = startupMultilogin(crawler, capabilities, recorder, captchaSolver);
 					break;
 
 				default:
@@ -561,6 +562,9 @@ public class TaskOperator implements ITaskOperator {
 
 				captchaSolver.setupDriver(context);
 
+				// apply captcha solver to context
+				context.setCaptchaSolver(captchaSolver);
+
 				isSetup.set(true);
 				done = true;
 			} catch (Exception ex) {
@@ -568,7 +572,8 @@ public class TaskOperator implements ITaskOperator {
 			}
 		}
 
-		return done;
+		// Verify result and return
+		return done && context.isValid();
 	}
 
 	@Override

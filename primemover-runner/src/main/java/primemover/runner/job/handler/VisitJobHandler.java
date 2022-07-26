@@ -4,11 +4,9 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.anticaptcha.ICaptchaSolver;
 import primemover.model.IJob;
 import primemover.model.jobs.VisitJob;
 import primemover.runner.context.ContextBase;
@@ -16,10 +14,6 @@ import primemover.runner.job.IJobHandler;
 import primemover.util.NavigationHelper;
 
 public class VisitJobHandler implements IJobHandler {
-
-	@Autowired
-	private ICaptchaSolver captchaSolver;
-
 	private static Logger logger = LoggerFactory.getLogger(VisitJobHandler.class);
 
 	public void handle(ContextBase<?> context, IJob job) {
@@ -31,7 +25,7 @@ public class VisitJobHandler implements IJobHandler {
 		logger.debug("running job");
 
 		// captcha before
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE);
 
 		logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
 		driver.navigate().to(typedJob.getUrl());
@@ -53,7 +47,7 @@ public class VisitJobHandler implements IJobHandler {
 		}
 
 		// captcha after
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
+		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER);
 
 		if (!success) {
 			logger.warn("Timeout visiting page {} for job {}", typedJob.getUrl(), typedJob.getId());

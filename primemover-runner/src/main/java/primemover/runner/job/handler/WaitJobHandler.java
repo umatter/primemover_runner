@@ -2,21 +2,15 @@ package primemover.runner.job.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.anticaptcha.ICaptchaSolver;
 import primemover.model.IJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.context.ContextBase;
 import primemover.runner.job.IJobHandler;
 
 public class WaitJobHandler implements IJobHandler {
-
-	@Autowired
-	private ICaptchaSolver captchaSolver;
-
 	private final static Logger LOGGER = LoggerFactory.getLogger(WaitJobHandler.class);
 
 	public void handle(ContextBase<?> context, IJob job) {
@@ -25,7 +19,7 @@ public class WaitJobHandler implements IJobHandler {
 		WaitJob typedJob = (WaitJob) job;
 
 		// captcha before
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE, captchaSolver);
+		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE);
 
 		try {
 			Thread.sleep(typedJob.getSeconds() * 1000);
@@ -34,6 +28,6 @@ public class WaitJobHandler implements IJobHandler {
 		}
 
 		// captcha after
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER, captchaSolver);
+		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER);
 	}
 }

@@ -100,29 +100,6 @@ class AutocreationOfMultiloginProfiles {
 		bp.deleteProfile();
 	}
 
-	@Test
-	void createCurrentWithTemplateAndGeoSurfProxy() throws Exception {
-		String mlProfile = "{\"name\":\"%%AGENTID%%\",\"os\":\"win\",\"browser\":\"mimic\",\"network\":{\"proxy\":{\"job_type\":\"%%PROXYTYPE%%\",\"host\":\"%%PROXYHOST%%\",\"port\":\"%%PROXYPORT%%\",\"username\":\"%%PROXYUSERNAME%%\",\"password\":\"%%PROXYPASSWORD%%\"},\"dns\":[]},\"navigator\":{\"language\":\"en-US,en;q=0.5\",\"doNotTrack\":0},\"geolocation\":{\"mode\":\"ALLOW\",\"fillBasedOnExternalIp\":true},\"canvas\":{\"mode\":\"NOISE\"},\"storage\":{\"local\":true}}";
-		agent = new MultiLoginAgent(10000l, "Testing", "Testing", "", "", mlProfile);
-		crawler.setAgent(agent);
-
-		// Defined proxy for US and city of New York for test!
-		HttpProxy proxy = new GeoSurfProxy("state.geosurf.io", 8000, "000000", "CHANGEME-password", "US-NY-NEW_YORK");
-		crawler.setProxy(proxy);
-
-		try {
-			MulitLoginBrowserProfile bp = browserProfileFactory.getItem(crawler, recorder);
-			Assert.hasText(bp.getProfileId(), "Profile was not created");
-
-			bp.deleteProfile();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-
-			fail("Profile was not created");
-		}
-
-	}
-
 	@AfterEach
 	public void tearDown() {
 		recorder.tearDown(true);
