@@ -19,8 +19,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.anticaptcha.CaptchaSolvingType;
+import primemover.api.converter.PrimemoverApiConverter;
 import primemover.api.model.CrawlerResult;
-import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 

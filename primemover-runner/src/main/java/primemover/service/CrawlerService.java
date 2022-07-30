@@ -20,9 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import primemover.anticaptcha.CaptchaSolvingType;
+import primemover.api.converter.PrimemoverApiConverter;
 import primemover.api.model.CrawlerResult;
 import primemover.config.StartupMode;
-import primemover.converter.PrimemoverApiConverter;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.Joblist;
