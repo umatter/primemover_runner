@@ -9,14 +9,14 @@ public class PageSourceWriter extends HtmlZippedDataWriterBase {
 
 	private String identifier;
 	private String baseName;
-	
-	public PageSourceWriter(RecordedJobData data) {		
-		this(data.getJob(), data.getPageSource());	
+
+	public PageSourceWriter(RecordedJobData data) {
+		this(data.getJob(), data.getPageSource());
 	}
-	
-	public PageSourceWriter(IJob job, String data) {		
+
+	public PageSourceWriter(IJob job, String data) {
 		super(data);
-		
+
 		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
 		this.identifier = StorageUtility.getIdentifier("page-finalsource", job);
 		this.baseName = datePrefix + "-" + identifier;

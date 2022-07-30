@@ -27,6 +27,7 @@ import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
+import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
@@ -35,6 +36,7 @@ import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
+import primemover.service.datawriter.WriterUtil;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
 import primemover.util.LoggingInterceptor;
@@ -52,6 +54,18 @@ public class TestConfig {
 
 	@Value("${backend.connectionTimeoutSeconds:10}")
 	private Long connectionTimeoutSeconds;
+
+	@Value("${awsS3.finalsource.bucketName}")
+	private String awsFinalSourceBucketName;
+	@Value("${awsS3.finalsource.subFolder}")
+	private String awsFinalSourceSubfolder;
+
+	@Bean(name = "AwsS3FinalSourceStorageService", initMethod = "init")
+	IStorageService getAwsS3FinalSourceStorageServices() {
+		AwsS3StorageService jobDataSerivce = new AwsS3StorageService(awsFinalSourceBucketName, awsFinalSourceSubfolder);
+		jobDataSerivce.setWriteSelector((writer) -> WriterUtil.isPageSourceWriter(writer));
+		return jobDataSerivce;
+	}
 
 	@Bean(name = "JobService")
 	JobService getJobService() {

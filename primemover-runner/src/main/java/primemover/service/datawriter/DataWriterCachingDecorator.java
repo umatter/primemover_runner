@@ -7,27 +7,27 @@ import java.io.OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DataWriterCachingDecorator implements IDataWriter{
+public class DataWriterCachingDecorator implements IDataWriterDecorator {
 	private static Logger logger = LoggerFactory.getLogger(DataWriterCachingDecorator.class);
-	
+
 	private IDataWriter innerWriter;
-	
+
 	private boolean cached = false;
 	private byte[] dataCache;
 
 	public DataWriterCachingDecorator(IDataWriter innerWriter) {
 		super();
 		this.innerWriter = innerWriter;
-		
+
 		// cache data
 		logger.debug("caching data");
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-			innerWriter.writeData(os);			
+			innerWriter.writeData(os);
 			dataCache = os.toByteArray();
 			cached = true;
 		} catch (IOException e) {
 			logger.warn("failed caching data", e);
-		}	
+		}
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class DataWriterCachingDecorator implements IDataWriter{
 		if (!cached) {
 			return false;
 		}
-		
+
 		try {
 			os.write(dataCache);
 			return true;
@@ -64,7 +64,10 @@ public class DataWriterCachingDecorator implements IDataWriter{
 			return false;
 		}
 	}
-	
-	
+
+	@Override
+	public IDataWriter getInnerWriter() {
+		return this.innerWriter;
+	}
 
 }

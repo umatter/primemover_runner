@@ -74,12 +74,13 @@ public class AwsS3StorageService implements IStorageService {
 
 		// exit fast if we don't need to write from this source
 		if (writeSelector != null && !writeSelector.test(writer)) {
-			logger.debug("storage {}/{} is skiping this writer {}", this.bucketName, this.subFolder, writer);
+			logger.debug("storage {}/{} is skiping for '{}'", this.bucketName, this.subFolder, writer.getIdentifier());
 			return true;
 		}
 
 		// write data to AWS
-		logger.debug("storage {}/{} is starting preparing for writer {}", this.bucketName, this.subFolder, writer);
+		logger.debug("storage {}/{} is starting preparing for '{}'", this.bucketName, this.subFolder,
+				writer.getIdentifier());
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 			PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName)
 					.contentType(writer.getContentType()).key(subFolder + writer.getIdentifier()).build();

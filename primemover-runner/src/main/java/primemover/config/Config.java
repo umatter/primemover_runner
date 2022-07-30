@@ -44,7 +44,7 @@ import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
-import primemover.service.datawriter.PageSourceWriter;
+import primemover.service.datawriter.WriterUtil;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
 import primemover.util.OutletsProvider;
@@ -155,8 +155,8 @@ public class Config {
 	@Bean(name = "AwsS3PageDataStorageService", initMethod = "init")
 	IStorageService getAwsS3PageDataStorageServices() {
 		AwsS3StorageService jobDataSerivce = new AwsS3StorageService(awsJobDataBucketName, awsJobDataSubfolder);
-		jobDataSerivce.setWriteSelector((writer) -> !(writer instanceof PageSourceWriter)); // don't write
-																							// PageSource-data
+		jobDataSerivce.setWriteSelector((writer) -> !WriterUtil.isPageSourceWriter(writer)); // don't write
+																								// PageSource-data
 		return jobDataSerivce;
 	}
 
@@ -168,7 +168,8 @@ public class Config {
 	@Bean(name = "AwsS3FinalSourceStorageService", initMethod = "init")
 	IStorageService getAwsS3FinalSourceStorageServices() {
 		AwsS3StorageService jobDataSerivce = new AwsS3StorageService(awsFinalSourceBucketName, awsFinalSourceSubfolder);
-		jobDataSerivce.setWriteSelector((writer) -> writer instanceof PageSourceWriter); // only write PageSource-data
+		jobDataSerivce.setWriteSelector((writer) -> WriterUtil.isPageSourceWriter(writer)); // only write
+																							// PageSource-data
 		return jobDataSerivce;
 	}
 
