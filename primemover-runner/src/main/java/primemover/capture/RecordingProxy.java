@@ -8,7 +8,6 @@ import java.net.Proxy.Type;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.littleshoot.proxy.HttpFilters;
@@ -224,13 +223,16 @@ public class RecordingProxy {
 		if (targetProxy != null) {
 			LOGGER.debug("using chained proxy {}:{}", targetProxy.getPort(), targetProxy.getPort());
 
+			// simple decorator for usernames, currently only for Geosurf-usage
+			SessionIdDecorator decoratedProxy = new SessionIdDecorator(targetProxy);
+
 			// check for whitelisting
 			// if (!(StringUtils.isEmpty(targetProxy.getUsername()) &&
 			// StringUtils.isEmpty(targetProxy.getPassword()))) {
-			proxy.chainedProxyAuthorization(targetProxy.getUsername(), targetProxy.getPassword(), AuthType.BASIC);
+			proxy.chainedProxyAuthorization(decoratedProxy.getUsername(), decoratedProxy.getPassword(), AuthType.BASIC);
 			// }
 
-			proxy.setChainedProxy(new InetSocketAddress(targetProxy.getUrl(), targetProxy.getPort()));
+			proxy.setChainedProxy(new InetSocketAddress(decoratedProxy.getUrl(), decoratedProxy.getPort()));
 
 			if (targetProxy instanceof HttpProxy) {
 				HttpProxy typedTargetProxy = (HttpProxy) targetProxy;
@@ -243,14 +245,14 @@ public class RecordingProxy {
 			// create session-identifier and set session-headers
 			if (targetProxy instanceof GeoSurfProxy) {
 				LOGGER.debug("applying GeoSurf-Headers");
-				GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
-				geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
+				// geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
 
 				// add custom auth headers ->
 				// https://github.com/browserup/browserup-proxy/blob/88914049391bd3ec5d3db1e4e92618fc7d197810/browserup-proxy-core/src/main/java/com/browserup/bup/BrowserUpProxyServer.java
 				// little danger as we don't watch missing auth credentials as in above code
 				proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
-					GeoSurfProxy proxy = geoProxy;
+					private SessionIdDecorator proxy = decoratedProxy;
+					private GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
 
 					@Override
 					public HttpFilters filterRequest(HttpRequest originalRequest) {
@@ -262,7 +264,7 @@ public class RecordingProxy {
 									if (ProxyUtils.isCONNECT(httpObject)
 											|| !((HttpRequest) httpObject).uri().startsWith("/")) {
 										HttpHeaders headers = ((HttpRequest) httpObject).headers();
-										headers.add("loc", proxy.getLocation());
+										headers.add("loc", geoProxy.getLocation());
 										headers.add("X-session", proxy.getSessionId());
 									}
 								}

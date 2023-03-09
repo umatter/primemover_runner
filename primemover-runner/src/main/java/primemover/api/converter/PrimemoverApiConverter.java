@@ -271,14 +271,65 @@ public class PrimemoverApiConverter {
 			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		LOGGER.debug("converting SingleSelectJob {}", id);
 		SingleSelectJob job = new SingleSelectJob();
-		setBaseFields(job, id, name, description, captchaSolving, behaviours);
-		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
-		job.setSelector(behaviours.get("selector"));
-		job.setDecisionType(DecisionType.valueOf(behaviours.get("decisionType")));
 
-		if (job.getDecisionType() == DecisionType.CALCULATED) {
-			job.setCriterionSelector(behaviours.get("criterionExtractor"));
+		// common
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
+
+		String clickSelector = null;
+		SelectorType clickType = null;
+		String criteriaSelector = null;
+		SelectorType criteriaType = null;
+		DecisionType decisionType = DecisionType.valueOf(behaviours.get("decisionType"));
+
+		boolean dataComplete = false;
+
+		// old job version (version 1)
+		if (behaviours.containsKey("selectionType") && behaviours.containsKey("selector")) {
+			LOGGER.debug("found simple job version");
+			clickSelector = behaviours.get("selector");
+			criteriaSelector = clickSelector;
+			clickType = SelectorType.valueOf(behaviours.get("selectionType"));
+			criteriaType = clickType;
+
+			// mandatory field for calculated-type
+			if (decisionType == DecisionType.CALCULATED) {
+				job.setCriteriaExtractor(behaviours.get("criterionExtractor")); // old job version
+			}
+
+			dataComplete = true;
 		}
+
+		// new job version (version 2)
+		if (behaviours.containsKey("clickSelectionType") && behaviours.containsKey("clickSelector")) {
+			LOGGER.debug("found extended job version");
+			clickSelector = behaviours.get("clickSelector");
+			clickType = SelectorType.valueOf(behaviours.get("clickSelectionType"));
+
+			if (behaviours.containsKey("criteriaSelector") || behaviours.containsKey("criteriaSelectionType")) {
+				criteriaSelector = behaviours.get("criteriaSelector");
+				criteriaType = SelectorType.valueOf(behaviours.get("criteriaSelectionType"));
+			} else {
+				criteriaSelector = clickSelector;
+				criteriaType = clickType;
+			}
+
+			// mandatory field for calculated-type
+			if (decisionType == DecisionType.CALCULATED) {
+				job.setCriteriaExtractor(behaviours.get("criteriaExtractor")); // new job version
+			}
+
+			dataComplete = true;
+		}
+
+		if (!dataComplete) {
+			throw new IllegalArgumentException("job data not complete. provide full data for version 1 or version 2.");
+		}
+
+		job.setDecisionType(decisionType);
+		job.setSelector(clickSelector);
+		job.setType(clickType);
+		job.setCriteriaSelector(criteriaSelector);
+		job.setCriteriaType(criteriaType);
 
 		return job;
 	}

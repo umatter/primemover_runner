@@ -10,7 +10,8 @@ import primemover.runner.context.ContextBase;
 public interface ICaptchaSolver {
 
 	/**
-	 * This method is called to set any additional options for the driver start
+	 * This method is called to set any additional options for the driver before
+	 * start
 	 * 
 	 * @param crawler
 	 * @param options
@@ -20,7 +21,7 @@ public interface ICaptchaSolver {
 	boolean setOptions(Crawler crawler, MutableCapabilities options, RecordingProxy recorder);
 
 	/**
-	 * This method is called to initialise anti-captcha after the driver was started
+	 * This method is called to initialize anti-captcha after the driver was started
 	 * 
 	 * @param context
 	 * @return

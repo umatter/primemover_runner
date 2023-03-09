@@ -1,0 +1,54 @@
+{
+                            "id": 9,
+                            "user_id": 1,
+                            "queue_id": 1,
+                            "name": "select_single",
+                            "description": "Select and click",
+                            "type": "SingleSelectJob",
+                            "order": 1,
+                            "active": 1,
+                            "updated_at": "2020-08-14T14:07:34.000000Z",
+                            "created_at": "2020-08-14T14:07:34.000000Z",
+                            "behaviors": [{
+                                    "id": 13,
+                                    "name": "type",
+                                    "description": "Click",
+                                    "value": "",
+                                    "active": 1,
+                                    "user_id": 1,
+                                    "job_id": 6,
+                                    "updated_at": "2020-08-14T14:07:34.000000Z",
+                                    "created_at": "2020-08-14T14:07:34.000000Z"
+                                }, {
+                                    "id": 11,
+                                    "name": "selectionType",
+                                    "description": "selectionType",
+                                    "value": "XPATH",
+                                    "active": 1,
+                                    "user_id": 1,
+                                    "job_id": 5,
+                                    "updated_at": "2020-08-14T14:07:34.000000Z",
+                                    "created_at": "2020-08-14T14:07:34.000000Z"
+                                }, {
+                                    "id": 14,
+                                    "name": "selector",
+                                    "description": "Target link",
+                                    "value": ".//div[@id='rso']/div/div/div/a",
+                                    "active": 1,
+                                    "user_id": 1,
+                                    "job_id": 6,
+                                    "updated_at": "2020-08-14T14:07:34.000000Z",
+                                    "created_at": "2020-08-14T14:07:34.000000Z"
+                                }, {
+                                 	"id": 14,
+                                    "name": "decisionType",
+                                    "description": "Target link",
+                                    "value": "RANDOM",
+                                    "active": 1,
+                                    "user_id": 1,
+                                    "job_id": 6,
+                                    "updated_at": "2020-08-14T14:07:34.000000Z",
+                                    "created_at": "2020-08-14T14:07:34.000000Z"
+                                }
+                            ]
+                        }

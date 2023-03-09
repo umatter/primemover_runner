@@ -4,10 +4,13 @@ import primemover.model.DecisionType;
 import primemover.model.SelectorType;
 
 public class SingleSelectJob extends SelectorBaseJob {
-	
+
 	private DecisionType decision;
-	
-	private String criterionSelector; // regular expression
+
+	private String criteriaSelector;
+	private SelectorType criteriaType;
+	private String criteriaExtractor; // regular expression
+	private Attribute criteriaBase = Attribute.TEXT;
 
 	public DecisionType getDecisionType() {
 		return decision;
@@ -17,22 +20,62 @@ public class SingleSelectJob extends SelectorBaseJob {
 		this.decision = decision;
 	}
 
-	public String getCriterionSelector() {
-		return this.criterionSelector;
+	public String getCriteriaSelector() {
+		return this.criteriaSelector;
 	}
-	
-	public void setCriterionSelector(String newVal) {
-		this.criterionSelector = newVal;
+
+	public void setCriteriaSelector(String newVal) {
+		this.criteriaSelector = newVal;
 	}
-	
+
+	public String getCriteriaExtractor() {
+		return this.criteriaExtractor;
+	}
+
+	public void setCriteriaExtractor(String newVal) {
+		this.criteriaExtractor = newVal;
+	}
+
+	public SelectorType getCriteriaType() {
+		return this.criteriaType;
+	}
+
+	public void setCriteriaType(SelectorType type) {
+		this.criteriaType = type;
+	}
+
 	public SingleSelectJob() {
 		super();
 	}
 
+	// new job version 2
+	public SingleSelectJob(Long id, String name, String description, String task, SelectorType clickType,
+			String clickSelector, DecisionType decision, String criteriaSelector, SelectorType criteriaType,
+			String criteriaExtractor, Attribute criteriaBase) {
+		super(id, name, description, task, clickType, clickSelector);
+		this.decision = decision;
+		this.criteriaSelector = criteriaSelector;
+		this.criteriaExtractor = criteriaExtractor;
+		this.criteriaType = criteriaType;
+		this.criteriaBase = criteriaBase;
+	}
+
+	// old job version 1
 	public SingleSelectJob(Long id, String name, String description, String task, SelectorType type, String selector,
-			DecisionType decision) {
+			DecisionType decision, Attribute criteriaBase) {
 		super(id, name, description, task, type, selector);
 		this.decision = decision;
+		this.criteriaType = type;
+		this.criteriaSelector = selector;
+		this.criteriaExtractor = null;
+		this.criteriaBase = Attribute.TEXT;
 	}
-	
+
+	public Attribute getCriteriaBase() {
+		return criteriaBase;
+	}
+
+	public void setCriteriaBase(Attribute criteriaBase) {
+		this.criteriaBase = criteriaBase;
+	}
 }

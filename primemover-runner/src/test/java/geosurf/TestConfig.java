@@ -29,11 +29,9 @@ import primemover.service.FileStorageService;
 import primemover.service.IStorageService;
 import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
-import primemover.service.OutletService;
 import primemover.service.TermsService;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
-import primemover.util.OutletsProvider;
 import primemover.util.SelectingHelper;
 
 @SpringBootConfiguration
@@ -98,17 +96,13 @@ public class TestConfig {
 	 * JobManager jobManager = new JobManager();
 	 * 
 	 * // jobManager will be called with spring's scheduler return jobManager; }
+	 * 
+	 * @Bean("OutletService") OutletService getOutletService() { return new
+	 * OutletService(); }
+	 * 
+	 * @Bean(name = "OutletsProvider", initMethod = "refresh") OutletsProvider
+	 * getOutletsProvider() { return new OutletsProvider(); }
 	 */
-	@Bean("OutletService")
-	OutletService getOutletService() {
-		return new OutletService();
-	}
-
-	@Bean(name = "OutletsProvider", initMethod = "refresh")
-	OutletsProvider getOutletsProvider() {
-		return new OutletsProvider();
-	}
-
 	@Bean(name = "SelectingHelper")
 	public SelectingHelper getSelectingHelper() {
 		return new SelectingHelper();

@@ -34,16 +34,26 @@ public class SingleSelectUrlJobHandler implements IJobHandler {
 		Crawler crawler = context.getCrawler();
 		SingleSelectJob typedJob = (SingleSelectJob) job;
 
-		List<WebElement> elements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
+		List<WebElement> clickElements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 				typedJob.getSelector());
+		List<WebElement> criteriaElements = null;
+		if (typedJob.getType() == typedJob.getCriteriaType()
+				&& typedJob.getSelector() == typedJob.getCriteriaSelector()) {
+			criteriaElements = clickElements;
+		} else {
+			criteriaElements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getCriteriaType(),
+					typedJob.getCriteriaSelector());
+		}
 
-		if (elements == null || elements.isEmpty()) {
+		if (clickElements == null || clickElements.isEmpty() || criteriaElements == null
+				|| criteriaElements.isEmpty()) {
 			logger.warn("no element found");
 
 			throw new IllegalStateException("no elements found");
 		}
 
-		WebElement selectedElement = selectingHelper.chooseElement(crawler, job, elements, typedJob.getDecisionType());
+		WebElement selectedElement = selectingHelper.chooseElement(crawler, typedJob, clickElements, criteriaElements,
+				typedJob.getDecisionType());
 
 		if (selectedElement != null) {
 			try {
