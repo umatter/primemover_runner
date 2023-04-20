@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 import com.browserup.harreader.model.Har;
 
+import primemover.model.CaptchaInfo;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 
@@ -19,6 +20,7 @@ public class RecordedJobData {
 	private String sessionStorage;
 	private String localStorage;
 	private LocationInfo location;
+	private CaptchaInfo capchaInfo;
 	private IJob job;
 	
 	public RecordedJobData(IJob job) {
@@ -113,5 +115,17 @@ public class RecordedJobData {
 	
 	public boolean hasLocationInfo() {
 		return this.location != null;
+	}
+
+	public CaptchaInfo getCapchaInfo() {
+		return capchaInfo;
+	}
+
+	public void setCapchaInfo(CaptchaInfo capchaInfo) {
+		this.capchaInfo = capchaInfo;
+	}
+	
+	public boolean hasCaptchaInfo() {
+		return this.capchaInfo != null;
 	}
 }

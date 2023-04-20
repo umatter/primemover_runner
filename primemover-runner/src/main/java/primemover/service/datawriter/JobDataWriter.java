@@ -16,39 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.runner.RecordedJobData;
 
-public class JobDataWriter implements IDataWriter {
+public class JobDataWriter extends RecordedJobDataBaseWriter  {
 	
 	private final static Logger logger = LoggerFactory.getLogger(JobDataWriter.class);	
-	private RecordedJobData data;
-	private String fileName;
-	private String identifier;
 	
 	public JobDataWriter(RecordedJobData data) {
-		super();
-		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
-		this.data = data;
-		this.identifier = StorageUtility.getIdentifier("static-jobdata", data.getJob());
-		this.fileName = datePrefix + "-" + identifier + ".zip";
-	}
-
-	@Override
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	@Override
-	public String getFileName() {
-		return fileName;
-	}
-
-	@Override
-	public String getDescription() {
-		return "job data as zip";
-	}
-
-	@Override
-	public String getContentType() {
-		return "application/zip";
+		super(data, "static-jobdata", "zip", "application/zip", "job data stored as zip" );
 	}
 
 	private static void writeCookies(OutputStream os, RecordedJobData data) throws IOException {
@@ -97,6 +70,7 @@ public class JobDataWriter implements IDataWriter {
 	
 	@Override
 	public boolean writeData(OutputStream os) {
+		RecordedJobData data = getData();
 		logger.info("writting jobdata as Zip for job {}", data.getJob().getId());
 		
 		// json mapper
@@ -189,6 +163,11 @@ public class JobDataWriter implements IDataWriter {
 			logger.warn("Error creating jobdata for job {}", data.getJob().getId(), e);
 			return false;
 		}
+	}
+
+	@Override
+	public boolean hasOutput() {
+		return true;
 	}
 
 }

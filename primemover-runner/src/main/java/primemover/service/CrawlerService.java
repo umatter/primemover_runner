@@ -152,6 +152,7 @@ public class CrawlerService implements ICrawlerService {
 		String url = calculateCrawlerUrl(null);
 		logger.debug("loading jobs from {}", url);
 		CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);
+		logger.debug("starting to convert");
 		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes, captchaSolvingDefault);
 
 		if (mode != StartupMode.PRODUCTION) {

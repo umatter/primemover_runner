@@ -51,6 +51,7 @@ import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
+import primemover.service.datawriter.IDataWriterFactory;
 import primemover.service.datawriter.JobDataWriter;
 import primemover.service.datawriter.PageSourceWriter;
 
@@ -86,6 +87,9 @@ public class TaskOperator implements ITaskOperator {
 	@Autowired(required = false)
 	List<IStorageService> storages = new ArrayList<IStorageService>();
 
+	@Autowired(required = false)
+	List<IDataWriterFactory> writerFactories = new ArrayList<IDataWriterFactory>();
+	
 	@Autowired
 	private RecordingProxyFactory recorderFactory;
 
@@ -379,21 +383,23 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			// Prepare writers
+			List<IDataWriter> writers = new ArrayList<>();
+			writerFactories.forEach((factory) -> {
+				writers.add(factory.getWriter(data));
+			});
+			
 			boolean writeRes = true;
-			IDataWriter jobDataWriter = new JobDataWriter(data);
-			jobDataWriter = new DataWriterCachingDecorator(jobDataWriter);
-
-			IDataWriter pageSourceWriter = new PageSourceWriter(data);
-			pageSourceWriter = new DataWriterCachingDecorator(pageSourceWriter);
-
 			// writing data
-			for (IStorageService storage : storages) {
-				try {
-					writeRes = writeRes && storage.writeData(job, jobDataWriter);
-					writeRes = writeRes && storage.writeData(job, pageSourceWriter);
-				} catch (Exception e) {
-					logger.warn("Error writing to job-data to storage for job {}", job.getId(), e);
-					writeRes = false;
+			
+			for (IDataWriter writer: writers) {
+				IDataWriter cachedWriter = new DataWriterCachingDecorator(writer);
+				for (IStorageService storage : storages) {
+					try {
+						writeRes = writeRes && storage.writeData(job, cachedWriter);
+					} catch (Exception e) {
+						logger.warn("Error writing to job-data to storage({}) for job {}", storage, job.getId(), e);
+						writeRes = false;
+					}
 				}
 			}
 

@@ -45,5 +45,8 @@ public class SelectionWriter extends JsonZippedDataWriterBase<Selection> {
 		return "Calculation data of the selection-method";
 	}
 
-	
+	@Override
+	public boolean hasOutput() {
+		return true;
+	}
 }

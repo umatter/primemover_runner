@@ -4,21 +4,31 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataWriterCachingDecorator implements IDataWriterDecorator {
 	private static Logger logger = LoggerFactory.getLogger(DataWriterCachingDecorator.class);
 
-	private IDataWriter innerWriter;
+	@Nonnull private IDataWriter innerWriter;
 
 	private boolean cached = false;
 	private byte[] dataCache;
 
-	public DataWriterCachingDecorator(IDataWriter innerWriter) {
-		super();
-		this.innerWriter = innerWriter;
-
+	public void cacheData() {
+		// already called
+		if (cached) {
+			return;
+		}
+		
+		// no input data
+		if (!innerWriter.hasOutput()) {
+			logger.debug("nothing to cache");
+			return;
+		}
+		
 		// cache data
 		logger.debug("caching data");
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -28,6 +38,11 @@ public class DataWriterCachingDecorator implements IDataWriterDecorator {
 		} catch (IOException e) {
 			logger.warn("failed caching data", e);
 		}
+	}
+	
+	public DataWriterCachingDecorator(IDataWriter innerWriter) {
+		super();
+		this.innerWriter = innerWriter;
 	}
 
 	@Override
@@ -52,7 +67,9 @@ public class DataWriterCachingDecorator implements IDataWriterDecorator {
 
 	@Override
 	public boolean writeData(OutputStream os) {
-		if (!cached) {
+		cacheData();
+		
+		if (!cached && !innerWriter.hasOutput()) {
 			return false;
 		}
 
@@ -68,6 +85,11 @@ public class DataWriterCachingDecorator implements IDataWriterDecorator {
 	@Override
 	public IDataWriter getInnerWriter() {
 		return this.innerWriter;
+	}
+
+	@Override
+	public boolean hasOutput() {
+		return this.innerWriter.hasOutput();
 	}
 
 }

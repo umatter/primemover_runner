@@ -44,6 +44,10 @@ import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
+import primemover.service.datawriter.CaptchaDetectionWriterFactory;
+import primemover.service.datawriter.IDataWriterFactory;
+import primemover.service.datawriter.JobDataWriterFactory;
+import primemover.service.datawriter.PageSourceWriterFactory;
 import primemover.service.datawriter.WriterUtil;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
@@ -239,5 +243,20 @@ public class Config {
 	@Bean(name = "RunJobHandler", initMethod = "setup")
 	public IJobDispatcher getRunJobHandler() {
 		return new JobDispatcher();
+	}
+	
+	@Bean(name = "PageSourceWriterFactory")
+	public IDataWriterFactory getPageSourceWriterFactory() {
+		return new PageSourceWriterFactory();
+	}
+	
+	@Bean(name = "JobDataWriterFactory")
+	public IDataWriterFactory getJobDataWriterFactory() {
+		return new JobDataWriterFactory();
+	}
+	
+	@Bean(name = "CaptchaDetectionWriterFactory")
+	public IDataWriterFactory getCaptchaDetectionWriterFactory() {
+		return new CaptchaDetectionWriterFactory();
 	}
 }

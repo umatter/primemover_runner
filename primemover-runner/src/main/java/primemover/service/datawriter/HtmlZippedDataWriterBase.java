@@ -2,6 +2,8 @@ package primemover.service.datawriter;
 
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Base class for writing a single HTML-file zipped
  * 
@@ -32,5 +34,10 @@ public abstract class HtmlZippedDataWriterBase extends SingleZipEntryDataWriterB
 	@Override
 	protected byte[] getData() throws Exception {
 		return data.getBytes(StandardCharsets.UTF_8);
+	}
+	
+	@Override
+	public boolean hasOutput() {
+		return StringUtils.isNotEmpty(data);
 	}
 }
