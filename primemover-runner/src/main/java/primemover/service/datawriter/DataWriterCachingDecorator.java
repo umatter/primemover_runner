@@ -67,17 +67,18 @@ public class DataWriterCachingDecorator implements IDataWriterDecorator {
 
 	@Override
 	public boolean writeData(OutputStream os) {
-		cacheData();
-		
-		if (!cached && !innerWriter.hasOutput()) {
-			return false;
-		}
-
 		try {
+			// prepare data
+			cacheData();
+			if (!cached && !innerWriter.hasOutput()) {
+				return false;
+			}
+			
+			// write output
 			os.write(dataCache);
 			return true;
 		} catch (IOException e) {
-			logger.warn("failed writing from cahce", e);
+			logger.warn("failed writing from cache", e);
 			return false;
 		}
 	}
