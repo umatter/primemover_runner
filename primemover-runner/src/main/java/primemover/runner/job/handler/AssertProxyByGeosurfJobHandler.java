@@ -12,10 +12,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.model.IJob;
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 
 public class AssertProxyByGeosurfJobHandler implements IJobHandler {
@@ -24,11 +23,11 @@ public class AssertProxyByGeosurfJobHandler implements IJobHandler {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	public void handle(ContextBase<?> context, IJob job) {
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
-		AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) job;
+		AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) context.getJob();
 
 		// get IP-Info from geosurf
 		driver.get("https://geo.geosurf.io/");

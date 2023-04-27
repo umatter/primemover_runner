@@ -7,25 +7,25 @@ import org.slf4j.LoggerFactory;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.model.IJob;
 import primemover.model.jobs.VisitJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.NavigationHelper;
 
 public class VisitJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(VisitJobHandler.class);
 
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		boolean success = false;
 		WebDriver driver = context.getDriver();
-		VisitJob typedJob = (VisitJob) job;
+		VisitJob typedJob = (VisitJob) context.getJob();
 		NavigationHelper navHelper = new NavigationHelper(driver, 2 * 60 * 1000l); // 2 Minuten
 
 		logger.debug("running job");
 
 		// captcha before
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE);
+		CaptchaJobHelper.solveCaptcha(context, JobPosition.BEFORE);
 
 		logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
 		driver.navigate().to(typedJob.getUrl());
@@ -47,7 +47,7 @@ public class VisitJobHandler implements IJobHandler {
 		}
 
 		// captcha after
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER);
+		CaptchaJobHelper.solveCaptcha(context, JobPosition.AFTER);
 
 		if (!success) {
 			logger.warn("Timeout visiting page {} for job {}", typedJob.getUrl(), typedJob.getId());

@@ -27,7 +27,8 @@ import primemover.model.jobs.SingleSelectJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
+import primemover.runner.context.IRunnerContext;
 import primemover.runner.job.handler.AlertJobHandler;
 import primemover.runner.job.handler.AssertElementExistsJobHandler;
 import primemover.runner.job.handler.AssertPageLoadedJobHandler;
@@ -161,7 +162,8 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 	}
 
 	// Call the job specific handler
-	public void handle(ContextBase context, IJob job) {
+	public void handle(IJobAwareRunnerContext<?> context) {
+		IJob job = context.getJob();
 		IJobHandler h = dispatch.get(job.getClass());
 		if (h == null) {
 			throw new UnsupportedOperationException("This type is not yet supported");
@@ -170,12 +172,12 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		if (job.isFailsave()) {
 			// catch any exception
 			try {
-				h.handle(context, job);
+				h.handle(context);
 			} catch (Exception e) {
 				logger.warn("Error in Failsave Job {} of type {}", job.getId(), job.getClass().getSimpleName(), e);
 			}
 		} else {
-			h.handle(context, job);
+			h.handle(context);
 		}
 
 	}

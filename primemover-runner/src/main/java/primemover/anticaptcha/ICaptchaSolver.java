@@ -5,7 +5,7 @@ import org.openqa.selenium.MutableCapabilities;
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IRunnerContext;
 
 public interface ICaptchaSolver {
 
@@ -26,7 +26,7 @@ public interface ICaptchaSolver {
 	 * @param context
 	 * @return
 	 */
-	boolean setupDriver(ContextBase<?> context);
+	boolean setupDriver(IRunnerContext<?> context);
 
 	/**
 	 * This method is called to solve captchas on the currently available page
@@ -36,6 +36,6 @@ public interface ICaptchaSolver {
 	 * @param submit
 	 * @return
 	 */
-	CaptchaSolverResult solve(ContextBase<?> context, IJob job, Boolean submit);
+	CaptchaSolverResult solve(IRunnerContext<?> context, IJob job, Boolean submit);
 
 }

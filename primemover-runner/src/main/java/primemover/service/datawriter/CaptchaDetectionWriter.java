@@ -23,7 +23,7 @@ public class CaptchaDetectionWriter extends RecordedJobDataBaseWriter {
 		RecordedJobData data = getData();
 		logger.info("writting captcha data as JSON for job {}", data.getJob().getId());
 		
-		if (!data.hasCaptchaInfo()) {
+		if (!data.hasAnyCaptchaResult()) {
 			return false;
 		}
 		
@@ -43,6 +43,10 @@ public class CaptchaDetectionWriter extends RecordedJobDataBaseWriter {
 
 	@Override
 	public boolean hasOutput() {
-		return getData().hasCaptchaInfo() && getData().getCapchaInfo().isCaptchaDetected();
+		if (! getData().hasAnyCaptchaResult()) {
+			return false;
+		}
+		
+		return getData().getCaptchaResults().isAnyCaptchaDetected();
 	}
 }

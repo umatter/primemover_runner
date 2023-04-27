@@ -10,11 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.model.IJob;
 import primemover.model.SelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
 import primemover.util.Typing;
@@ -22,11 +21,12 @@ import primemover.util.Typing;
 public class EnterTextFieldJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(EnterTextFieldJobHandler.class);
 
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
-		EnterTextFieldJob typedJob = (EnterTextFieldJob) job;
+		EnterTextFieldJob typedJob = (EnterTextFieldJob) context.getJob();
 
 		boolean done = false;
 		int retriesCount = 0;
@@ -42,7 +42,7 @@ public class EnterTextFieldJobHandler implements IJobHandler {
 				String selector = typedJob.getSelector();
 
 				// captcha before
-				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE);
+				CaptchaJobHelper.solveCaptcha(context, JobPosition.BEFORE);
 
 				// provide WebElement dynamic for below functions. Google search will stale the
 				// element with the search suggestions
@@ -71,7 +71,7 @@ public class EnterTextFieldJobHandler implements IJobHandler {
 				logger.debug("done typing text");
 
 				// captcha after
-				CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER);
+				CaptchaJobHelper.solveCaptcha(context, JobPosition.AFTER);
 
 				done = true;
 			} catch (StaleElementReferenceException e) {

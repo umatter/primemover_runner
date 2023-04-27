@@ -2,12 +2,12 @@ package primemover.runner;
 
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
 
 import com.browserup.harreader.model.Har;
-
-import primemover.model.CaptchaInfo;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 
@@ -20,15 +20,24 @@ public class RecordedJobData {
 	private String sessionStorage;
 	private String localStorage;
 	private LocationInfo location;
-	private CaptchaInfo capchaInfo;
-	private IJob job;
+	private CaptchaSolverResultHolder captchaResults = new CaptchaSolverResultHolder();
+	@Nonnull private IJob job;
 	
-	public RecordedJobData(IJob job) {
+	public RecordedJobData(RecordedJobDataBuilder builder) {
 		super();
-		this.job = job;
+		
+		this.job = builder.getJob();
+		this.pageSource = builder.getPageSource();
+		this.sessionStorage = builder.getSessionStorage();
+		this.cookies = builder.getCookies();
+		this.localStorage = builder.getLocalStorage();
+		this.location = builder.getLocation();
+		this.har = builder.getHar();
+		this.screenshot = builder.getScreenshot();
+		this.captchaResults = builder.getCaptchaResults();
 	}
 	
-	public IJob getJob() {
+	@Nonnull public IJob getJob() {
 		return job;
 	}
 
@@ -36,6 +45,7 @@ public class RecordedJobData {
 		return har;
 	}
 
+	
 	public void setHar(Har har) {
 		this.har = har;
 	}
@@ -96,7 +106,6 @@ public class RecordedJobData {
 		this.screenshot = screenshot;
 	}
 	
-	
 	public byte[] getScreenshot() {
 		return this.screenshot;
 	}
@@ -117,15 +126,15 @@ public class RecordedJobData {
 		return this.location != null;
 	}
 
-	public CaptchaInfo getCapchaInfo() {
-		return capchaInfo;
+	public CaptchaSolverResultHolder getCaptchaResults() {
+		return captchaResults;
 	}
 
-	public void setCapchaInfo(CaptchaInfo capchaInfo) {
-		this.capchaInfo = capchaInfo;
+	public void setCapchaResults(CaptchaSolverResultHolder capchaInfo) {
+		this.captchaResults = capchaInfo;
 	}
 	
-	public boolean hasCaptchaInfo() {
-		return this.capchaInfo != null;
+	public boolean hasAnyCaptchaResult() {
+		return captchaResults != null && captchaResults.hasAnyCaptchaResult();
 	}
 }

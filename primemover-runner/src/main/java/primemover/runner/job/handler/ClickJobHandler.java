@@ -9,9 +9,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import primemover.model.IJob;
 import primemover.model.jobs.ClickJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
 import primemover.util.Waiter;
@@ -20,11 +19,12 @@ public class ClickJobHandler implements IJobHandler {
 
 	private static Logger logger = LoggerFactory.getLogger(ClickJobHandler.class);
 
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
-		ClickJob typedJob = (ClickJob) job;
+		ClickJob typedJob = (ClickJob) context.getJob();
 
 		List<WebElement> elements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 				typedJob.getSelector());

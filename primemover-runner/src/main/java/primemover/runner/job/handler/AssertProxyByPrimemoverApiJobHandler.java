@@ -1,6 +1,6 @@
 package primemover.runner.job.handler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -12,10 +12,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import primemover.model.IJob;
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 
 public class AssertProxyByPrimemoverApiJobHandler implements IJobHandler {
@@ -26,11 +25,12 @@ public class AssertProxyByPrimemoverApiJobHandler implements IJobHandler {
 
 	// TODO effectively change to primemover API. Below is a quick hack to get
 	// running due to timeconstraint.
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
-		AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) job;
+		AssertProxyByGeosurfJob typedJob = (AssertProxyByGeosurfJob) context.getJob();
 
 		// get IP-Info from geosurf
 		driver.get("https://geo.geosurf.io/");

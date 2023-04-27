@@ -22,6 +22,7 @@ import primemover.model.IJob;
 import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
+import primemover.runner.context.IJobAwareRunnerContext;
 
 @Service
 public class JobService {

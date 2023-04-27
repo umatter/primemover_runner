@@ -42,6 +42,10 @@ import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.ChromeContext;
 import primemover.runner.context.ContextBase;
 import primemover.runner.context.FirefoxContext;
+import primemover.runner.context.IJobAwareRunnerContext;
+import primemover.runner.context.IJobDataRecorder;
+import primemover.runner.context.JobAwarnessContextDecorator;
+import primemover.runner.context.JobDataRecorder;
 import primemover.runner.context.MultiloginContext;
 import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
@@ -60,7 +64,6 @@ import primemover.service.datawriter.PageSourceWriter;
  * (browser, proxy, anti-captcha) and run some checks. Then the containing
  * joblist will execute job by job. Data is gathered along the execution and
  * stored.
- * 
  * @author dburkolter
  *
  */
@@ -117,7 +120,7 @@ public class TaskOperator implements ITaskOperator {
 			ICaptchaSolver captchaSolver) {
 		FirefoxContext ffContext = new FirefoxContext();
 		ffContext.setCrawler(crawler);
-		ffContext.setRecorder(recorder);
+		ffContext.setRecordingProxy(recorder);
 
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
 		firefoxOptions.merge(capabilities);
@@ -134,7 +137,7 @@ public class TaskOperator implements ITaskOperator {
 			ICaptchaSolver captchaSolver) {
 		ChromeContext chContext = new ChromeContext();
 		chContext.setCrawler(crawler);
-		chContext.setRecorder(recorder);
+		chContext.setRecordingProxy(recorder);
 
 		ChromeOptions chromeOptions = new ChromeOptions();
 		chromeOptions.merge(capabilities);
@@ -158,7 +161,7 @@ public class TaskOperator implements ITaskOperator {
 			ICaptchaSolver captchaSolver) {
 		MultiloginContext mlContext = new MultiloginContext();
 		mlContext.setCrawler(crawler);
-		mlContext.setRecorder(recorder);
+		mlContext.setRecordingProxy(recorder);
 
 		// setup anticaptcha
 		captchaSolver.setOptions(crawler, capabilities, recorder);
@@ -248,8 +251,7 @@ public class TaskOperator implements ITaskOperator {
 	 * @param data:          JobData to store captured location info
 	 * @param job:           current job
 	 */
-	private void checkIpRecording(IpRecordingTiming currentTiming, IpRecordingTiming comparee, RecordedJobData data,
-			IJob job) {
+	private void checkIpRecording(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming currentTiming, IpRecordingTiming comparee) {
 		if (currentTiming == IpRecordingTiming.NONE) {
 			logger.debug("Found {} as current ip-recording timing", currentTiming);
 			return;
@@ -258,36 +260,36 @@ public class TaskOperator implements ITaskOperator {
 		// grab ip-location if matching above
 		if (currentTiming == comparee || currentTiming == IpRecordingTiming.ALWAYS) {
 			LocationInfo loc = ipService.getLocationInfo();
-			logger.debug("captured location info for job {} for timing {} is {}", job.getId(), currentTiming, loc);
-			data.setLocation(loc);
+			logger.debug("captured location info for job {} for timing {} is {}", jobContext.getJob().getId(), currentTiming, loc);
+			jobContext.getJobDataRecorder().setLocation(loc);
 		}
 	}
 
-	private Boolean runJob(IJob job, IpRecordingTiming ipRecording) {
+	private Boolean runJob(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming ipRecording) {
 		boolean runJobResult = false;
 
+		IJob job = jobContext.getJob();
+		IJobDataRecorder dataRecorder = jobContext.getJobDataRecorder();
+		
 		logger.info("Starting job {}", job.getId());
 
 		try {
 			jobService.updateJobState(job, JobState.RUNNING, null, null, ZonedDateTime.now(), null); // setting
-																										// starttime
-
-			// init data recording
-			RecordedJobData data = new RecordedJobData(job);
+						
 
 			// IP-Checking
 			try {
-				checkIpRecording(ipRecording, IpRecordingTiming.BEFORE_JOB, data, job);
+				checkIpRecording(jobContext, ipRecording, IpRecordingTiming.BEFORE_JOB);
 			} catch (Exception e) {
 				logger.warn("IP-Checking (before job) was unsuccessfull for job {}", job.getId());
 			}
 
 			// start MITM
-			this.context.getRecorder().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
+			this.context.getRecordingProxy().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
 
 			// running job
 			try {
-				runJobHandler.handle(context, job);
+				runJobHandler.handle(jobContext);
 			} catch (Exception e) {
 				logger.warn("Catched exception running job {}", job.getId(), e);
 				runJobResult = false;
@@ -335,49 +337,49 @@ public class TaskOperator implements ITaskOperator {
 					TakesScreenshot camera = (TakesScreenshot) context.getDriver();
 					byte[] screenshot = camera.getScreenshotAs(OutputType.BYTES);
 
-					data.setScreenshot(screenshot);
+					dataRecorder.setScreenshot(screenshot);
 				}
 			} catch (Exception e) {
 				// noting to do
 			}
 
 			// capture trafic data
-			Har har = context.getRecorder().stopCapturing();
-			data.setHar(har);
+			Har har = context.getRecordingProxy().stopCapturing();
+			dataRecorder.setHar(har);
 
 			// capture page data
 			if (StringUtils.isEmpty(pageSource)) {
-				data.setPageSource(null);
+				dataRecorder.setPageSource(null);
 				logger.warn("no page source available for job {}", job.getId());
 			} else {
-				data.setPageSource(pageSource);
+				dataRecorder.setPageSource(pageSource);
 			}
 
 			// capture cookies, localstorage, etc.
 			try {
-				data.setCookies(context.getDriver().manage().getCookies());
+				dataRecorder.setCookies(context.getDriver().manage().getCookies());
 			} catch (Exception ex) {
 				logger.warn("Could not read cookies for job {}", job.getId(), ex);
-				data.setCookies(null);
+				dataRecorder.setCookies(null);
 			}
 
 			try {
-				data.setLocalStorage(primemover.util.LocalStorage.getItems(context.getDriver()));
+				dataRecorder.setLocalStorage(primemover.util.LocalStorage.getItems(context.getDriver()));
 			} catch (Exception ex) {
 				logger.warn("Could not read local storage for job {}", job.getId(), ex);
-				data.setLocalStorage(null);
+				dataRecorder.setLocalStorage(null);
 			}
 
 			try {
-				data.setSessionStorage(primemover.util.SessionStorage.getItems(context.getDriver()));
+				dataRecorder.setSessionStorage(primemover.util.SessionStorage.getItems(context.getDriver()));
 			} catch (Exception ex) {
 				logger.warn("Could not read session storage for job {}", job.getId(), ex);
-				data.setSessionStorage(null);
+				dataRecorder.setSessionStorage(null);
 			}
 
 			// IP-Checking
 			try {
-				checkIpRecording(ipRecording, IpRecordingTiming.AFTER_JOB, data, job);
+				checkIpRecording(jobContext, ipRecording, IpRecordingTiming.AFTER_JOB);
 			} catch (Exception e) {
 				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId());
 			}
@@ -385,7 +387,7 @@ public class TaskOperator implements ITaskOperator {
 			// Prepare writers
 			List<IDataWriter> writers = new ArrayList<>();
 			writerFactories.forEach((factory) -> {
-				writers.add(factory.getWriter(data));
+				writers.add(factory.getWriter(jobContext.getJobDataRecorder().getRecordings()));
 			});
 			
 			boolean writeRes = true;
@@ -472,6 +474,14 @@ public class TaskOperator implements ITaskOperator {
 
 		throw new IllegalStateException("Could not establish a recording proxy");
 	}
+	
+	/**
+	 * prepare context etc. before the job run
+	 */
+	public IJobAwareRunnerContext<?> getJobAwareContext(IJob job) {
+		
+		return JobAwarnessContextDecorator.decorate(context, job, new JobDataRecorder(job));
+	}
 
 	@Override
 	public Boolean runJobList(Joblist jobs) {
@@ -487,21 +497,24 @@ public class TaskOperator implements ITaskOperator {
 			List<IJob> jobList = jobs.getJobs();
 
 			for (int i = 0; i < jobList.size(); i++) {
-				IJob item = jobList.get(i);
+				IJob job = jobList.get(i);
 
 				if (previousResult) {
-					previousJob = item;
+					IJobAwareRunnerContext<?> jobAwareContext = getJobAwareContext(job);
+										
 					if (i == 0) {
-						runJob(item, IpRecordingTiming.BEFORE_JOB);
+						runJob(jobAwareContext, IpRecordingTiming.BEFORE_JOB);
 					} else if (i == jobList.size() - 1) {
-						runJob(item, IpRecordingTiming.AFTER_JOB);
+						runJob(jobAwareContext, IpRecordingTiming.AFTER_JOB);
 					} else {
-						runJob(item, IpRecordingTiming.NONE);
+						runJob(jobAwareContext, IpRecordingTiming.NONE);
 					}
+					
+					previousJob = job;
 				} else {
-					logger.warn("skipping job ({}) due to error in previous job ({})", item.getId(),
+					logger.warn("skipping job ({}) due to error in previous job ({})", job.getId(),
 							previousJob == null ? -1 : previousJob.getId());
-					jobService.updateJobState(item, JobState.SKIPPED, null, null, ZonedDateTime.now(),
+					jobService.updateJobState(job, JobState.SKIPPED, null, null, ZonedDateTime.now(),
 							ZonedDateTime.now());
 				}
 			}
@@ -537,7 +550,7 @@ public class TaskOperator implements ITaskOperator {
 				// stop recorder if in retry
 				RecordingProxy recorder = null;
 				if (context != null) {
-					recorder = context.getRecorder();
+					recorder = context.getRecordingProxy();
 					if (recorder != null) {
 						recorder.tearDown();
 					}
@@ -639,7 +652,7 @@ public class TaskOperator implements ITaskOperator {
 		}
 
 		try {
-			context.getRecorder().tearDown();
+			context.getRecordingProxy().tearDown();
 		} catch (Exception e) {
 			logger.warn("Exception quitting recorder for crawler {}", context.getCrawler().getId());
 		}

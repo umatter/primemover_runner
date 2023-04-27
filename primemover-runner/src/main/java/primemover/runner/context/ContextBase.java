@@ -6,11 +6,12 @@ import org.openqa.selenium.WebDriver;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
+import primemover.model.IJob;
 
-public abstract class ContextBase<OptionsType extends MutableCapabilities> {
+public abstract class ContextBase<OptionsType extends MutableCapabilities> implements IRunnerContext<OptionsType> {
 
 	private OptionsType options;
-	private RecordingProxy recorder;
+	private RecordingProxy recorderProxy;
 	private WebDriver driver;
 	private Crawler crawler;
 	private ICaptchaSolver captchaSolver;
@@ -18,6 +19,7 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 	public ContextBase() {
 	}
 
+	@Override
 	public OptionsType getOptions() {
 		return options;
 	}
@@ -26,14 +28,16 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 		this.options = options;
 	}
 
-	public RecordingProxy getRecorder() {
-		return recorder;
+	@Override
+	public RecordingProxy getRecordingProxy() {
+		return recorderProxy;
 	}
 
-	public void setRecorder(RecordingProxy recorder) {
-		this.recorder = recorder;
+	public void setRecordingProxy(RecordingProxy recorder) {
+		this.recorderProxy = recorder;
 	}
 
+	@Override
 	public WebDriver getDriver() {
 		return driver;
 	}
@@ -42,6 +46,7 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 		this.driver = driver;
 	}
 
+	@Override
 	public Crawler getCrawler() {
 		return crawler;
 	}
@@ -50,6 +55,7 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 		this.crawler = crawler;
 	}
 
+	@Override
 	public ICaptchaSolver getCaptchaSolver() {
 		return captchaSolver;
 	}
@@ -59,6 +65,6 @@ public abstract class ContextBase<OptionsType extends MutableCapabilities> {
 	}
 
 	public boolean isValid() {
-		return recorder != null && driver != null && crawler != null && captchaSolver != null;
+		return recorderProxy != null && driver != null && crawler != null && captchaSolver != null;
 	}
 }

@@ -1,14 +1,13 @@
 package primemover.runner.job.handler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import primemover.model.IJob;
 import primemover.model.jobs.AssertScrolledMaxJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.Scrolling;
 
@@ -16,11 +15,12 @@ public class AssertScrolledMaxJobHandler implements IJobHandler {
 
 	private static Logger logger = LoggerFactory.getLogger(AssertScrolledMaxJobHandler.class);
 
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
-		AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) job;
+		AssertScrolledMaxJob typedJob = (AssertScrolledMaxJob) context.getJob();
 		Boolean res;
 
 		switch (typedJob.getDirection()) {

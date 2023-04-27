@@ -9,22 +9,22 @@ import org.slf4j.LoggerFactory;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.model.IJob;
 import primemover.model.jobs.HandleAlertJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 
 public class AlertJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(AlertJobHandler.class);
 
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
-		HandleAlertJob typedJob = (HandleAlertJob) job;
+		HandleAlertJob typedJob = (HandleAlertJob) context.getJob();
 
 		// captcha before
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.BEFORE);
+		CaptchaJobHelper.solveCaptcha(context, JobPosition.BEFORE);
 
 		// Wait for Element
 		WebDriverWait wait = new WebDriverWait(driver, 5);
@@ -42,6 +42,6 @@ public class AlertJobHandler implements IJobHandler {
 		}
 
 		// captcha after
-		CaptchaJobHelper.solveCaptcha(context, typedJob, JobPosition.AFTER);
+		CaptchaJobHelper.solveCaptcha(context, JobPosition.AFTER);
 	}
 }

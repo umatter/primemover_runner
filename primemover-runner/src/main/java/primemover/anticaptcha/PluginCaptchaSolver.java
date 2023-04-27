@@ -1,7 +1,9 @@
 package primemover.anticaptcha;
 
+import org.apache.commons.lang3.time.StopWatch;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 import org.openqa.selenium.By;
@@ -23,11 +25,11 @@ import primemover.model.IJob;
 import primemover.model.MultiLoginAgent;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IRunnerContext;
 import primemover.util.NavigationHelper;
 
 public class PluginCaptchaSolver implements ICaptchaSolver {
-	private static final Logger LOGGER = LoggerFactory.getLogger(CaptchaSolver.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PluginCaptchaSolver.class);
 
 	@Autowired
 	MultiLoginBrowserProfileFactory mlProfileFactory;
@@ -120,7 +122,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 	}
 
 	@Override
-	public boolean setupDriver(ContextBase<?> context) {
+	public boolean setupDriver(IRunnerContext<?> context) {
 		LOGGER.debug("initialising plugin in open browser for crawler {}", context.getCrawler().getId());
 		if (!this.pluginAvailable) {
 			return true; // Plugin not available
@@ -156,20 +158,21 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 	}
 
 	@Override
-	public CaptchaSolverResult solve(ContextBase<?> context, IJob job, Boolean submit) {
+	public CaptchaSolverResult solve(IRunnerContext<?> context, IJob job, Boolean submit) {
 		if (!this.pluginInitialised) {
 			LOGGER.debug("Plugin not available for job {}", job.getId());
-			return CaptchaSolverResult.ERROR; // Plugin not working
+			return CaptchaSolverResult._PLUGINFAILURE; // Plugin not working
 		}
 
-		// check to see if the plugin is working, allow 5 seconds for setup
-		try {
-			new WebDriverWait(context.getDriver(), 5)
+		// check to see if the plugin is working on a captcha, allow 3 seconds for setup
+		try 
+		{
+			new WebDriverWait(context.getDriver(), 3)
 					.until(driver -> driver.findElement(By.cssSelector(".antigate_solver")));
 		} catch (Exception e) {
 			// ignore -> plugin inactive
 			LOGGER.debug("no captcha found");
-			return CaptchaSolverResult.NOTFOUND;
+			return CaptchaSolverResult._NOCAPTCHADETECTED;
 		}
 
 		// Most important part: we wait upto 120 seconds until the AntiCaptcha plugin
@@ -177,18 +180,19 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 		// gets the solved class, which means that the captcha was successfully solved
 		LOGGER.debug("waiting for captcha being solved for {} seconds", maxSolvingSeconds);
 
+		StopWatch timing = new StopWatch();
+		timing.start();
 		try
-
 		{
-			new WebDriverWait(context.getDriver(), maxSolvingSeconds)
-					.until(driver -> driver.findElement(By.cssSelector(".antigate_solver.solved")));
-
+			new WebDriverWait(context.getDriver(), maxSolvingSeconds).until(driver -> driver.findElement(By.cssSelector(".antigate_solver.solved")));
 		} catch (NoSuchElementException ex) {
 			LOGGER.warn("Captcha not solved within {} seconds", maxSolvingSeconds);
 
-			return CaptchaSolverResult.FAILURE;
+			return CaptchaSolverResult.of(true, true, false, maxSolvingSeconds, true, true, null);
 		}
-
-		return CaptchaSolverResult.SUCCESS;
+		timing.stop();
+		
+		return CaptchaSolverResult.of(true, true, false, timing.getTime(TimeUnit.SECONDS), false, false, null);
+		
 	}
 }

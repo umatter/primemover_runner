@@ -1,10 +1,9 @@
 package primemover.runner.job;
 
-import primemover.model.IJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 
 public interface IJobDispatcher {
 
-	public void handle(ContextBase context, IJob job) throws UnsupportedOperationException;
+	public void handle(IJobAwareRunnerContext<?> context) throws UnsupportedOperationException;
 	public void setup();
 }

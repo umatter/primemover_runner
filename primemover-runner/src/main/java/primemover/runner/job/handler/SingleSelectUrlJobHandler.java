@@ -15,9 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.model.Crawler;
-import primemover.model.IJob;
 import primemover.model.jobs.SingleSelectJob;
-import primemover.runner.context.ContextBase;
+import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
 
@@ -27,12 +26,13 @@ public class SingleSelectUrlJobHandler implements IJobHandler {
 	@Autowired
 	private SelectingHelper selectingHelper;
 
-	public void handle(ContextBase<?> context, IJob job) {
+	@Override
+	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
 
 		WebDriver driver = context.getDriver();
 		Crawler crawler = context.getCrawler();
-		SingleSelectJob typedJob = (SingleSelectJob) job;
+		SingleSelectJob typedJob = (SingleSelectJob) context.getJob();
 
 		List<WebElement> clickElements = SelectingHelper.getElementsByWebdriver(driver, typedJob.getType(),
 				typedJob.getSelector());
