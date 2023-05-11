@@ -7,9 +7,9 @@ import java.util.List;
 public class Joblist {
 	private Long id;
 	private Boolean active;
+	private Boolean processing;
 	private Boolean processed;
 	private Boolean reviewed;
-	private Boolean processing;
 	private ZonedDateTime startTime;
 	private List<IJob> jobs;
 

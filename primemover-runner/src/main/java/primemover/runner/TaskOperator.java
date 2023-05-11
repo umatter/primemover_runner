@@ -56,14 +56,13 @@ import primemover.service.JobService;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.IDataWriterFactory;
-import primemover.service.datawriter.JobDataWriter;
-import primemover.service.datawriter.PageSourceWriter;
 
 /**
  * Entry point for a task run. The operator will first setup the running context
  * (browser, proxy, anti-captcha) and run some checks. Then the containing
  * joblist will execute job by job. Data is gathered along the execution and
  * stored.
+ * 
  * @author dburkolter
  *
  */
@@ -92,7 +91,7 @@ public class TaskOperator implements ITaskOperator {
 
 	@Autowired(required = false)
 	List<IDataWriterFactory> writerFactories = new ArrayList<IDataWriterFactory>();
-	
+
 	@Autowired
 	private RecordingProxyFactory recorderFactory;
 
@@ -126,7 +125,6 @@ public class TaskOperator implements ITaskOperator {
 		firefoxOptions.merge(capabilities);
 		firefoxOptions.setAcceptInsecureCerts(true);
 		captchaSolver.setOptions(crawler, firefoxOptions, recorder);
-
 		ffContext.setFirefoxOptions(firefoxOptions);
 		ffContext.setDriver(new FirefoxDriver(firefoxOptions));
 
@@ -251,7 +249,8 @@ public class TaskOperator implements ITaskOperator {
 	 * @param data:          JobData to store captured location info
 	 * @param job:           current job
 	 */
-	private void checkIpRecording(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming currentTiming, IpRecordingTiming comparee) {
+	private void checkIpRecording(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming currentTiming,
+			IpRecordingTiming comparee) {
 		if (currentTiming == IpRecordingTiming.NONE) {
 			logger.debug("Found {} as current ip-recording timing", currentTiming);
 			return;
@@ -260,7 +259,8 @@ public class TaskOperator implements ITaskOperator {
 		// grab ip-location if matching above
 		if (currentTiming == comparee || currentTiming == IpRecordingTiming.ALWAYS) {
 			LocationInfo loc = ipService.getLocationInfo();
-			logger.debug("captured location info for job {} for timing {} is {}", jobContext.getJob().getId(), currentTiming, loc);
+			logger.debug("captured location info for job {} for timing {} is {}", jobContext.getJob().getId(),
+					currentTiming, loc);
 			jobContext.getJobDataRecorder().setLocation(loc);
 		}
 	}
@@ -270,12 +270,11 @@ public class TaskOperator implements ITaskOperator {
 
 		IJob job = jobContext.getJob();
 		IJobDataRecorder dataRecorder = jobContext.getJobDataRecorder();
-		
+
 		logger.info("Starting job {}", job.getId());
 
 		try {
 			jobService.updateJobState(job, JobState.RUNNING, null, null, ZonedDateTime.now(), null); // setting
-						
 
 			// IP-Checking
 			try {
@@ -389,11 +388,11 @@ public class TaskOperator implements ITaskOperator {
 			writerFactories.forEach((factory) -> {
 				writers.add(factory.getWriter(jobContext.getJobDataRecorder().getRecordings()));
 			});
-			
+
 			boolean writeRes = true;
 			// writing data
-			
-			for (IDataWriter writer: writers) {
+
+			for (IDataWriter writer : writers) {
 				IDataWriter cachedWriter = new DataWriterCachingDecorator(writer);
 				for (IStorageService storage : storages) {
 					try {
@@ -474,12 +473,12 @@ public class TaskOperator implements ITaskOperator {
 
 		throw new IllegalStateException("Could not establish a recording proxy");
 	}
-	
+
 	/**
 	 * prepare context etc. before the job run
 	 */
 	public IJobAwareRunnerContext<?> getJobAwareContext(IJob job) {
-		
+
 		return JobAwarnessContextDecorator.decorate(context, job, new JobDataRecorder(job));
 	}
 
@@ -501,7 +500,7 @@ public class TaskOperator implements ITaskOperator {
 
 				if (previousResult) {
 					IJobAwareRunnerContext<?> jobAwareContext = getJobAwareContext(job);
-										
+
 					if (i == 0) {
 						runJob(jobAwareContext, IpRecordingTiming.BEFORE_JOB);
 					} else if (i == jobList.size() - 1) {
@@ -509,7 +508,7 @@ public class TaskOperator implements ITaskOperator {
 					} else {
 						runJob(jobAwareContext, IpRecordingTiming.NONE);
 					}
-					
+
 					previousJob = job;
 				} else {
 					logger.warn("skipping job ({}) due to error in previous job ({})", job.getId(),
@@ -544,7 +543,6 @@ public class TaskOperator implements ITaskOperator {
 				DesiredCapabilities capabilities = new DesiredCapabilities();
 
 				// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
-				capabilities.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);
 				capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 
 				// stop recorder if in retry

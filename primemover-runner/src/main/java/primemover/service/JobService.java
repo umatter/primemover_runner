@@ -22,7 +22,6 @@ import primemover.model.IJob;
 import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
-import primemover.runner.context.IJobAwareRunnerContext;
 
 @Service
 public class JobService {
@@ -104,7 +103,7 @@ public class JobService {
 				logger.info("updated data for joblist {}", queueId);
 				return true;
 			} else {
-				logger.warn("failure updating joblist {} ", queueId);
+				logger.warn("failure updating joblist {}\nrequest:{}\nresponse:\n{}", queueId, request, response);
 				return false;
 			}
 		} catch (Exception ex) {
@@ -168,7 +167,8 @@ public class JobService {
 				logger.info("updated data for job {}", jobID);
 				return true;
 			} else {
-				logger.warn("failure updating job {} ", jobID);
+				logger.warn("failure updating job {}, HTTP-state: {}, message:\n{}", jobID, response.getStatusCode(),
+						response.getBody());
 				return false;
 			}
 		} catch (Exception ex) {
