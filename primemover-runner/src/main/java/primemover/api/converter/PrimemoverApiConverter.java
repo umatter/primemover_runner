@@ -460,6 +460,9 @@ public class PrimemoverApiConverter {
 			selectConfig.setTau(param.getTau());
 
 			HashMap<String, MediaOutlet> outlets = new HashMap<>();
+			if (param.getMedia_outlet_urls() == null) {
+				throw new IllegalArgumentException("media outlet urls are missing");
+			}
 			for (primemover.api.model.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
 				MediaOutlet modelOutlet = new MediaOutlet();
 				modelOutlet.setDomain(apiOutlet.getDomain());
