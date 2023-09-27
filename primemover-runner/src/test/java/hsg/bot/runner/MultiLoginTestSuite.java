@@ -37,7 +37,7 @@ class MultiLoginTestSuite {
 		proxy = new HttpProxy("us-30m.geosurf.io", 8000, "b8a2d8a4-ea69-4d0d-923e-2a83421cd1e5", "CHANGEME-password");
 		service = serviceFactory.getItem();
 		agent = new MultiLoginAgent(1l, "Multilogin-Test", "Multilogin-Test", "",
-				"4408c421-447e-4822-b045-b35529d75aa6", "");
+				"466f7131-98db-46e8-9c3c-0ec5a1f6af8d", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 		crawler.setProxy(proxy);

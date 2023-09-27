@@ -20,6 +20,7 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.browserup.bup.BrowserUpProxyServer;
@@ -86,6 +87,9 @@ public class RecordingProxy {
 
 	@Value("#{'${recorder.connectivityVerificationUrls:https://primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero
 	private List<String> connectivityVerificationUrls;
+
+	@Autowired
+	private ProxyDecoratorFactory sessionDecoratorFactory;
 
 	private BrowserUpProxyServer proxy = null;
 	private UrlVerificator urlVerificator = null;
@@ -224,7 +228,7 @@ public class RecordingProxy {
 			LOGGER.debug("using chained proxy {}:{}", targetProxy.getPort(), targetProxy.getPort());
 
 			// simple decorator for usernames, currently only for Geosurf-usage
-			SessionIdDecorator decoratedProxy = new SessionIdDecorator(targetProxy);
+			ProxyDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
 
 			// check for whitelisting
 			// if (!(StringUtils.isEmpty(targetProxy.getUsername()) &&
@@ -245,13 +249,12 @@ public class RecordingProxy {
 			// create session-identifier and set session-headers
 			if (targetProxy instanceof GeoSurfProxy) {
 				LOGGER.debug("applying GeoSurf-Headers");
-				// geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
 
 				// add custom auth headers ->
 				// https://github.com/browserup/browserup-proxy/blob/88914049391bd3ec5d3db1e4e92618fc7d197810/browserup-proxy-core/src/main/java/com/browserup/bup/BrowserUpProxyServer.java
-				// little danger as we don't watch missing auth credentials as in above code
+				// little dangerous as we don't watch missing auth credentials as in above code
 				proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
-					private SessionIdDecorator proxy = decoratedProxy;
+					private ProxyDecorator proxy = decoratedProxy;
 					private GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
 
 					@Override
@@ -389,8 +392,8 @@ public class RecordingProxy {
 		seleniumProxy.setSslProxy("0.0.0.0:" + port);
 
 		// debug only
-		seleniumProxy.setHttpProxy("localhost:" + port);
-		seleniumProxy.setSslProxy("localhost:" + port);
+		// seleniumProxy.setHttpProxy("localhost:" + port);
+		// seleniumProxy.setSslProxy("localhost:" + port);
 
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
 		// cap.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.api.deserializer.RelaxedZonedDateTimeDeserializer;
+import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
@@ -244,19 +245,24 @@ public class Config {
 	public IJobDispatcher getRunJobHandler() {
 		return new JobDispatcher();
 	}
-	
+
 	@Bean(name = "PageSourceWriterFactory")
 	public IDataWriterFactory getPageSourceWriterFactory() {
 		return new PageSourceWriterFactory();
 	}
-	
+
 	@Bean(name = "JobDataWriterFactory")
 	public IDataWriterFactory getJobDataWriterFactory() {
 		return new JobDataWriterFactory();
 	}
-	
+
 	@Bean(name = "CaptchaDetectionWriterFactory")
 	public IDataWriterFactory getCaptchaDetectionWriterFactory() {
 		return new CaptchaDetectionWriterFactory();
+	}
+
+	@Bean(name = "ProxyDecoratorFactory")
+	public ProxyDecoratorFactory getProxyDecoratorFactory() {
+		return new ProxyDecoratorFactory();
 	}
 }

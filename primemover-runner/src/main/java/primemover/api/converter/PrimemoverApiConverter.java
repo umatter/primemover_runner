@@ -54,7 +54,7 @@ import primemover.model.proxy.IProxy;
 public class PrimemoverApiConverter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PrimemoverApiConverter.class);
 
-	public PrimemoverApiConverter() {
+	private PrimemoverApiConverter() {
 	}
 
 	private static IProxy convertApiProxy(primemover.api.model.Proxy item, Crawler crawler) {
@@ -75,7 +75,6 @@ public class PrimemoverApiConverter {
 				GeoSurfProxy geoProxy = new GeoSurfProxy();
 				geoProxy.setLocation(crawler.getAgent().getLocation());
 				res = geoProxy;
-
 			} else if (type.contains("http")) {
 				res = new HttpProxy();
 

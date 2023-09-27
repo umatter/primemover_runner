@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class CaptchaSolverResult {
+	// some default results
 	public static CaptchaSolverResult _PLUGINFAILURE = of(false, false, false, 0, false, true, null);
 	public static CaptchaSolverResult _NOCAPTCHADETECTED = of(true, false, false, 0, false, false, null);
 
@@ -13,6 +14,9 @@ public class CaptchaSolverResult {
 	private boolean hasSolvingTimeout = false;
 	private boolean captchaSolved = false;
 	private boolean hasError = false;
+
+	private CaptchaSolverResult() {
+	}
 
 	@Nullable
 	private String captchaType;

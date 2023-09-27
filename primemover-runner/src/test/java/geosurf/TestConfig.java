@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
+import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
@@ -179,5 +180,10 @@ public class TestConfig {
 	@Bean(name = "AntiCaptchaService")
 	public AntiCaptchaService getAntiCaptchaService() {
 		return new AntiCaptchaService();
+	}
+
+	@Bean(name = "ProxyDecoratorFactory")
+	public ProxyDecoratorFactory getProxyDecoratorFactory() {
+		return new ProxyDecoratorFactory();
 	}
 }

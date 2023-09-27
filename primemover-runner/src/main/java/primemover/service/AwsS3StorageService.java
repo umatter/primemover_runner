@@ -46,7 +46,7 @@ public class AwsS3StorageService implements IStorageService {
 	boolean isInit = false;
 	S3Client client = null;
 
-	public void init() {
+	public boolean init() {
 		try {
 			AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 
@@ -58,6 +58,8 @@ public class AwsS3StorageService implements IStorageService {
 		}
 
 		isInit = true;
+
+		return client != null;
 	}
 
 	@Override

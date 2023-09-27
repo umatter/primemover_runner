@@ -11,7 +11,7 @@ import primemover.runner.context.IJobAwareRunnerContext;
 public class CaptchaJobHelper {
 	private static Logger logger = LoggerFactory.getLogger(CaptchaJobHelper.class);
 
-	public CaptchaJobHelper() {
+	private CaptchaJobHelper() {
 	}
 
 	public enum JobPosition {
