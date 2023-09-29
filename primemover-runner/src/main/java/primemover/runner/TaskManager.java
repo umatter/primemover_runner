@@ -44,6 +44,9 @@ public class TaskManager implements ITaskManager {
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
 
+	/**
+	 * maxThreads "equals" to the number of open browsers (running bots) in parallel
+	 */
 	@Value("${runner.MaxParallelExecution:4}")
 	private Integer maxThreads = 4; // maximum parallel executions of joblists
 
@@ -88,6 +91,12 @@ public class TaskManager implements ITaskManager {
 	 * (non-Javadoc)
 	 * 
 	 * @see primemover.runner.IJobManager#run()
+	 */
+
+	/**
+	 * This method is running periodic checks for new TaskLists (aka Queues) to run.
+	 * It uses the Spring-Scheduling. The initial delay makes sure that all other
+	 * classes are loaded and spring initialised.
 	 */
 	@Override
 	@Scheduled(fixedRate = 60000, initialDelay = 10000)

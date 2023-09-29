@@ -11,6 +11,9 @@ public class Joblist {
 	private Boolean processed;
 	private Boolean reviewed;
 	private ZonedDateTime startTime;
+	/**
+	 * jobs to be executed in execution order
+	 */
 	private List<IJob> jobs;
 
 	public List<IJob> getJobs() {
