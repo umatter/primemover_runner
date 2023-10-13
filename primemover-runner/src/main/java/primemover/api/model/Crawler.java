@@ -3,27 +3,29 @@ package primemover.api.model;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Crawler {
-	
+
+	@Nonnull
 	private Integer id;
 	private String name;
 	private String description;
 	private Boolean active;
 	private Date updated_at;
 	private Date created_at;
-	private Proxy proxy;	
+	private Proxy proxy;
 	private Agent agent;
 	private Configuration configuration;
 	private List<Queue> queues;
-	
 
 	public Crawler() {
 		// nothing to do
 	}
-	
+
 	public Agent getAgent() {
 		return agent;
 	}
@@ -103,5 +105,5 @@ public class Crawler {
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 	}
-	
+
 }

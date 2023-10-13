@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy.Type;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.littleshoot.proxy.HttpFilters;
@@ -43,6 +42,15 @@ import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
 import primemover.service.IpService;
 
+/**
+ * A proxy for recording all data that is communicated while opening a webpage.
+ * The proxy will need to act as a man-in-the-middle. Extra functionality is
+ * added in order to verify connections, pinging connections to keep the "line"
+ * open, add auth for Geosurf and also to intercept packages to hide the proxy.
+ * 
+ * @author Dominik
+ *
+ */
 public class RecordingProxy {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecordingProxy.class);
 
@@ -82,23 +90,19 @@ public class RecordingProxy {
 	@Value("${proxy.pingConnections:true}")
 	private Boolean pingConnections;
 
-	@Value("${proxy.pingIntervalSeconds:45}")
-	private int pingIntervalSeconds;
+	@Autowired
+	private KeepAlivePingFactory keepAlivePingFactory;
 
-	@Value("#{'${recorder.connectivityVerificationUrls:https://primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero
-	private List<String> connectivityVerificationUrls;
+	@Autowired
+	private UrlVerificatorFactory urlVerificatorFactory;
 
 	@Autowired
 	private ProxyDecoratorFactory sessionDecoratorFactory;
 
 	private BrowserUpProxyServer proxy = null;
-	private UrlVerificator urlVerificator = null;
-	private KeepAliveHelper keepAliveHelper;
+	private KeepAlivePing keepAliveHelper;
 
 	public void tearDown(boolean immediate) {
-		// reseting fields
-		urlVerificator = null;
-
 		// stopping ping
 		if (keepAliveHelper != null) {
 			try {
@@ -287,12 +291,11 @@ public class RecordingProxy {
 	}
 
 	private boolean verifyConnectivity() {
-		if (urlVerificator == null) {
-			this.urlVerificator = new UrlVerificator(getProxy(), connectivityVerificationUrls,
-					connectTimeoutSeconds * 1000);
+		if (urlVerificatorFactory == null) {
+			return true;
 		}
 
-		return urlVerificator.runCheck();
+		return urlVerificatorFactory.getInstance(getProxy()).runCheck();
 	}
 
 	private void setupKeepAlive() {
@@ -300,14 +303,7 @@ public class RecordingProxy {
 			return;
 		}
 
-		if (keepAliveHelper != null) {
-			return;
-		}
-
-		this.keepAliveHelper = new KeepAliveHelper(
-				new UrlVerificator(getProxy(), connectivityVerificationUrls, connectTimeoutSeconds * 1000),
-				pingIntervalSeconds);
-
+		this.keepAliveHelper = keepAlivePingFactory.getInstance(getProxy());
 		this.keepAliveHelper.start();
 	}
 
@@ -392,8 +388,8 @@ public class RecordingProxy {
 		seleniumProxy.setSslProxy("0.0.0.0:" + port);
 
 		// debug only
-		// seleniumProxy.setHttpProxy("localhost:" + port);
-		// seleniumProxy.setSslProxy("localhost:" + port);
+		seleniumProxy.setHttpProxy("localhost:" + port);
+		seleniumProxy.setSslProxy("localhost:" + port);
 
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
 		// cap.setCapability(CapabilityType.ACCEPT_SSL_CERTS, true);

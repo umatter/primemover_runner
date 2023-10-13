@@ -27,6 +27,7 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
+import primemover.service.IJobService;
 import primemover.service.JobService;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
@@ -51,7 +52,7 @@ public class TestConfig {
 	}
 
 	@Bean(name = "JobService")
-	JobService getJobService() {
+	IJobService getJobService() {
 		return new JobService();
 	}
 

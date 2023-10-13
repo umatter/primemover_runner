@@ -1,5 +1,7 @@
 package primemover.util;
 
+import java.time.Duration;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -11,62 +13,60 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class Waiter {
 	private static Logger logger = LoggerFactory.getLogger(Waiter.class);
-	
+
 	/**
 	 * Waits for Javascript to finish loading
 	 * 
-	 * @param driver to run wait in
+	 * @param driver  to run wait in
 	 * @param timeout in seconds for max wait
 	 */
-    public static Boolean waitUntilJSReady(WebDriver driver, Integer timeout) {
-    	return waitUntilJSReady(driver, timeout, 1);
-    }
-    
-	//Wait Until JS Ready
+	public static Boolean waitUntilJSReady(WebDriver driver, Integer timeout) {
+		return waitUntilJSReady(driver, timeout, 1);
+	}
+
+	// Wait Until JS Ready
 	/**
 	 * Waits for Javascript to finish loading
 	 * 
-	 * @param driver to run wait in
+	 * @param driver  to run wait in
 	 * @param timeout in seconds for max wait
 	 */
-    public static Boolean waitUntilJSReady(WebDriver driver, Integer timeout, Integer numRetries) {
-        //Wait for Javascript to load
-        ExpectedCondition<Boolean> jsLoad = jsExec -> ((JavascriptExecutor) driver)
-                .executeScript("return document.readyState").toString().equals("complete");
+	public static Boolean waitUntilJSReady(WebDriver driver, Integer timeout, Integer numRetries) {
+		// Wait for Javascript to load
+		ExpectedCondition<Boolean> jsLoad = jsExec -> ((JavascriptExecutor) driver)
+				.executeScript("return document.readyState").toString().equals("complete");
 
-        //Get JS is Ready
-        boolean jsReady = ((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete");
+		// Get JS is Ready
+		boolean jsReady = ((JavascriptExecutor) driver).executeScript("return document.readyState").toString()
+				.equals("complete");
 
-        //Wait Javascript until it is Ready!
-        if(!jsReady) {
-        	logger.trace("JS is not ready -> wait for {} second(s)", timeout);
-        	
-        	for (int n = 0; n < numRetries; n++) {
-        		logger.debug("trial {} of {}", n + 1, numRetries);
-                
-        		//Wait for Javascript to load
-                try {
-                	WebDriverWait wait = new WebDriverWait(driver, timeout);
-                    wait.until(jsLoad);
-                    logger.debug("successfully waited for js-ready");
-                    
-                    return true;
-                } catch (TimeoutException ex){
-                	logger.warn("timeout waiting for js-ready", ex);
-                }
-        	}
-        	return false;
-        	
-        } else {
-            logger.debug("JS is Ready");
-            return true;
-        }
-    }
+		// Wait Javascript until it is Ready!
+		if (!jsReady) {
+			logger.trace("JS is not ready -> wait for {} second(s)", timeout);
 
-	
+			for (int n = 0; n < numRetries; n++) {
+				logger.debug("trial {} of {}", n + 1, numRetries);
+
+				// Wait for Javascript to load
+				try {
+					WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
+					wait.until(jsLoad);
+					logger.debug("successfully waited for js-ready");
+
+					return true;
+				} catch (TimeoutException ex) {
+					logger.warn("timeout waiting for js-ready", ex);
+				}
+			}
+			return false;
+
+		} else {
+			logger.debug("JS is Ready");
+			return true;
+		}
+	}
 
 	public static void waitUntilObjectGone(WebDriver driver, Integer timeoutMillis, WebElement element) {
 		boolean done = false;
@@ -90,10 +90,10 @@ public class Waiter {
 			}
 
 			try {
-                Thread.sleep(50);
-            } catch (Exception e) {
-                // Nothing to do
-            }
+				Thread.sleep(50);
+			} catch (Exception e) {
+				// Nothing to do
+			}
 		}
 
 		logger.trace("Element gone {}", element);

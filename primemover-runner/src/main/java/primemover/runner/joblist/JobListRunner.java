@@ -13,7 +13,7 @@ import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 import primemover.runner.ITaskOperator;
-import primemover.service.JobService;
+import primemover.service.IJobService;
 
 /**
  * Runs joblists on the specified crawler
@@ -32,7 +32,7 @@ public class JobListRunner implements Callable<Boolean> {
 	private Long redoMinutes = 45l;
 
 	@Autowired
-	private JobService jobService;
+	private IJobService jobService;
 
 	private enum SetupState {
 		SUCCESS, FAILURE, SKIPPED, NO_JOBS

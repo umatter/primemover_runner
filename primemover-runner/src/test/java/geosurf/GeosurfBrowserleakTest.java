@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import primemover.model.AgentType;
-import primemover.model.BasicAgent;
+import primemover.model.ChromeAgent;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
@@ -34,12 +33,11 @@ public class GeosurfBrowserleakTest {
 	Crawler crawler;
 
 	public void setup(IProxy proxy, boolean useMultiLoginAgent) {
-		operator = operatorFactory.getItem();
 
 		if (useMultiLoginAgent) {
 			agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", "72c8610a-7041-4693-809d-b4e4a2643cf2", "");
 		} else {
-			agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
+			agent = new ChromeAgent(1l, "Chrome", "Chrome", "");
 		}
 
 		crawler = new Crawler();
@@ -66,7 +64,7 @@ public class GeosurfBrowserleakTest {
 
 		crawler.setProxy(proxy);
 
-		operator.setup(crawler);
+		operator = operatorFactory.getItem(crawler);
 	}
 
 	Joblist createJobList() {

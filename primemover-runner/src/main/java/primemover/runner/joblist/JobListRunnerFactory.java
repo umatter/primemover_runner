@@ -11,30 +11,29 @@ import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.runner.TaskOperatorFactory;
 
-public class JobListRunnerFactory  implements ApplicationContextAware {
+public class JobListRunnerFactory implements ApplicationContextAware {
 
 	@Value("${global.mode}")
-	private  StartupMode mode;
+	private StartupMode mode;
 	private ApplicationContext ctx;
-	
+
 	@Autowired
 	TaskOperatorFactory taskOperatorFactory;
-	
+
 	public JobListRunnerFactory() {
 	}
-	
+
 	public JobListRunner createJobListRunner(Crawler crawler, Joblist jobs) {
-		JobListRunner ret = new JobListRunner(taskOperatorFactory.getItem(), crawler, jobs);
-		
+		JobListRunner ret = new JobListRunner(taskOperatorFactory.getItem(crawler), crawler, jobs);
+
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
-		
+
 		return ret;
 	}
-	
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.ctx = applicationContext;
 	}
-	
 
 }

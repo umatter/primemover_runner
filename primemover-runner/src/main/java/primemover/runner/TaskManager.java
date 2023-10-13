@@ -23,7 +23,7 @@ import primemover.model.JoblistState;
 import primemover.runner.joblist.JobListRunner;
 import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.ICrawlerService;
-import primemover.service.JobService;
+import primemover.service.IJobService;
 
 /**
  * The Task-Manager is responsible for checking for newly available tasks and
@@ -73,7 +73,7 @@ public class TaskManager implements ITaskManager {
 	JobListRunnerFactory jobListRunnerFactory;
 
 	@Autowired
-	private JobService jobService;
+	private IJobService jobService;
 
 	/*
 	 * (non-Javadoc)

@@ -1,5 +1,7 @@
 package primemover.runner.job.handler;
 
+import java.time.Duration;
+
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -27,7 +29,7 @@ public class AlertJobHandler implements IJobHandler {
 		CaptchaJobHelper.solveCaptcha(context, JobPosition.BEFORE);
 
 		// Wait for Element
-		WebDriverWait wait = new WebDriverWait(driver, 5);
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 		Alert dialog = wait.until(ExpectedConditions.alertIsPresent());
 
 		switch (typedJob.getAction()) {

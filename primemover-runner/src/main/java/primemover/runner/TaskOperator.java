@@ -49,10 +49,10 @@ import primemover.runner.context.JobDataRecorder;
 import primemover.runner.context.MultiloginContext;
 import primemover.runner.job.JobDispatcher;
 import primemover.service.AgentService;
+import primemover.service.IJobService;
 import primemover.service.IStorageService;
 import primemover.service.IpService;
 import primemover.service.IpServiceFactory;
-import primemover.service.JobService;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.IDataWriterFactory;
@@ -81,7 +81,7 @@ public class TaskOperator implements ITaskOperator {
 	private ContextBase<?> context = null;
 
 	@Autowired
-	private JobService jobService;
+	private IJobService jobService;
 
 	@Autowired
 	private AgentService agentService;

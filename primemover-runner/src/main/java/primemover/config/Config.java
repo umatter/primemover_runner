@@ -26,8 +26,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.api.deserializer.RelaxedZonedDateTimeDeserializer;
+import primemover.capture.KeepAlivePingFactory;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
+import primemover.capture.UrlVerificatorFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.ITaskManager;
@@ -40,6 +42,7 @@ import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
 import primemover.service.ICrawlerService;
+import primemover.service.IJobService;
 import primemover.service.IStorageService;
 import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
@@ -68,6 +71,16 @@ public class Config {
 	@Bean(name = "jobListRunnerFactory")
 	JobListRunnerFactory getJobListRunnerFactory() {
 		return new JobListRunnerFactory();
+	}
+
+	@Bean(name = "UrlVerificatorFactory")
+	UrlVerificatorFactory getUrlVerificatorFactory() {
+		return new UrlVerificatorFactory();
+	}
+
+	@Bean(name = "KeepAlivePingFactory")
+	KeepAlivePingFactory getKeepAlivePingFactory() {
+		return new KeepAlivePingFactory();
 	}
 
 	@Bean(name = "tokenGenerator")
@@ -184,7 +197,7 @@ public class Config {
 	}
 
 	@Bean(name = "JobService")
-	JobService getJobService() {
+	IJobService getJobService() {
 		return new JobService();
 	}
 

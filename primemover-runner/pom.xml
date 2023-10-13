@@ -19,6 +19,7 @@
 		<java.version>11</java.version> <!-- crosscheck with openjdk installed on server -->
 		<skipTests>true</skipTests>
 		<junit.version>5.9.1</junit.version>
+		<selenium.version>4.14.0</selenium.version>
 	</properties>
 
 	<repositories>
@@ -34,28 +35,28 @@
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             
-				<version>4.9.1</version>
+				<version>${selenium.version}</version>
         </dependency>
         <dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-api</artifactId>
-				<version>4.9.1</version>
+				<version>${selenium.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-remote-driver</artifactId>
-				<version>4.9.1</version>
+				<version>${selenium.version}</version>
 			</dependency>
         <dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-firefox-driver</artifactId>
-				<version>4.9.1</version>
+				<version>${selenium.version}</version>
 			</dependency>
         
 			<dependency>
 				<groupId>org.seleniumhq.selenium</groupId>
 				<artifactId>selenium-chrome-driver</artifactId>
-				<version>4.9.1</version>
+				<version>${selenium.version}</version>
 			</dependency>
 		<dependency>
 			<groupId>com.browserup</groupId>
@@ -144,6 +145,24 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.5.13</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>5.6.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.mockito</groupId>
+		    <artifactId>mockito-junit-jupiter</artifactId>
+		    <version>5.6.0</version>
+		    <scope>test</scope>
+		</dependency>
+		
+		<dependency>
+		    <groupId>net.bytebuddy</groupId>
+		    <artifactId>byte-buddy</artifactId>
+		    <version>1.14.9</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -178,13 +197,4 @@
 		</plugins>
 	</build>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.seleniumhq.selenium</groupId>
-				<artifactId>selenium-java</artifactId>
-				<version>4.9.1</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

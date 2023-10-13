@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import primemover.model.BasicAgent;
-import primemover.model.AgentType;
+import primemover.model.ChromeAgent;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
@@ -22,59 +21,59 @@ import primemover.runner.TaskOperatorFactory;
 
 @SpringBootTest
 class ScrollingTestSuite {
-	
+
 	@Autowired
 	private TaskOperatorFactory serviceFactory;
-	
+
 	private ITaskOperator service;
 	private IAgent agent;
 	Crawler crawler;
-	
-	
+
 	@BeforeEach
 	public void setup() {
-		service = serviceFactory.getItem();
-		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
+		agent = new ChromeAgent(1l, "Chrome", "Chrome", "");
 		crawler = new Crawler();
-		crawler.setAgent(agent);	
+		crawler.setAgent(agent);
 
-		service.setup(crawler);
+		service = serviceFactory.getItem(crawler);
 	}
 
 	@Test
 	void openPageAndScrollDown() {
 		// Define jobs for google search
 		Joblist jobs = new Joblist();
-		
+
 		// open page
 		VisitJob visitJob = new VisitJob(1l, "visit google", "visit google", "https://www.nzz.ch", null);
 		jobs.appendJob(visitJob);
-		
+
 		// quick wait for search to finish
 		WaitJob waitJob = new WaitJob(1l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
-		
+
 		// Assert page loaded
 		AssertPageLoadedJob pageLoadedJob = new AssertPageLoadedJob(1l, "assert page loaded", "assert page loaded");
 		jobs.appendJob(pageLoadedJob);
-		
+
 		// scroll down
-		ScrollByLengthJob scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 100% down", null, ScrollDirection.DOWN, 100);
+		ScrollByLengthJob scrollJob = new ScrollByLengthJob(1l, "scroll", "scroll 100% down", null,
+				ScrollDirection.DOWN, 100);
 		jobs.appendJob(scrollJob);
-		
+
 		// Assert page loaded
-		AssertScrolledMaxJob assertScrolledDown = new AssertScrolledMaxJob(1l, "assert scrolled max down", "assert scrolled max down", ScrollDirection.DOWN);
+		AssertScrolledMaxJob assertScrolledDown = new AssertScrolledMaxJob(1l, "assert scrolled max down",
+				"assert scrolled max down", ScrollDirection.DOWN);
 		jobs.appendJob(assertScrolledDown);
-				
+
 		service.runJobList(jobs);
 	}
-	
+
 	@AfterEach
-    public void tearDown() {
-        service.tearDown(true);
-        service = null;
-        agent = null;
-        crawler = null;
-    }
+	public void tearDown() {
+		service.tearDown(true);
+		service = null;
+		agent = null;
+		crawler = null;
+	}
 
 }

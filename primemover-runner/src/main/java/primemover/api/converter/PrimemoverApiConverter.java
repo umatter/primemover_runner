@@ -19,12 +19,12 @@ import primemover.api.model.IpResult;
 import primemover.api.model.IpResultData;
 import primemover.api.model.OutletResult;
 import primemover.api.model.TermResult;
-import primemover.model.AgentType;
-import primemover.model.BasicAgent;
+import primemover.model.ChromeAgent;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.DialogHandleType;
+import primemover.model.FirefoxAgent;
 import primemover.model.IAgent;
 import primemover.model.IJob;
 import primemover.model.Joblist;
@@ -116,11 +116,9 @@ public class PrimemoverApiConverter {
 		ident = ident.toLowerCase();
 
 		if (ident.contains("firefox")) {
-			agent = new BasicAgent(item.getId(), AgentType.FIREFOX, item.getName(), item.getDescription(),
-					item.getLocation());
+			agent = new FirefoxAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation());
 		} else if (ident.contains("chrome")) {
-			agent = new BasicAgent(item.getId(), AgentType.CHROME, item.getName(), item.getDescription(),
-					item.getLocation());
+			agent = new ChromeAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation());
 		} else if (ident.contains("multilogin") || ident.contains("multlogin")) {
 			String validatedJson = StringEscapeUtils.unescapeJson(item.getMultilogin_profile());
 			if (validatedJson.startsWith("\"")) {
@@ -517,7 +515,9 @@ public class PrimemoverApiConverter {
 
 		// grab crawler
 		Crawler crawler = new Crawler();
-
+		if (item.getId() == null) {
+			throw new IllegalArgumentException("id must not be null");
+		}
 		crawler.setId(item.getId().longValue());
 		crawler.setName(item.getName());
 		crawler.setDescription(item.getDescription());
@@ -529,16 +529,18 @@ public class PrimemoverApiConverter {
 		// grab joblists
 		List<primemover.api.model.Queue> queues = item.getQueues();
 
-		for (primemover.api.model.Queue queue : queues) {
-			Joblist jobList = convertApiQueue(queue, defaultCaptchaSolving);
+		if (queues != null) {
+			for (primemover.api.model.Queue queue : queues) {
+				Joblist jobList = convertApiQueue(queue, defaultCaptchaSolving);
 
-			if (jobList == null) {
-				LOGGER.debug("adding empty joblist to crawler {}", crawler.getId());
-			} else {
-				LOGGER.debug("adding joblist {} to crawler {}", jobList.getId(), crawler.getId());
+				if (jobList == null) {
+					LOGGER.debug("adding empty joblist to crawler {}", crawler.getId());
+				} else {
+					LOGGER.debug("adding joblist {} to crawler {}", jobList.getId(), crawler.getId());
+				}
+
+				out.add(Pair.of(crawler, jobList));
 			}
-
-			out.add(Pair.of(crawler, jobList));
 		}
 
 		return out;
@@ -550,6 +552,23 @@ public class PrimemoverApiConverter {
 
 		List<Pair<Crawler, Joblist>> res = new ArrayList<Pair<Crawler, Joblist>>();
 		List<primemover.api.model.Crawler> data = input.getData();
+
+		if (!data.isEmpty()) {
+
+			for (primemover.api.model.Crawler item : data) {
+				res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
+			}
+		}
+
+		return res;
+	}
+
+	public static List<Pair<Crawler, Joblist>> convertFromApi(primemover.api.model.Crawler input,
+			CaptchaSolvingType defaultCaptchaSolving) {
+		LOGGER.debug("converting Crawler with joblist {} with defaultCaptchaSolving", input, defaultCaptchaSolving);
+
+		List<Pair<Crawler, Joblist>> res = new ArrayList<Pair<Crawler, Joblist>>();
+		List<primemover.api.model.Crawler> data = List.of(input);
 
 		if (!data.isEmpty()) {
 
@@ -596,7 +615,6 @@ public class PrimemoverApiConverter {
 			outItem.setSearchTerm(inItem.getSearch_term());
 
 			res.add(outItem);
-
 		}
 
 		return res;
@@ -629,6 +647,21 @@ public class PrimemoverApiConverter {
 		}
 
 		return res;
+	}
+
+	public static List<Pair<Crawler, Joblist>> convertFromApi(List<primemover.api.model.Crawler> crawlers,
+			CaptchaSolvingType defaultCaptchaSolving) {
+		List<Pair<Crawler, Joblist>> out = new ArrayList<>();
+
+		LOGGER.debug("start converting {} items", crawlers.size());
+
+		for (primemover.api.model.Crawler crawler : crawlers) {
+			LOGGER.debug("converting crawler id {} / {}", crawler.getId(), crawler.getName());
+			List<Pair<Crawler, Joblist>> conversion = convertFromApi(crawler, defaultCaptchaSolving);
+			out.addAll(conversion);
+		}
+
+		return out;
 	}
 
 }

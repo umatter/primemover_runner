@@ -9,12 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import primemover.anticaptcha.CaptchaSolvingType;
-import primemover.model.AgentType;
-import primemover.model.BasicAgent;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.DialogHandleType;
+import primemover.model.FirefoxAgent;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
@@ -47,8 +46,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 	@BeforeEach
 	public void setup() {
-		operator = operatorFactory.getItem();
-		agent = new BasicAgent(1l, AgentType.FIREFOX, "firefox", "Firefox", "");
+		agent = new FirefoxAgent(1l, "firefox", "Firefox", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 
@@ -86,7 +84,7 @@ class RunGoogleSearchOnFirefoxTest {
 		config.setSelectionConfiguration(selConfig);
 		crawler.setConfig(config);
 
-		operator.setup(crawler);
+		operator = operatorFactory.getItem(crawler);
 	}
 
 	void visitGoogleInclAgreementJobs(Joblist jobs, long jobIdStart) {

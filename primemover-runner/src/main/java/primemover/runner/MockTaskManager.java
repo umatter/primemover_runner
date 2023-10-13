@@ -19,14 +19,14 @@ public class MockTaskManager implements ITaskManager {
 	private static Logger logger = LoggerFactory.getLogger(MockTaskManager.class);
 
 	private Integer maxThreads = 2; // maximum parallel executions of joblists
-	
+
 	private ExecutorService executorService;
-	
+
 	private List<FutureTask<Boolean>> tasks = new ArrayList<FutureTask<Boolean>>();
 
 	@Autowired
 	TaskOperatorFactory taskServiceFactory;
-	
+
 	public MockTaskManager() {
 	}
 
@@ -34,20 +34,19 @@ public class MockTaskManager implements ITaskManager {
 	public void setup() {
 		executorService = Executors.newFixedThreadPool(maxThreads);
 	}
-	
 
-	public void addTask (Crawler crawler, Joblist jobs) {
-		JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(), crawler, jobs);
+	public void addTask(Crawler crawler, Joblist jobs) {
+		JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(crawler), crawler, jobs);
 		FutureTask<Boolean> fut = new FutureTask<Boolean>(runner);
 		tasks.add(fut);
 	}
-	
+
 	@Override
 	public void run() {
 		for (FutureTask<Boolean> task : tasks) {
 			executorService.execute(task);
 		}
-		
+
 		for (FutureTask<Boolean> task : tasks) {
 			try {
 				task.get();

@@ -25,6 +25,7 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.service.AgentService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
+import primemover.service.IJobService;
 import primemover.service.IStorageService;
 import primemover.service.JobService;
 import primemover.service.MockCrawlerService;
@@ -51,7 +52,7 @@ public class TestConfig {
 	}
 
 	@Bean(name = "JobService")
-	JobService getJobService() {
+	IJobService getJobService() {
 		return new JobService();
 	}
 

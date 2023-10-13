@@ -3,7 +3,7 @@ package primemover.model;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BasicAgent implements IAgent {
+public abstract class BasicAgent implements IAgent {
 
 	@Nonnull
 	private Long id;

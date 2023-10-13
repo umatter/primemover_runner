@@ -1,10 +1,11 @@
 package primemover.anticaptcha;
 
-import org.apache.commons.lang3.time.StopWatch;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -165,9 +166,8 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 		}
 
 		// check to see if the plugin is working on a captcha, allow 3 seconds for setup
-		try 
-		{
-			new WebDriverWait(context.getDriver(), 3)
+		try {
+			new WebDriverWait(context.getDriver(), Duration.ofSeconds(3))
 					.until(driver -> driver.findElement(By.cssSelector(".antigate_solver")));
 		} catch (Exception e) {
 			// ignore -> plugin inactive
@@ -182,17 +182,17 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 		StopWatch timing = new StopWatch();
 		timing.start();
-		try
-		{
-			new WebDriverWait(context.getDriver(), maxSolvingSeconds).until(driver -> driver.findElement(By.cssSelector(".antigate_solver.solved")));
+		try {
+			new WebDriverWait(context.getDriver(), Duration.ofSeconds(maxSolvingSeconds))
+					.until(driver -> driver.findElement(By.cssSelector(".antigate_solver.solved")));
 		} catch (NoSuchElementException ex) {
 			LOGGER.warn("Captcha not solved within {} seconds", maxSolvingSeconds);
 
 			return CaptchaSolverResult.of(true, true, false, maxSolvingSeconds, true, true, null);
 		}
 		timing.stop();
-		
+
 		return CaptchaSolverResult.of(true, true, false, timing.getTime(TimeUnit.SECONDS), false, false, null);
-		
+
 	}
 }

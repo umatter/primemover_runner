@@ -1,5 +1,6 @@
 package primemover.runner.job.handler;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.openqa.selenium.WebDriver;
@@ -33,7 +34,7 @@ public class SwitchToJobHandler implements IJobHandler {
 			WebElement selectedElement = elements.get(0);
 
 			// Wait for Element
-			WebDriverWait wait = new WebDriverWait(driver, 5);
+			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 			wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(selectedElement));
 		} else {
 			logger.warn("Found more than one element for job {}", typedJob.getId());

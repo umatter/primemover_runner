@@ -2,6 +2,7 @@ package primemover.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +45,7 @@ public class SelectingHelper {
 
 	public static List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
 		logger.debug("grabing elements by {} with selector {}", type, selector);
-		WebDriverWait wait = new WebDriverWait(driver, 5);
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
 		List<WebElement> elements;
 		switch (type) {
@@ -78,7 +79,7 @@ public class SelectingHelper {
 	public static WebElement getElementByWebdriver(WebDriver driver, SelectorType type, String selector) {
 		logger.debug("grabing element by {} with selector {}", type, selector);
 		WebElement element;
-		WebDriverWait wait = new WebDriverWait(driver, 5);
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
 		switch (type) {
 		case CLASS:

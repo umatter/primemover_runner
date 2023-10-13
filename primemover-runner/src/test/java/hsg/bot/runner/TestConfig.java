@@ -32,6 +32,7 @@ import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
 import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
+import primemover.service.IJobService;
 import primemover.service.IStorageService;
 import primemover.service.IpServiceFactory;
 import primemover.service.JobService;
@@ -69,7 +70,7 @@ public class TestConfig {
 	}
 
 	@Bean(name = "JobService")
-	JobService getJobService() {
+	IJobService getJobService() {
 		return new JobService();
 	}
 

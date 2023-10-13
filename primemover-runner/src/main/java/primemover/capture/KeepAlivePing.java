@@ -14,14 +14,14 @@ import org.slf4j.LoggerFactory;
  * @author dburkolter
  *
  */
-public class KeepAliveHelper implements AutoCloseable {
-	private static final Logger LOGGER = LoggerFactory.getLogger(KeepAliveHelper.class);
+public class KeepAlivePing implements AutoCloseable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(KeepAlivePing.class);
 
 	private UrlVerificator verificator;
 	private int intervalSeconds;
 	Timer timer = null;
 
-	public KeepAliveHelper(UrlVerificator verificator, int intervalSeconds) {
+	public KeepAlivePing(UrlVerificator verificator, int intervalSeconds) {
 		super();
 		this.verificator = verificator;
 		this.intervalSeconds = intervalSeconds;

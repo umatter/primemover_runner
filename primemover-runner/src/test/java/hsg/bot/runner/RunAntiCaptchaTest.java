@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import primemover.anticaptcha.CaptchaSolvingType;
-import primemover.model.AgentType;
-import primemover.model.BasicAgent;
+import primemover.model.ChromeAgent;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
+import primemover.model.FirefoxAgent;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
@@ -35,7 +35,6 @@ class RunAntiCaptchaTest {
 	Crawler crawler;
 
 	public void setup() {
-		operator = operatorFactory.getItem();
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 
@@ -69,7 +68,7 @@ class RunAntiCaptchaTest {
 		config.setSelectionConfiguration(selConfig);
 		crawler.setConfig(config);
 
-		operator.setup(crawler);
+		operator = operatorFactory.getItem(crawler);
 	}
 
 	private void runJobList() {
@@ -100,7 +99,7 @@ class RunAntiCaptchaTest {
 
 	@Test
 	void openRecaptchaV2WithChrome() {
-		agent = new BasicAgent(1l, AgentType.CHROME, "Chrome", "Chrome", "");
+		agent = new ChromeAgent(1l, "Chrome", "Chrome", "");
 		setup();
 
 		runJobList();
@@ -108,7 +107,7 @@ class RunAntiCaptchaTest {
 
 	@Test
 	void openRecaptchaV2WithFirefox() {
-		agent = new BasicAgent(1l, AgentType.FIREFOX, "Chrome", "Chrome", "");
+		agent = new FirefoxAgent(1l, "firefox", "firefox", "");
 		setup();
 
 		runJobList();

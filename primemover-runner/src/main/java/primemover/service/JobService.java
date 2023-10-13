@@ -24,7 +24,7 @@ import primemover.model.Joblist;
 import primemover.model.JoblistState;
 
 @Service
-public class JobService {
+public class JobService implements IJobService {
 
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
@@ -67,12 +67,13 @@ public class JobService {
 		return url;
 	}
 
+	@Override
 	public Boolean updateJoblistState(Joblist jobs, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
 		return updateJoblistState(jobs.getId(), state, startTime, endTime, processed, processing);
 	}
 
-	public Boolean updateJoblistState(Long queueId, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
+	private Boolean updateJoblistState(Long queueId, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
 		String url = calculateJobListUrl(queueId);
 
@@ -112,16 +113,18 @@ public class JobService {
 		}
 	}
 
+	@Override
 	public Boolean updateCaptchaStateOnJob(final IJob job, Boolean captchaFound, Boolean captchaSolved) {
 		return updateJobState(job.getId(), null, captchaFound, captchaSolved, null, null);
 	}
 
+	@Override
 	public Boolean updateJobState(final IJob job, final JobState state, Boolean captchaFound,
 			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
 		return updateJobState(job.getId(), state, captchaFound, captchaSolved, startTime, endTime);
 	}
 
-	public Boolean updateJobState(final Long jobID, final JobState state, final Boolean captchaFound,
+	private Boolean updateJobState(final Long jobID, final JobState state, final Boolean captchaFound,
 			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
 		// do we have something to update?
 		if (state == null && captchaFound == null && captchaSolved == null && startTime != null && endTime != null) {
