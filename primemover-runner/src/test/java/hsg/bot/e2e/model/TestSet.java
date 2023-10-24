@@ -11,14 +11,14 @@ import primemover.api.model.Crawler;
 public class TestSet {
 
 	@Nonnull
-	private List<Crawler> crawlers = new ArrayList<>();
+	private List<Crawler> data = new ArrayList<>();
 
 	public TestSet() {
 	}
 
 	@Nonnull
-	public List<Crawler> getCrawlers() {
-		return Collections.unmodifiableList(crawlers);
+	public List<Crawler> getData() {
+		return Collections.unmodifiableList(data);
 	}
 
 }

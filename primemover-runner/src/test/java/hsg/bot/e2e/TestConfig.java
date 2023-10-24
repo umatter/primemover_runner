@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -138,7 +139,11 @@ public class TestConfig {
 
 	@Bean(name = "OutletsProvider", initMethod = "refresh")
 	OutletsProvider getOutletsProvider() {
-		return new OutletsProvider();
+
+		OutletsProvider mockProvider = mock(OutletsProvider.class);
+		when(mockProvider.getOutletsMapByDomain()).thenReturn(new HashMap<>());
+
+		return mockProvider;
 	}
 
 	@Bean(name = "SelectingHelper")

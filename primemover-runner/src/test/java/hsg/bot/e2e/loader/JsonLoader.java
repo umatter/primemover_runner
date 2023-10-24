@@ -33,7 +33,6 @@ import primemover.model.IAgent;
 import primemover.model.Joblist;
 
 public class JsonLoader {
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Nullable
@@ -95,7 +94,7 @@ public class JsonLoader {
 		LOGGER.debug("loading file: '{}'", path);
 
 		TestSet testSet = mapper.readValue(new File(path), TestSet.class);
-		List<Pair<Crawler, Joblist>> converted = PrimemoverApiConverter.convertFromApi(testSet.getCrawlers(),
+		List<Pair<Crawler, Joblist>> converted = PrimemoverApiConverter.convertFromApi(testSet.getData(),
 				defaultCaptchaSolving);
 
 		// run remapping

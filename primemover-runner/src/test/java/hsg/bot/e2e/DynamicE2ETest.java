@@ -32,7 +32,15 @@ class DynamicE2ETest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	/**
+	 * source folder for the json-testscripts
+	 */
 	private static String testCasesFolder = "e2e-testcases";
+
+	/**
+	 * get rid of some tests by putting a prefix while developing
+	 */
+	private static String disablePrefix = "_";
 
 	@Autowired
 	private TaskOperatorFactory operatorFactory;
@@ -45,9 +53,15 @@ class DynamicE2ETest {
 		loader.setAgentRemapping(AgentType.CHROME);
 	}
 
+	/**
+	 * Display name of the generated test
+	 */
 	private Function<Pair<Crawler, Joblist>, String> displayNameGenerator = (input) -> "test: "
 			+ input.getLeft().getName();
 
+	/**
+	 * Executor for the tests
+	 */
 	private ThrowingConsumer<Pair<Crawler, Joblist>> testExecutor = (test) -> {
 		LOGGER.debug("running test '{}'", test.getLeft().getName());
 
@@ -57,6 +71,14 @@ class DynamicE2ETest {
 		service = null;
 	};
 
+	/**
+	 * Generator for tests. Will browse the folder for JSON-Files and read in the
+	 * crawlers with the joblists to execute
+	 * 
+	 * @return Stream with tests
+	 * 
+	 * @throws IOException
+	 */
 	@TestFactory
 	public Stream<DynamicTest> generateTestCases() throws IOException {
 
@@ -68,8 +90,11 @@ class DynamicE2ETest {
 
 		File[] files = path.listFiles();
 
-		List<String> fileList = Stream.of(files).filter(file -> !file.isDirectory()).map(File::getAbsolutePath)
-				.collect(Collectors.toUnmodifiableList());
+		Stream<File> fileStream = Stream.of(files).filter(file -> !file.isDirectory());
+		if (disablePrefix != null) {
+			fileStream = fileStream.filter((file) -> !file.getName().startsWith(disablePrefix));
+		}
+		List<String> fileList = fileStream.map(File::getAbsolutePath).collect(Collectors.toUnmodifiableList());
 
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("num test cases: {}", fileList.size());
