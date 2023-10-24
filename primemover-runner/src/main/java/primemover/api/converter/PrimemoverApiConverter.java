@@ -432,7 +432,7 @@ public class PrimemoverApiConverter {
 	}
 
 	private static Configuration convertApiConfiguration(primemover.api.model.Configuration item) {
-		LOGGER.debug("converting Cofiguration {}", item);
+		LOGGER.debug("converting Configuration {}", item);
 
 		if (item == null) {
 			return null;

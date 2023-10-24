@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -136,6 +137,12 @@ public class JobListRunner implements Callable<Boolean> {
 
 	@Override
 	public Boolean call() {
+		// add some context
+		MDC.put("crawler.id", crawler.getId().toString());
+		MDC.put("crawler.name", crawler.getName());
+		MDC.put("joblist.id", jobs.getId().toString());
+		MDC.put("correlationId", "cr-" + crawler.getId().toString() + "|jl-" + jobs.getId().toString());
+
 		// running joblist
 		try {
 			SetupState setupRes = null;

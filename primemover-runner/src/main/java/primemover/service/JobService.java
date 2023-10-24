@@ -161,6 +161,10 @@ public class JobService implements IJobService {
 			data.put("finished_at", dateFormater.format(endTime));
 		}
 
+		if (logger.isDebugEnabled()) {
+			logger.debug("sending JSON:\n{}", data);
+		}
+
 		HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 
 		try {

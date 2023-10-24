@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ import primemover.runner.joblist.JobListRunner;
 import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.ICrawlerService;
 import primemover.service.IJobService;
+import primemover.util.threading.MdcAwareThreadPoolExecutor;
 
 /**
  * The Task-Manager is responsible for checking for newly available tasks and
@@ -82,7 +84,13 @@ public class TaskManager implements ITaskManager {
 	 */
 	@Override
 	public void setup() {
-		executorService = Executors.newFixedThreadPool(maxThreads);
+
+		// make sure to create an executor that will clean the MDC-state after
+		// execution.
+		executorService = new MdcAwareThreadPoolExecutor(0, maxThreads, 10, TimeUnit.SECONDS,
+				new LinkedBlockingQueue<Runnable>());
+
+		// executorService = Executors.newFixedThreadPool(maxThreads);
 		scheduler = Executors.newSingleThreadScheduledExecutor(); // jobs will only pass the execution to the executor
 																	// service
 	}
@@ -188,14 +196,18 @@ public class TaskManager implements ITaskManager {
 
 				// just pass the job to the executor after reaching the starttime
 				scheduler.schedule(new Runnable() {
-					// Job to run
-					JobListRunner runner = jobListRunnerFactory.createJobListRunner(task.getLeft(), jobs);
-					// ID of joblist
-					Long jobListId = task.getRight().getId();
+
+					// crawler
+					Crawler crawler = task.getLeft();
+
+					// jobs
+					Joblist jobs = task.getRight();
 
 					@Override
 					public void run() {
-						logger.info("Init execution of joblist {}", jobListId);
+						// run
+						logger.info("Init execution of joblist {}", jobs.getId());
+						JobListRunner runner = jobListRunnerFactory.createJobListRunner(crawler, jobs);
 						executorService.submit(runner);
 					}
 
