@@ -14,10 +14,10 @@ import primemover.api.model.TermResult;
 import primemover.model.Term;
 
 public class TermsService {
-	
-	@Value("#{'${backend.endpoint}' +'agents'}")
+
+	@Value("#{'${backend.endpoint.runner}' +'agents'}")
 	private String endpointPath;
-	
+
 	@Qualifier("ServiceRestTemplate")
 	@Autowired
 	private RestTemplate restTemplate;
@@ -29,9 +29,9 @@ public class TermsService {
 
 	public List<Term> getTerms() {
 		logger.debug("loading jobs from {}", endpointPath);
-		TermResult apiRes = restTemplate.getForObject(endpointPath, TermResult.class);		
+		TermResult apiRes = restTemplate.getForObject(endpointPath, TermResult.class);
 		List<Term> res = PrimemoverApiConverter.convertFromApi(apiRes);
-		
+
 		return res;
 	}
 }

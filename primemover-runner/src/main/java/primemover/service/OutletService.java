@@ -14,10 +14,10 @@ import primemover.api.model.OutletResult;
 import primemover.model.Outlet;
 
 public class OutletService {
-	
-	@Value("#{'${backend.endpoint}' +'outlets'}")
+
+	@Value("#{'${backend.endpoint.api}' +'outlets'}")
 	private String endpointPath;
-	
+
 	@Qualifier("ServiceRestTemplate")
 	@Autowired
 	private RestTemplate restTemplate;
@@ -29,9 +29,9 @@ public class OutletService {
 
 	public List<Outlet> getOutlets() {
 		logger.debug("loading outlets from {}", endpointPath);
-		OutletResult apiRes = restTemplate.getForObject(endpointPath, OutletResult.class);		
+		OutletResult apiRes = restTemplate.getForObject(endpointPath, OutletResult.class);
 		List<Outlet> res = PrimemoverApiConverter.convertFromApi(apiRes);
-		
+
 		return res;
 	}
 }

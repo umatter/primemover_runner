@@ -29,10 +29,10 @@ public class JobService implements IJobService {
 	@Value("${global.mode:PRODUCTION}")
 	private StartupMode mode;
 
-	@Value("#{'${backend.endpoint}' +'queues'}")
+	@Value("#{'${backend.endpoint.runner}' +'queues'}")
 	private String endpointPathQueues;
 
-	@Value("#{'${backend.endpoint}' +'jobs'}")
+	@Value("#{'${backend.endpoint.runner}' +'jobs'}")
 	private String endpointPathJobs;
 
 	private static Logger logger = LoggerFactory.getLogger(JobService.class);

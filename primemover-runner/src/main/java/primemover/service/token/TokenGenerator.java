@@ -22,7 +22,7 @@ public class TokenGenerator {
 	@Value("${backend.connectionTimeoutSeconds:10}")
 	private Long connectionTimeoutSeconds;
 
-	@Value("#{'${backend.endpoint}' +'login'}")
+	@Value("#{'${backend.endpoint.api}' +'login'}")
 	private String endpointPathReports;
 
 	@Value("${backend.username}")

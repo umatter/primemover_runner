@@ -27,47 +27,45 @@ public class IpService {
 	private static Logger logger = LoggerFactory.getLogger(IpService.class);
 	private RestTemplate restTemplate;
 	private AtomicBoolean isInit = new AtomicBoolean(false);
-	
-	@Value("#{'${backend.endpoint}' +'ip'}")
+
+	@Value("#{'${backend.endpoint.api}' +'ip'}")
 	private String endpointPathReports;
-	
+
 	@Autowired
 	TokenRequestInterceptor requestInterceptor;
-	
+
 	public IpService(Proxy proxy) {
 		setProxy(proxy);
 	}
-	
+
 	public IpService() {
 	}
-	
+
 	public void setProxy(Proxy proxy) {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setProxy(proxy);
 		restTemplate = new RestTemplate(requestFactory);
 		isInit.set(true);
 	}
-	
-	
-	
+
 	public LocationInfo getLocationInfo() {
 		if (!isInit.get()) {
 			throw new IllegalStateException("Init proxy before using");
 		}
 		String url = endpointPathReports;
-		
+
 		logger.debug("grabbing location info from {}", url);
 		try {
 			IpResult apiRes = restTemplate.getForObject(url, IpResult.class);
 			LocationInfo res = PrimemoverApiConverter.convertFromApi(apiRes);
-			
+
 			logger.debug("location info retrieved {}", res.toString());
-			
+
 			return res;
 		} catch (RestClientException ex) {
 			logger.warn("Error getting location info", ex);
 		}
-		
+
 		return null;
 	}
 

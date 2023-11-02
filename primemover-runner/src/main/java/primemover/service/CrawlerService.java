@@ -41,16 +41,16 @@ public class CrawlerService implements ICrawlerService {
 	@Value("${global.mode}")
 	private StartupMode mode;
 
-	@Value("#{'${backend.endpoint}' +'crawlers-unprocessed'}")
+	@Value("#{'${backend.endpoint.api}' +'crawlers-unprocessed'}")
 	private String endpointPathUnprocessed;
 
-	@Value("#{'${backend.endpoint}' +'crawlers'}")
+	@Value("#{'${backend.endpoint.api}' +'crawlers'}")
 	private String endpointPathAll;
 
-	@Value("#{'${backend.endpoint}' +'crawlers-testing'}")
+	@Value("#{'${backend.endpoint.api}' +'crawlers-testing'}")
 	private String endpointPathTesting;
 
-	@Value("#{'${backend.endpoint}' +'reports'}")
+	@Value("#{'${backend.endpoint.api}' +'reports'}")
 	private String endpointPathReports;
 
 	@Value("${anticaptcha.defaultMode:NEVER}")
@@ -155,6 +155,8 @@ public class CrawlerService implements ICrawlerService {
 		logger.debug("starting to convert");
 		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes, captchaSolvingDefault);
 
+		logger.debug("jobs detected: {}", res.size());
+
 		if (mode != StartupMode.PRODUCTION) {
 			adjustJobsToToday(res);
 			appendFakeJob(res);
@@ -195,6 +197,7 @@ public class CrawlerService implements ICrawlerService {
 		return null;
 	}
 
+	@Override
 	public Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -226,6 +229,7 @@ public class CrawlerService implements ICrawlerService {
 		}
 	}
 
+	@Override
 	public Boolean writeS3JobData(Long jobId, String filename, String path, String description) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
