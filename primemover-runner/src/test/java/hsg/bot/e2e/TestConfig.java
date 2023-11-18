@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.Proxy;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +29,10 @@ import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.KeepAlivePingFactory;
 import primemover.capture.ProxyDecoratorFactory;
+import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.capture.UrlVerificatorFactory;
+import primemover.model.LocationInfo;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
@@ -41,6 +44,7 @@ import primemover.service.FileStorageService;
 import primemover.service.ICrawlerService;
 import primemover.service.IJobService;
 import primemover.service.IStorageService;
+import primemover.service.IpService;
 import primemover.service.IpServiceFactory;
 import primemover.service.OutletService;
 import primemover.service.TermsService;
@@ -86,9 +90,21 @@ public class TestConfig {
 		return mock;
 	}
 
+	private IpService createIpServiceMock() {
+		IpService mock = mock(IpService.class);
+		when(mock.getLocationInfo()).thenReturn(new LocationInfo());
+		return mock;
+	}
+
 	@Bean(name = "IpServiceFactory")
 	public IpServiceFactory getIpServiceFactory() {
-		return new IpServiceFactory();
+		IpService mockIpService = createIpServiceMock();
+
+		IpServiceFactory mockIpServiceFactory = mock(IpServiceFactory.class);
+		when(mockIpServiceFactory.getInstance((Proxy) any())).thenReturn(mock(IpService.class));
+		when(mockIpServiceFactory.getInstance((RecordingProxy) any())).thenReturn(mockIpService);
+
+		return mockIpServiceFactory;
 	}
 
 	@Bean(name = "AgentService")
