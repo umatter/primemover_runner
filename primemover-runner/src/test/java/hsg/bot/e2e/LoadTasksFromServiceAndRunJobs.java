@@ -43,7 +43,7 @@ class LoadTasksFromServiceAndRunJobs {
 
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = operatorFactory.getItem(task.getLeft());
+			ITaskOperator service = operatorFactory.getInstance(task.getLeft());
 			service.runJobList(task.getValue());
 			service.tearDown(true);
 		}
@@ -56,7 +56,7 @@ class LoadTasksFromServiceAndRunJobs {
 
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = operatorFactory.getItem(task.getLeft());
+			ITaskOperator service = operatorFactory.getInstance(task.getLeft());
 			service.runJobList(task.getValue());
 			service.tearDown(true);
 		}
@@ -69,7 +69,7 @@ class LoadTasksFromServiceAndRunJobs {
 
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = operatorFactory.getItem(task.getLeft());
+			ITaskOperator service = operatorFactory.getInstance(task.getLeft());
 			service.runJobList(task.getValue());
 			service.tearDown(true);
 		}
@@ -82,7 +82,7 @@ class LoadTasksFromServiceAndRunJobs {
 
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = operatorFactory.getItem(task.getLeft());
+			ITaskOperator service = operatorFactory.getInstance(task.getLeft());
 			service.runJobList(task.getValue());
 			service.tearDown(true);
 		}
@@ -95,7 +95,7 @@ class LoadTasksFromServiceAndRunJobs {
 
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = operatorFactory.getItem(task.getLeft());
+			ITaskOperator service = operatorFactory.getInstance(task.getLeft());
 			service.runJobList(task.getValue());
 			service.tearDown(true);
 		}
@@ -108,7 +108,7 @@ class LoadTasksFromServiceAndRunJobs {
 
 		// run the tasks
 		for (Pair<Crawler, Joblist> task : taskList) {
-			ITaskOperator service = operatorFactory.getItem(task.getLeft());
+			ITaskOperator service = operatorFactory.getInstance(task.getLeft());
 			service.runJobList(task.getValue());
 			service.tearDown(true);
 		}

@@ -5,7 +5,6 @@ import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,8 +34,6 @@ import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
-import primemover.model.proxy.GeoSurfProxy;
-import primemover.model.proxy.IProxy;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.ChromeContext;
@@ -77,6 +74,8 @@ public class TaskOperator implements ITaskOperator {
 	private Integer maxRetryCountInit;
 	@Value("${anticaptcha.check.enabled:true}")
 	private Boolean runCaptchaChecks;
+	@Value("${runner.skipIpRecording:false}")
+	private boolean skipIpRecording = false;
 
 	private ContextBase<?> context = null;
 
@@ -199,13 +198,6 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			try {
-				// log session-identifier
-				if (crawler.getProxy() instanceof GeoSurfProxy) {
-					GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
-					logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
-							geoProxy.getSessionId());
-				}
-
 				// apply proxy
 				logger.debug("updating proxy");
 				bp.updateProxy(recorder);
@@ -433,7 +425,6 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	private RecordingProxy setupRecorder(Crawler crawler) {
-		IProxy crawlerProxy = crawler.getProxy();
 		Integer curRetry = 1;
 
 		while (curRetry <= 3) {
@@ -441,24 +432,7 @@ public class TaskOperator implements ITaskOperator {
 				logger.debug("setting up recorder for {} ({} of {})", crawler.getId(), curRetry, 3);
 
 				// create a recording proxy. Check also for any additional proxy
-				RecordingProxy recorder = recorderFactory.createRecordingProxy();
-
-				if (crawlerProxy != null) {
-					// setting GeoSurf-Session identifier
-					if (crawler.getProxy() instanceof GeoSurfProxy) {
-						GeoSurfProxy geoProxy = (GeoSurfProxy) crawler.getProxy();
-
-						geoProxy.setSessionId("primemover-" + UUID.randomUUID().toString());
-						logger.debug("GeoSurf-Session identifier for crawler {} is {}", crawler.getId(),
-								geoProxy.getSessionId());
-					}
-
-					recorder.setup(crawlerProxy);
-				} else {
-					recorder.setup();
-				}
-
-				return recorder;
+				return recorderFactory.createRecordingProxy(crawler.getProxy());
 			} catch (IllegalStateException ex) {
 				if (curRetry < 3) {
 					logger.warn("setting up recorder for {} failed ({} of {})", crawler.getId(), curRetry, 3);
@@ -501,7 +475,9 @@ public class TaskOperator implements ITaskOperator {
 				if (previousResult) {
 					IJobAwareRunnerContext<?> jobAwareContext = getJobAwareContext(job);
 
-					if (i == 0) {
+					if (skipIpRecording) {
+						runJob(jobAwareContext, IpRecordingTiming.NONE);
+					} else if (i == 0) {
 						runJob(jobAwareContext, IpRecordingTiming.BEFORE_JOB);
 					} else if (i == jobList.size() - 1) {
 						runJob(jobAwareContext, IpRecordingTiming.AFTER_JOB);
@@ -519,7 +495,9 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			res = true;
-		} catch (Exception ex) {
+		} catch (
+
+		Exception ex) {
 			logger.warn("Error running joblist {}", jobs.getId(), ex);
 		}
 
@@ -661,4 +639,13 @@ public class TaskOperator implements ITaskOperator {
 	public void tearDown() {
 		tearDown(false);
 	}
+
+	public boolean isSkipIpRecording() {
+		return skipIpRecording;
+	}
+
+	public void setSkipIpRecording(boolean skipIpRecording) {
+		this.skipIpRecording = skipIpRecording;
+	}
+
 }

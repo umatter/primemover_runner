@@ -1,4 +1,8 @@
-package geosurf;
+package proxy.oxylabs;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -19,8 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
+import primemover.capture.KeepAlivePingFactory;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
+import primemover.capture.UrlVerificatorFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
@@ -30,7 +36,6 @@ import primemover.service.FileStorageService;
 import primemover.service.IJobService;
 import primemover.service.IStorageService;
 import primemover.service.IpServiceFactory;
-import primemover.service.JobService;
 import primemover.service.TermsService;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
@@ -50,7 +55,12 @@ public class TestConfig {
 
 	@Bean(name = "JobService")
 	IJobService getJobService() {
-		return new JobService();
+		IJobService mock = mock(IJobService.class);
+		when(mock.updateCaptchaStateOnJob(any(), any(), any())).thenReturn(true);
+		when(mock.updateJoblistState(any(), any(), any(), any(), any(), any())).thenReturn(true);
+		when(mock.updateJobState(any(), any(), any(), any(), any(), any())).thenReturn(true);
+
+		return mock;
 	}
 
 	@Bean(name = "IpServiceFactory")
@@ -110,7 +120,7 @@ public class TestConfig {
 		return new SelectingHelper();
 	}
 
-	@Bean(name = "RunJobHandler")
+	@Bean(name = "RunJobHandler", initMethod = "setup")
 	public JobDispatcher getRunJobHandler() {
 		return new JobDispatcher();
 	}
@@ -186,5 +196,15 @@ public class TestConfig {
 	@Bean(name = "ProxyDecoratorFactory")
 	public ProxyDecoratorFactory getProxyDecoratorFactory() {
 		return new ProxyDecoratorFactory();
+	}
+
+	@Bean(name = "UrlVerificatorFactory")
+	UrlVerificatorFactory getUrlVerificatorFactory() {
+		return new UrlVerificatorFactory();
+	}
+
+	@Bean(name = "KeepAlivePingFactory")
+	KeepAlivePingFactory getKeepAlivePingFactory() {
+		return new KeepAlivePingFactory();
 	}
 }

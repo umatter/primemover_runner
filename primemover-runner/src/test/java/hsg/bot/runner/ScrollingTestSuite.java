@@ -35,7 +35,7 @@ class ScrollingTestSuite {
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 
-		service = serviceFactory.getItem(crawler);
+		service = serviceFactory.getInstance(crawler);
 	}
 
 	@Test

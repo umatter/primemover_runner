@@ -1,10 +1,14 @@
 package primemover.capture;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import primemover.model.proxy.IProxy;
 
 public class RecordingProxyFactory implements ApplicationContextAware {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecordingProxyFactory.class);
@@ -24,6 +28,10 @@ public class RecordingProxyFactory implements ApplicationContextAware {
 	}
 
 	public RecordingProxy createRecordingProxy() {
+		return this.createRecordingProxy(null);
+	}
+
+	public RecordingProxy createRecordingProxy(@Nullable IProxy chainedProxy) {
 		if (!isInit) {
 			throw new IllegalStateException("set the appliation context before usage.");
 		}
@@ -31,6 +39,12 @@ public class RecordingProxyFactory implements ApplicationContextAware {
 
 		RecordingProxy ret = new RecordingProxy();
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
+
+		if (chainedProxy == null) {
+			ret.setup();
+		} else {
+			ret.setup(chainedProxy);
+		}
 
 		return ret;
 	}

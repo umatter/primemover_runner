@@ -1,4 +1,4 @@
-package geosurf;
+package proxy.geosurf;
 
 import java.util.HashMap;
 
@@ -64,7 +64,7 @@ public class GeosurfBrowserleakTest {
 
 		crawler.setProxy(proxy);
 
-		operator = operatorFactory.getItem(crawler);
+		operator = operatorFactory.getInstance(crawler);
 	}
 
 	Joblist createJobList() {

@@ -84,7 +84,7 @@ class RunGoogleSearchOnFirefoxTest {
 		config.setSelectionConfiguration(selConfig);
 		crawler.setConfig(config);
 
-		operator = operatorFactory.getItem(crawler);
+		operator = operatorFactory.getInstance(crawler);
 	}
 
 	void visitGoogleInclAgreementJobs(Joblist jobs, long jobIdStart) {

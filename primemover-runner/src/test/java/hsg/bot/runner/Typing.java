@@ -35,7 +35,7 @@ class Typing {
 		agent = new ChromeAgent(1l, "Chrome", "Chrome", "");
 		crawler = new Crawler();
 		crawler.setAgent(agent);
-		operator = operatorFactory.getItem(crawler);
+		operator = operatorFactory.getInstance(crawler);
 	}
 
 	@Test

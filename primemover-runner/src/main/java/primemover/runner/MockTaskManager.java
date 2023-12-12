@@ -36,7 +36,7 @@ public class MockTaskManager implements ITaskManager {
 	}
 
 	public void addTask(Crawler crawler, Joblist jobs) {
-		JobListRunner runner = new JobListRunner(taskServiceFactory.getItem(crawler), crawler, jobs);
+		JobListRunner runner = new JobListRunner(taskServiceFactory.getInstance(crawler), crawler, jobs);
 		FutureTask<Boolean> fut = new FutureTask<Boolean>(runner);
 		tasks.add(fut);
 	}

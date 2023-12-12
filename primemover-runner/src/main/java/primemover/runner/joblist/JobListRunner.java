@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -81,7 +83,7 @@ public class JobListRunner implements Callable<Boolean> {
 	}
 
 	private enum RunningState {
-		SUCCESS, FAILURE
+		NOTSTARTED, SUCCESS, FAILURE
 	}
 
 	private RunningState runJoblist() {
@@ -99,7 +101,7 @@ public class JobListRunner implements Callable<Boolean> {
 		}
 	}
 
-	private void tearDown(SetupState setupRes, RunningState jobsRes) {
+	private void tearDown(@Nonnull SetupState setupRes, @Nonnull RunningState jobsRes) {
 		// release resources
 		logger.debug("tearing down crawler {} after running joblist {}", crawler.getId(), jobs.getId());
 		taskOperator.tearDown(false);
@@ -146,15 +148,25 @@ public class JobListRunner implements Callable<Boolean> {
 		// running joblist
 		try {
 			SetupState setupRes = null;
-			RunningState jobsRes = null;
+			RunningState jobsRes = RunningState.NOTSTARTED;
 
 			setupRes = setup();
 
-			if (setupRes == SetupState.SUCCESS) {
+			switch (setupRes) {
+			case FAILURE:
+				tearDown(setupRes, jobsRes);
+				return false;
+			case NO_JOBS:
+				tearDown(setupRes, jobsRes);
+				return true;
+			case SKIPPED:
+				tearDown(setupRes, jobsRes);
+				return true;
+			default:
 				jobsRes = runJoblist();
+				tearDown(setupRes, jobsRes);
+				return true;
 			}
-
-			tearDown(setupRes, jobsRes);
 
 		} catch (Exception e) {
 			try {
@@ -172,8 +184,6 @@ public class JobListRunner implements Callable<Boolean> {
 
 			return false; // exit due to error
 		}
-
-		return true; // execution was successful (all Exceptions are treated accordingly)
 	}
 
 	public JobListRunner(ITaskOperator taskOperator, Crawler crawler, Joblist jobs) {

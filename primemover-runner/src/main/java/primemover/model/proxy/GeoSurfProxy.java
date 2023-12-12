@@ -1,8 +1,7 @@
 package primemover.model.proxy;
 
-public class GeoSurfProxy extends HttpProxy {
+public class GeoSurfProxy extends HttpProxy implements ISessionProxy {
 	private String location;
-	private String sessionId;
 
 	public GeoSurfProxy(String url, Integer port, String username, String password, String location) {
 		super(url, port, username, password);
@@ -21,13 +20,4 @@ public class GeoSurfProxy extends HttpProxy {
 		this.location = location;
 	}
 
-	public String getSessionId() {
-		return sessionId;
-	}
-
-	public void setSessionId(String sessionId) {
-		this.sessionId = sessionId;
-	}
-
-	
 }

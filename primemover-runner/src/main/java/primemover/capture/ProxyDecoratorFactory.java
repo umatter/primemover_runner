@@ -25,13 +25,13 @@ public class ProxyDecoratorFactory implements ApplicationContextAware {
 		isInit = true;
 	}
 
-	public ProxyDecorator decorateProxy(IProxy proxy) {
+	public SessionDecorator decorateProxy(IProxy proxy) {
 		if (!isInit) {
 			throw new IllegalStateException("set the appliation context before usage.");
 		}
 		LOGGER.debug("decorating Proxy - {}", proxy);
 
-		ProxyDecorator decorated = new ProxyDecorator(proxy);
+		SessionDecorator decorated = new SessionDecorator(proxy);
 		ctx.getAutowireCapableBeanFactory().autowireBean(decorated);
 		return decorated;
 	}

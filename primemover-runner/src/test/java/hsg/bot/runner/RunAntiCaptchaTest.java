@@ -68,7 +68,7 @@ class RunAntiCaptchaTest {
 		config.setSelectionConfiguration(selConfig);
 		crawler.setConfig(config);
 
-		operator = operatorFactory.getItem(crawler);
+		operator = operatorFactory.getInstance(crawler);
 	}
 
 	private void runJobList() {

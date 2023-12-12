@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import io.opentelemetry.api.internal.StringUtils;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.IProxy;
+import primemover.model.proxy.OxylabsProxy;
+import primemover.model.proxy.Utils;
 
 /**
  * This class will decorate a Proxy-object with a specific session-id. Thus, any
@@ -16,24 +18,29 @@ import primemover.model.proxy.IProxy;
  * @author dburkolter
  *
  */
-public class ProxyDecorator implements IProxy {
+public class SessionDecorator implements IProxy {
 
 	@Value("${geosurf.overwrite.user:}")
 	private static String geosurfUserOverwrite;
 	@Value("${geosurf.overwrite.password:}")
 	private static String geosurfPasswordOverwrite;
 
+	@Value("${oxylabs.overwrite.user:}")
+	private static String oxylabsUserOverwrite;
+	@Value("${oxylabs.overwrite.password:}")
+	private static String oxylabsPasswordOverwrite;
+
 	private final IProxy innerProxy;
 	private final String sessionId;
 
-	ProxyDecorator(IProxy decorated, String prefix) {
+	SessionDecorator(IProxy decorated, String prefix) {
 		this.innerProxy = decorated;
 
 		// sessionId = prefix + String.format("%06d", new Random().nextInt(1000000));
-		sessionId = prefix + UUID.randomUUID().toString();
+		sessionId = prefix + UUID.randomUUID().toString().replace("-", "");
 	}
 
-	ProxyDecorator(IProxy decorated) {
+	SessionDecorator(IProxy decorated) {
 		this(decorated, "");
 	}
 
@@ -60,22 +67,39 @@ public class ProxyDecorator implements IProxy {
 		return innerProxy.getPort();
 	}
 
+	private String runUsernameReplacement(String input) {
+		return input //
+				.replace(Utils.SessionPlaceholder, this.getSessionId()) //
+				.replace(Utils.PasswordPlaceholder, this.getPassword());
+	}
+
 	@Override
 	public String getUsername() {
+
+		String tmp = innerProxy.getUsername();
+
 		if (!StringUtils.isNullOrEmpty(geosurfUserOverwrite) && innerProxy instanceof GeoSurfProxy) {
-			return geosurfUserOverwrite.replace("%%SESSIONID%%", sessionId);
-		} else {
-			return innerProxy.getUsername().replace("%%SESSIONID%%", sessionId);
+			tmp = geosurfUserOverwrite;
 		}
+
+		if (!StringUtils.isNullOrEmpty(oxylabsUserOverwrite) && innerProxy instanceof OxylabsProxy) {
+			tmp = oxylabsUserOverwrite;
+		}
+
+		return runUsernameReplacement(tmp);
 	}
 
 	@Override
 	public String getPassword() {
 		if (!StringUtils.isNullOrEmpty(geosurfPasswordOverwrite) && innerProxy instanceof GeoSurfProxy) {
 			return geosurfPasswordOverwrite;
-		} else {
-			return innerProxy.getPassword();
 		}
+
+		if (!StringUtils.isNullOrEmpty(oxylabsPasswordOverwrite) && innerProxy instanceof OxylabsProxy) {
+			return oxylabsPasswordOverwrite;
+		}
+
+		return innerProxy.getPassword();
 	}
 
 }

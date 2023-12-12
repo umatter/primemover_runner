@@ -24,7 +24,7 @@ public class JobListRunnerFactory implements ApplicationContextAware {
 	}
 
 	public JobListRunner createJobListRunner(Crawler crawler, Joblist jobs) {
-		JobListRunner ret = new JobListRunner(taskOperatorFactory.getItem(crawler), crawler, jobs);
+		JobListRunner ret = new JobListRunner(taskOperatorFactory.getInstance(crawler), crawler, jobs);
 
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
 

@@ -42,7 +42,7 @@ class MultiLoginTestSuite {
 		crawler.setAgent(agent);
 		crawler.setProxy(proxy);
 
-		service = serviceFactory.getItem(crawler);
+		service = serviceFactory.getInstance(crawler);
 	}
 
 	@Test

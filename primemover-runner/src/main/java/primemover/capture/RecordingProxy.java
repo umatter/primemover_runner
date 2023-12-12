@@ -9,6 +9,8 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
@@ -33,6 +35,7 @@ import com.browserup.bup.proxy.auth.AuthType;
 import com.browserup.bup.proxy.dns.NativeResolver;
 import com.browserup.harreader.model.Har;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
@@ -41,6 +44,7 @@ import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
 import primemover.service.IpService;
+import software.amazon.awssdk.utils.StringUtils;
 
 /**
  * A proxy for recording all data that is communicated while opening a webpage.
@@ -216,11 +220,10 @@ public class RecordingProxy {
 			@Override
 			public HttpFilters filterRequest(HttpRequest originalRequest) {
 				return new HttpFiltersAdapter(originalRequest) {
-					@SuppressWarnings("deprecation")
 					@Override
 					public HttpResponse proxyToServerRequest(HttpObject httpObject) {
 						if (httpObject instanceof HttpRequest) {
-							((HttpRequest) httpObject).headers().remove(HttpHeaders.Names.VIA);
+							((HttpRequest) httpObject).headers().remove(HttpHeaderNames.VIA);
 						}
 						return null;
 					}
@@ -229,17 +232,18 @@ public class RecordingProxy {
 		});
 
 		if (targetProxy != null) {
-			LOGGER.debug("using chained proxy {}:{}", targetProxy.getPort(), targetProxy.getPort());
+			LOGGER.debug("using chained proxy {}:{}", targetProxy.getUrl(), targetProxy.getPort());
 
 			// simple decorator for usernames, currently only for Geosurf-usage
-			ProxyDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
+			SessionDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
 
-			// check for whitelisting
-			// if (!(StringUtils.isEmpty(targetProxy.getUsername()) &&
-			// StringUtils.isEmpty(targetProxy.getPassword()))) {
-			proxy.chainedProxyAuthorization(decoratedProxy.getUsername(), decoratedProxy.getPassword(), AuthType.BASIC);
-			// }
+			// Whitelisting check -> Username and Password not set
+			String username = decoratedProxy.getUsername();
+			String password = decoratedProxy.getPassword();
+			if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
+				proxy.chainedProxyAuthorization(username, password, AuthType.BASIC);
 
+			}
 			proxy.setChainedProxy(new InetSocketAddress(decoratedProxy.getUrl(), decoratedProxy.getPort()));
 
 			if (targetProxy instanceof HttpProxy) {
@@ -258,7 +262,7 @@ public class RecordingProxy {
 				// https://github.com/browserup/browserup-proxy/blob/88914049391bd3ec5d3db1e4e92618fc7d197810/browserup-proxy-core/src/main/java/com/browserup/bup/BrowserUpProxyServer.java
 				// little dangerous as we don't watch missing auth credentials as in above code
 				proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
-					private ProxyDecorator proxy = decoratedProxy;
+					private SessionDecorator proxy = decoratedProxy;
 					private GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
 
 					@Override
@@ -307,7 +311,7 @@ public class RecordingProxy {
 		this.keepAliveHelper.start();
 	}
 
-	public void setup(IProxy targetProxy) throws IllegalStateException {
+	protected void setup(@Nullable IProxy targetProxy) throws IllegalStateException {
 		LOGGER.debug("starting recorder");
 
 		// proxy creation without connectivity verification
@@ -344,7 +348,7 @@ public class RecordingProxy {
 		throw new IllegalStateException("Proxy was not started properly");
 	}
 
-	public void setup() {
+	protected void setup() {
 		this.setup(null);
 	}
 

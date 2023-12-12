@@ -50,6 +50,7 @@ import primemover.model.jobs.WaitJob;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
+import primemover.model.proxy.OxylabsProxy;
 
 public class PrimemoverApiConverter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PrimemoverApiConverter.class);
@@ -75,10 +76,15 @@ public class PrimemoverApiConverter {
 				GeoSurfProxy geoProxy = new GeoSurfProxy();
 				geoProxy.setLocation(crawler.getAgent().getLocation());
 				res = geoProxy;
+			} else if (type.contains("oxylabs")) {
+				OxylabsProxy oxyProxy = new OxylabsProxy();
+				oxyProxy.setLocation(crawler.getAgent().getLocation());
+				res = oxyProxy;
+
 			} else if (type.contains("http")) {
 				res = new HttpProxy();
 
-				if (type.equals("https")) {
+				if (type.contains("https")) {
 					res.setUseHttps(true);
 				}
 			} else {

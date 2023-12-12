@@ -32,7 +32,7 @@ class EditionCnnComTest {
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 
-		operator = operatorFactory.getItem(crawler);
+		operator = operatorFactory.getInstance(crawler);
 	}
 
 	@Test

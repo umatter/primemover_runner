@@ -1,6 +1,7 @@
-package geosurf;
+package proxy.geosurf;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -41,8 +42,7 @@ class FixedIPTest {
 		HttpProxy targetProxy = new HttpProxy("ctr-1-30m.geosurf.io", 8000, "000000+STATIC-DERS+000000+%%SESSIONID%%",
 				"$SyntheticUsersLimbo2022");
 
-		RecordingProxy rec = recFac.createRecordingProxy();
-		rec.setup(targetProxy);
+		RecordingProxy rec = recFac.createRecordingProxy(targetProxy);
 
 		IpService ipService = ipServiceFactory.getInstance(rec);
 
@@ -66,8 +66,7 @@ class FixedIPTest {
 		HttpProxy targetProxy = new HttpProxy("ctr-1-30m.geosurf.io", 8000, "000000+STATIC-AURS+000000+%%SESSIONID%%",
 				"$SyntheticUsersLimbo2022");
 
-		RecordingProxy rec = recFac.createRecordingProxy();
-		rec.setup(targetProxy);
+		RecordingProxy rec = recFac.createRecordingProxy(targetProxy);
 
 		IpService ipService = ipServiceFactory.getInstance(rec);
 
@@ -91,8 +90,7 @@ class FixedIPTest {
 		HttpProxy targetProxy = new HttpProxy("ctr-1-30m.geosurf.io", 8000, "000000+STATIC-FRRS+000000+%%SESSIONID%%",
 				"$SyntheticUsersLimbo2022");
 
-		RecordingProxy rec = recFac.createRecordingProxy();
-		rec.setup(targetProxy);
+		RecordingProxy rec = recFac.createRecordingProxy(targetProxy);
 
 		IpService ipService = ipServiceFactory.getInstance(rec);
 
@@ -116,8 +114,7 @@ class FixedIPTest {
 		HttpProxy targetProxy = new HttpProxy("ctr-1-30m.geosurf.io", 8000, "000000+STATIC-AURS+154.81.61.30",
 				"$SyntheticUsersLimbo2022");
 
-		RecordingProxy rec = recFac.createRecordingProxy();
-		rec.setup(targetProxy);
+		RecordingProxy rec = recFac.createRecordingProxy(targetProxy);
 
 		IpService ipService = ipServiceFactory.getInstance(rec);
 

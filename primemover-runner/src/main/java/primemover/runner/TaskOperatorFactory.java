@@ -15,23 +15,8 @@ public class TaskOperatorFactory implements ApplicationContextAware {
 	private ApplicationContext ctx;
 	private static TaskOperatorFactory instance = new TaskOperatorFactory();
 
-	public ITaskOperator getItem(Crawler crawler) {
-		ITaskOperator ret = null;
-		switch (mode) {
-		case DEVELOP:
-			ret = new TaskOperator();
-			break;
-		case INTEGRATION:
-			ret = new TaskOperator();
-			break;
-		case PRODUCTION:
-			ret = new TaskOperator();
-			break;
-		default:
-			throw new IllegalStateException("Invalid argument for application mode");
-		// break;
-		}
-
+	public ITaskOperator getInstance(Crawler crawler) {
+		ITaskOperator ret = new TaskOperator();
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
 		ret.setup(crawler);
 

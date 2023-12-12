@@ -65,7 +65,7 @@ class DynamicE2ETest {
 	private ThrowingConsumer<Pair<Crawler, Joblist>> testExecutor = (test) -> {
 		LOGGER.debug("running test '{}'", test.getLeft().getName());
 
-		ITaskOperator service = operatorFactory.getItem(test.getLeft());
+		ITaskOperator service = operatorFactory.getInstance(test.getLeft());
 		service.runJobList(test.getRight());
 		service.tearDown(true);
 		service = null;

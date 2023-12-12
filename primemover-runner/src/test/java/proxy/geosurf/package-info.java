@@ -5,4 +5,4 @@
  * @author dburkolter
  *
  */
-package geosurf;
+package proxy.geosurf;
