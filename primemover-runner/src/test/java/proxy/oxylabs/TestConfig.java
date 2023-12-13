@@ -103,18 +103,6 @@ public class TestConfig {
 		return new RecordingProxyFactory();
 	}
 
-	/*
-	 * @Bean(name="jobmanager", initMethod = "setup") JobManager getManager() {
-	 * JobManager jobManager = new JobManager();
-	 * 
-	 * // jobManager will be called with spring's scheduler return jobManager; }
-	 * 
-	 * @Bean("OutletService") OutletService getOutletService() { return new
-	 * OutletService(); }
-	 * 
-	 * @Bean(name = "OutletsProvider", initMethod = "refresh") OutletsProvider
-	 * getOutletsProvider() { return new OutletsProvider(); }
-	 */
 	@Bean(name = "SelectingHelper")
 	public SelectingHelper getSelectingHelper() {
 		return new SelectingHelper();

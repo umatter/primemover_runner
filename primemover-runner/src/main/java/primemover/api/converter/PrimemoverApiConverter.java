@@ -47,6 +47,7 @@ import primemover.model.jobs.SingleSelectJob;
 import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
+import primemover.model.proxy.BrightdataProxy;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
@@ -80,7 +81,11 @@ public class PrimemoverApiConverter {
 				OxylabsProxy oxyProxy = new OxylabsProxy();
 				oxyProxy.setLocation(crawler.getAgent().getLocation());
 				res = oxyProxy;
-
+			} else if (type.contains("brightdata")) {
+				BrightdataProxy brProxy = new BrightdataProxy();
+				brProxy.setLocation(crawler.getAgent().getLocation());
+				brProxy.setOperatingSystem(null); // currently not passed from the agent
+				res = brProxy;
 			} else if (type.contains("http")) {
 				res = new HttpProxy();
 

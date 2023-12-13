@@ -193,9 +193,10 @@ public class RecordingProxy {
 		// tell the ImpersonatingMitmManager to generate EC keys and to use the EC
 		// RootCertificateGenerator
 		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
-				.rootCertificateSource(existingCertificateSource).serverKeyGenerator(new ECKeyGenerator())
+				.rootCertificateSource(existingCertificateSource)//
+				.serverKeyGenerator(new ECKeyGenerator())//
 				.cacheConcurrencyLevel(16) // 8 is default
-				.cacheExpirationInterval(60, TimeUnit.MINUTES) // 5 Minutes is default
+				.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
 				// .trustAllServers(true)
 				.build();
 
@@ -204,7 +205,7 @@ public class RecordingProxy {
 		// set DNS resolver
 		NativeResolver resolver = new NativeResolver();
 		resolver.getHostRemappings();
-		LOGGER.debug("resolver:" + resolver);
+		LOGGER.debug("resolver: {}", resolver);
 		proxy.setHostNameResolver(resolver);
 
 		// proxy.setMitmDisabled(true);
@@ -234,8 +235,9 @@ public class RecordingProxy {
 		if (targetProxy != null) {
 			LOGGER.debug("using chained proxy {}:{}", targetProxy.getUrl(), targetProxy.getPort());
 
-			// simple decorator for usernames, currently only for Geosurf-usage
+			// simple decorator for usernames with session parameters
 			SessionDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
+			LOGGER.debug("generated session-id: {}", decoratedProxy.getSessionId());
 
 			// Whitelisting check -> Username and Password not set
 			String username = decoratedProxy.getUsername();

@@ -1,12 +1,16 @@
 package primemover.capture;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +29,40 @@ public class UrlVerificator {
 		this.verificationUrls = verificationUrls;
 	}
 
+	private void readData(HttpURLConnection connection) throws IOException {
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(connection.getResponseCode()).append(" ").append(connection.getResponseMessage()).append("\n");
+
+		Map<String, List<String>> map = connection.getHeaderFields();
+		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+			if (entry.getKey() == null)
+				continue;
+			builder.append(entry.getKey()).append(": ");
+
+			List<String> headerValues = entry.getValue();
+			Iterator<String> it = headerValues.iterator();
+			if (it.hasNext()) {
+				builder.append(it.next());
+
+				while (it.hasNext()) {
+					builder.append(", ").append(it.next());
+				}
+			}
+
+			builder.append("\n");
+		}
+
+		builder.append("content:\n");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			builder.append(line);
+		}
+
+		LOGGER.debug("verification response:\n{}", builder);
+	}
+
 	private boolean verifyUrl(String strUrl) {
 		LOGGER.debug("Start to verify {}", strUrl);
 
@@ -33,6 +71,9 @@ public class UrlVerificator {
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			connection.setConnectTimeout(timeoutMillis);
 			connection.connect();
+			if (LOGGER.isDebugEnabled()) {
+				this.readData(connection);
+			}
 			connection.disconnect();
 
 			LOGGER.debug("Successfully verified {}", strUrl);
