@@ -16,7 +16,7 @@ public class UrlVerificatorFactory {
 	@Value("${recorder.connectTimeoutSeconds:45}")
 	private Integer connectTimeoutSeconds;
 
-	@Value("#{'${recorder.connectivityVerificationUrls:https://primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero
+	@Value("#{'${proxy.connectivityVerificationUrls:https://primemover.example/,https://app.multiloginapp.com/whatismyip}'.split(',')}") // zero
 	private List<String> connectivityVerificationUrls;
 
 	UrlVerificator getInstance(Proxy proxy) {

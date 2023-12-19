@@ -94,6 +94,10 @@ public class SelectingHelper {
 		case XPATH:
 			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(selector)));
 			break;
+		case TEXT:
+			String xPath = "//*[text()='" + selector + "']";
+			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xPath)));
+			break;
 		default:
 			throw new UnsupportedOperationException("Not implemented yet");
 		}

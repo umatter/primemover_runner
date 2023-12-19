@@ -11,6 +11,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -24,10 +25,12 @@ import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.MultiLoginAgent;
+import primemover.model.SelectorType;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.IRunnerContext;
 import primemover.util.NavigationHelper;
+import primemover.util.SelectingHelper;
 
 public class PluginCaptchaSolver implements ICaptchaSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PluginCaptchaSolver.class);
@@ -191,6 +194,22 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 			return CaptchaSolverResult.of(true, true, false, maxSolvingSeconds, true, true, null);
 		}
 		timing.stop();
+
+		// special treatment of Amazon -> needs Button click
+		try {
+			WebElement button = SelectingHelper.getElementByWebdriver(context.getDriver(), SelectorType.TEXT,
+					"Continue shopping");
+			if (button != null) {
+				// click and wait for page refresh
+				LOGGER.debug("Clicking Amazon continue");
+				button.click();
+				Thread.sleep(5000);
+			}
+		} catch (NoSuchElementException ex) {
+			// no Amazon button
+		} catch (InterruptedException e) {
+			// nothing to do
+		}
 
 		return CaptchaSolverResult.of(true, true, false, timing.getTime(TimeUnit.SECONDS), false, false, null);
 

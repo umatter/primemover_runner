@@ -1,18 +1,19 @@
 package primemover.model;
 
 public enum SelectorType {
-	XPATH(1),
-	CSS(2),
-	CLASS(3),
-	ID(4);
-	
+	XPATH(1), //
+	CSS(2), //
+	CLASS(3), //
+	ID(4), //
+	TEXT(5);
+
 	private final int code;
 
-    private SelectorType(int code) {
-        this.code = code;
-    }
-    
-    public int getCode() {
-    	return this.code;
-    }
+	private SelectorType(int code) {
+		this.code = code;
+	}
+
+	public int getCode() {
+		return this.code;
+	}
 }
