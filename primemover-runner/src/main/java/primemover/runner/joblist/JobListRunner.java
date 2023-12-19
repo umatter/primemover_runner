@@ -2,7 +2,7 @@ package primemover.runner.joblist;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
@@ -24,7 +24,7 @@ import primemover.service.IJobService;
  * @author dburkolter
  *
  */
-public class JobListRunner implements Callable<Boolean> {
+public class JobListRunner implements Supplier<Boolean> {
 	private static Logger logger = LoggerFactory.getLogger(JobListRunner.class);
 
 	private ITaskOperator taskOperator;
@@ -137,8 +137,7 @@ public class JobListRunner implements Callable<Boolean> {
 		}
 	}
 
-	@Override
-	public Boolean call() {
+	public Boolean run() {
 		// add some context
 		MDC.put("crawler.id", crawler.getId().toString());
 		MDC.put("crawler.name", crawler.getName());
@@ -191,5 +190,10 @@ public class JobListRunner implements Callable<Boolean> {
 		this.taskOperator = taskOperator;
 		this.crawler = crawler;
 		this.jobs = jobs;
+	}
+
+	@Override
+	public Boolean get() {
+		return run();
 	}
 }

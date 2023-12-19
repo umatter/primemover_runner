@@ -3,12 +3,16 @@ package primemover.runner;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -21,7 +25,6 @@ import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
-import primemover.runner.joblist.JobListRunner;
 import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.ICrawlerService;
 import primemover.service.IJobService;
@@ -67,6 +70,8 @@ public class TaskManager implements ITaskManager {
 	private ExecutorService executorService;
 
 	private ScheduledExecutorService scheduler;
+
+	private Map<Long, Runnable> plannedTasks = new ConcurrentHashMap<>();
 
 	@Autowired
 	private ICrawlerService crawlerService;
@@ -192,10 +197,14 @@ public class TaskManager implements ITaskManager {
 				// calculating execution delay (positive only)
 				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
 
-				logger.info("Preparing execution of joblist {} in {} seconds", task.getRight().getId(), delaySeconds);
+				// is tasks already planned
+				if (this.plannedTasks.containsKey(task.getRight().getId())) {
+					logger.info("joblist {} is already planned to be executed", task.getRight().getId());
+					continue;
+				}
 
-				// just pass the job to the executor after reaching the starttime
-				scheduler.schedule(new Runnable() {
+				logger.info("Preparing execution of joblist {} in {} seconds", task.getRight().getId(), delaySeconds);
+				Runnable taskRunnable = new Runnable() {
 
 					// crawler
 					Crawler crawler = task.getLeft();
@@ -205,13 +214,21 @@ public class TaskManager implements ITaskManager {
 
 					@Override
 					public void run() {
-						// run
+						// run and remove from hash
 						logger.info("Init execution of joblist {}", jobs.getId());
-						JobListRunner runner = jobListRunnerFactory.createJobListRunner(crawler, jobs);
-						executorService.submit(runner);
+						Supplier<Boolean> runner = jobListRunnerFactory.createJobListRunner(crawler, jobs);
+						CompletableFuture.supplyAsync(runner, executorService).thenRunAsync(() -> {
+							plannedTasks.remove(jobs.getId());
+						});
 					}
 
-				}, delaySeconds, TimeUnit.SECONDS);
+				};
+
+				this.plannedTasks.put(task.getRight().getId(), taskRunnable); // just need the key, is removed after the
+																				// run of the taskRunnable
+
+				// just pass the job to the executor after reaching the start-time
+				scheduler.schedule(taskRunnable, delaySeconds, TimeUnit.SECONDS);
 			}
 		}
 
@@ -222,6 +239,11 @@ public class TaskManager implements ITaskManager {
 			logger.info("{} joblist are ready to execute; {} are currently executing", size,
 					Math.min(size, maxThreads));
 		}
+
+		// empty plannedTasks
+		this.plannedTasks.forEach((id, runnable) -> {
+
+		});
 
 		lastExecution = curRun;
 		lastTimeAdded = newLastTimeToAdd;
