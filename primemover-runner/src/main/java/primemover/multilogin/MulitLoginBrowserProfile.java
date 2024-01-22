@@ -33,8 +33,11 @@ public class MulitLoginBrowserProfile {
 
 	private static Logger logger = LoggerFactory.getLogger(MulitLoginBrowserProfile.class);
 
-	private static final String MULTILOGIN_API_V1_BASE_URL = "http://127.0.0.1:35000/api/v1";
-	private static final String MULTILOGIN_API_V2_BASE_URL = "http://127.0.0.1:35000/api/v2";
+	private static final String MULTILOGIN_API_V1_BASE_URL = "http://127.0.0.1:%%PORT%%/api/v1";
+	private static final String MULTILOGIN_API_V2_BASE_URL = "http://127.0.0.1:%%PORT%%/api/v2";
+
+	@Value("${multilogin.api.port:35000}")
+	private Long apiPort;
 
 	@Value("${mulitlogin.ApiWaitSeconds:10}")
 	private Long apiWaitSeconds;
@@ -73,6 +76,10 @@ public class MulitLoginBrowserProfile {
 		this.profileId = "";
 	}
 
+	private String replaceApiPlaceholders(String url) {
+		return url.replace("%%PORT%%%", this.apiPort.toString());
+	}
+
 	private void runApiWait() {
 		if (apiWaitSeconds > 0) {
 			logger.trace("make API wait of {} seconds", apiWaitSeconds);
@@ -91,7 +98,7 @@ public class MulitLoginBrowserProfile {
 	public boolean updateExtensions(List<String> extensions) {
 		logger.debug("updating extensions for profile {} to {}", this.profileId, String.join(",", extensions));
 
-		final String url = MULTILOGIN_API_V2_BASE_URL + "/profile/" + this.profileId;
+		final String url = replaceApiPlaceholders(MULTILOGIN_API_V2_BASE_URL) + "/profile/" + this.profileId;
 
 		HttpURLConnection con = null;
 		try {
@@ -143,7 +150,7 @@ public class MulitLoginBrowserProfile {
 	}
 
 	public void updateProxy(RecordingProxy proxy) throws Exception {
-		final String url = MULTILOGIN_API_V2_BASE_URL + "/profile/" + this.profileId;
+		final String url = replaceApiPlaceholders(MULTILOGIN_API_V2_BASE_URL) + "/profile/" + this.profileId;
 
 		logger.debug("Updating proxy for profile {}", this.profileId);
 
@@ -189,7 +196,8 @@ public class MulitLoginBrowserProfile {
 
 	public Boolean isActive() throws Exception {
 		// no API wait as this is requesting a state
-		final String url = MULTILOGIN_API_V1_BASE_URL + "/profile/active?profileId=" + this.profileId;
+		final String url = replaceApiPlaceholders(MULTILOGIN_API_V1_BASE_URL) + "/profile/active?profileId="
+				+ this.profileId;
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -229,7 +237,7 @@ public class MulitLoginBrowserProfile {
 	}
 
 	public Boolean stopProfile() throws Exception {
-		String url = MULTILOGIN_API_V1_BASE_URL + "/profile/stop?profileId=" + this.profileId;
+		String url = replaceApiPlaceholders(MULTILOGIN_API_V1_BASE_URL) + "/profile/stop?profileId=" + this.profileId;
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -278,7 +286,8 @@ public class MulitLoginBrowserProfile {
 		 * Please make sure that you have Multilogin listening port set to 35000.
 		 * Otherwise please change the port value in the url string
 		 */
-		String url = MULTILOGIN_API_V1_BASE_URL + "/profile/start?profileId=" + this.profileId + "&automation=true";
+		String url = replaceApiPlaceholders(MULTILOGIN_API_V1_BASE_URL) + "/profile/start?profileId=" + this.profileId
+				+ "&automation=true";
 
 		logger.debug("Starting profile {}", this.profileId);
 
@@ -323,7 +332,7 @@ public class MulitLoginBrowserProfile {
 	}
 
 	public Boolean deleteProfile() throws Exception {
-		String url = MULTILOGIN_API_V2_BASE_URL + "/profile/" + this.profileId;
+		String url = replaceApiPlaceholders(MULTILOGIN_API_V2_BASE_URL) + "/profile/" + this.profileId;
 
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -395,7 +404,7 @@ public class MulitLoginBrowserProfile {
 	public void createNewProfile(MultiLoginAgent agent, RecordingProxy proxy) {
 		try {
 			// setup method
-			String url = MULTILOGIN_API_V2_BASE_URL + "/profile";
+			String url = replaceApiPlaceholders(MULTILOGIN_API_V2_BASE_URL) + "/profile";
 
 			logger.debug("creating profile for agent {} at {}", agent.getId(), url);
 

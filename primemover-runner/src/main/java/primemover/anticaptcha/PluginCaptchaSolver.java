@@ -140,7 +140,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 			// wait for Plugin initial load
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
 
@@ -149,6 +149,12 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 			data.put("antiCaptchaApiKey", apiKey);
 
 			sendApiRequest(context.getDriver(), SET_OPTIONS_MESSAGE, data);
+
+			// wait for Plugin to accept key
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+			}
 
 			this.pluginInitialised = true;
 
