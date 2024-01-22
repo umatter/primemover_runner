@@ -77,7 +77,7 @@ public class MulitLoginBrowserProfile {
 	}
 
 	private String replaceApiPlaceholders(String url) {
-		return url.replace("%%PORT%%%", this.apiPort.toString());
+		return url.replace("%%PORT%%", this.apiPort.toString());
 	}
 
 	private void runApiWait() {
