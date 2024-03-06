@@ -35,8 +35,10 @@ import primemover.capture.UrlVerificatorFactory;
 import primemover.model.LocationInfo;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
+import primemover.runner.TaskExecutor;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.JobDispatcher;
+import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.AgentService;
 import primemover.service.AwsS3StorageService;
 import primemover.service.CrawlerService;
@@ -71,6 +73,16 @@ public class TestConfig {
 	private String awsFinalSourceBucketName;
 	@Value("${awsS3.finalsource.subFolder}")
 	private String awsFinalSourceSubfolder;
+
+	@Bean(name = "TaskExecutor", initMethod = "setup")
+	TaskExecutor getTaskExecutor() {
+		return new TaskExecutor();
+	}
+
+	@Bean(name = "jobListRunnerFactory")
+	JobListRunnerFactory getJobListRunnerFactory() {
+		return new JobListRunnerFactory();
+	}
 
 	@Bean(name = "AwsS3FinalSourceStorageService", initMethod = "init")
 	IStorageService getAwsS3FinalSourceStorageServices() {

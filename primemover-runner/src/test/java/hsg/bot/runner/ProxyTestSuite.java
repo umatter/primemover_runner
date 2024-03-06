@@ -64,7 +64,7 @@ class ProxyTestSuite {
 		jobs.appendJob(assertProxyJob);
 		jobs.appendJob(new WaitJob(2l, "Wait", "", null, 10));
 
-		service.setup(crawler);
+		service.prepareExeuction(crawler);
 		service.runJobList(jobs);
 	}
 
@@ -83,7 +83,7 @@ class ProxyTestSuite {
 		jobs.appendJob(assertProxyJob);
 		jobs.appendJob(new WaitJob(2l, "Wait", "", null, 10));
 
-		service.setup(crawler);
+		service.prepareExeuction(crawler);
 		service.runJobList(jobs);
 	}
 
@@ -102,7 +102,7 @@ class ProxyTestSuite {
 		jobs.appendJob(assertProxyJob);
 		jobs.appendJob(new WaitJob(2l, "Wait", "", null, 10));
 
-		service.setup(crawler);
+		service.prepareExeuction(crawler);
 		service.runJobList(jobs);
 	}
 

@@ -3,16 +3,9 @@ package primemover.runner;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -25,10 +18,8 @@ import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
-import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.ICrawlerService;
 import primemover.service.IJobService;
-import primemover.util.threading.MdcAwareThreadPoolExecutor;
 
 /**
  * The Task-Manager is responsible for checking for newly available tasks and
@@ -52,8 +43,8 @@ public class TaskManager implements ITaskManager {
 	/**
 	 * maxThreads "equals" to the number of open browsers (running bots) in parallel
 	 */
-	@Value("${runner.MaxParallelExecution:4}")
-	private Integer maxThreads = 4; // maximum parallel executions of joblists
+	@Value("${runner.MaxParallelExecution:2}")
+	private Integer maxThreads; // maximum parallel executions of joblists
 
 	@Value("${runner.UpdateInterval:15}")
 	private Integer updateInterval; // Update Interval to grab planned jobs in minutes
@@ -67,20 +58,16 @@ public class TaskManager implements ITaskManager {
 	private ZonedDateTime lastExecution = null; // last execution time of scheduler
 	private ZonedDateTime lastTimeAdded = ZonedDateTime.now(); // the max datetime of the jobs added during the last run
 
-	private ExecutorService executorService;
-
 	private ScheduledExecutorService scheduler;
-
-	private Map<Long, Runnable> plannedTasks = new ConcurrentHashMap<>();
 
 	@Autowired
 	private ICrawlerService crawlerService;
 
 	@Autowired
-	JobListRunnerFactory jobListRunnerFactory;
+	private IJobService jobService;
 
 	@Autowired
-	private IJobService jobService;
+	private TaskExecutor taskExecutor;
 
 	/*
 	 * (non-Javadoc)
@@ -89,13 +76,6 @@ public class TaskManager implements ITaskManager {
 	 */
 	@Override
 	public void setup() {
-
-		// make sure to create an executor that will clean the MDC-state after
-		// execution.
-		executorService = new MdcAwareThreadPoolExecutor(0, maxThreads, 10, TimeUnit.SECONDS,
-				new LinkedBlockingQueue<Runnable>());
-
-		// executorService = Executors.newFixedThreadPool(maxThreads);
 		scheduler = Executors.newSingleThreadScheduledExecutor(); // jobs will only pass the execution to the executor
 																	// service
 	}
@@ -197,12 +177,6 @@ public class TaskManager implements ITaskManager {
 				// calculating execution delay (positive only)
 				Long delaySeconds = Math.max(0l, ChronoUnit.SECONDS.between(curRun, startTime));
 
-				// is tasks already planned
-				if (this.plannedTasks.containsKey(task.getRight().getId())) {
-					logger.info("joblist {} is already planned to be executed", task.getRight().getId());
-					continue;
-				}
-
 				logger.info("Preparing execution of joblist {} in {} seconds", task.getRight().getId(), delaySeconds);
 				Runnable taskRunnable = new Runnable() {
 
@@ -214,36 +188,15 @@ public class TaskManager implements ITaskManager {
 
 					@Override
 					public void run() {
-						// run and remove from hash
-						logger.info("Init execution of joblist {}", jobs.getId());
-						Supplier<Boolean> runner = jobListRunnerFactory.createJobListRunner(crawler, jobs);
-						CompletableFuture.supplyAsync(runner, executorService).thenRunAsync(() -> {
-							plannedTasks.remove(jobs.getId());
-						});
+						logger.debug("passing to execution joblist {} for crawler {}", jobs.getId(), crawler.getId());
+						taskExecutor.run(crawler, jobs);
 					}
-
-				};
-
-				this.plannedTasks.put(task.getRight().getId(), taskRunnable); // just need the key, is removed after the
-																				// run of the taskRunnable
+				}; // run of the taskRunnable
 
 				// just pass the job to the executor after reaching the start-time
 				scheduler.schedule(taskRunnable, delaySeconds, TimeUnit.SECONDS);
 			}
 		}
-
-		// log out stats
-		if (executorService instanceof ThreadPoolExecutor) {
-			ThreadPoolExecutor implementation = (ThreadPoolExecutor) executorService;
-			int size = implementation.getQueue().size();
-			logger.info("{} joblist are ready to execute; {} are currently executing", size,
-					Math.min(size, maxThreads));
-		}
-
-		// empty plannedTasks
-		this.plannedTasks.forEach((id, runnable) -> {
-
-		});
 
 		lastExecution = curRun;
 		lastTimeAdded = newLastTimeToAdd;

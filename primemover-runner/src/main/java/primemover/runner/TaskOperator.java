@@ -465,6 +465,7 @@ public class TaskOperator implements ITaskOperator {
 
 		// run job list
 		try {
+			logger.info("start running joblist {} of crawler {}", jobs.getId(), this.context.getCrawler().getId());
 			Boolean previousResult = true;
 			IJob previousJob = null;
 			List<IJob> jobList = jobs.getJobs();
@@ -505,7 +506,7 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	@Override
-	public Boolean setup(Crawler crawler) {
+	public Boolean prepareExeuction(Crawler crawler) {
 
 		boolean done = false;
 		Integer curRetry = 0;
@@ -564,6 +565,8 @@ public class TaskOperator implements ITaskOperator {
 
 				// setup driver in running browser
 				captchaSolver.setupDriver(context);
+
+				logger.debug("finished starting up crawler {}, success: {}", crawler.getId(), true);
 
 				isSetup.set(true);
 				done = true;

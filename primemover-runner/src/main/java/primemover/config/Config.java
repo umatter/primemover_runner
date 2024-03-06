@@ -33,6 +33,7 @@ import primemover.capture.UrlVerificatorFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.ITaskManager;
+import primemover.runner.TaskExecutor;
 import primemover.runner.TaskManager;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.IJobDispatcher;
@@ -81,6 +82,11 @@ public class Config {
 	@Bean(name = "KeepAlivePingFactory")
 	KeepAlivePingFactory getKeepAlivePingFactory() {
 		return new KeepAlivePingFactory();
+	}
+
+	@Bean(name = "TaskExecutor", initMethod = "setup")
+	TaskExecutor getTaskExecutor() {
+		return new TaskExecutor();
 	}
 
 	@Bean(name = "tokenGenerator")

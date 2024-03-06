@@ -2,7 +2,6 @@ package primemover.runner.joblist;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
@@ -24,7 +23,7 @@ import primemover.service.IJobService;
  * @author dburkolter
  *
  */
-public class JobListRunner implements Supplier<Boolean> {
+public class JobListRunner implements IJobListRunner {
 	private static Logger logger = LoggerFactory.getLogger(JobListRunner.class);
 
 	private ITaskOperator taskOperator;
@@ -65,7 +64,7 @@ public class JobListRunner implements Supplier<Boolean> {
 
 		// starting up
 		logger.debug("Setting up crawler {} for joblist {}", crawler.getId(), jobs.getId());
-		Boolean isStartedUp = taskOperator.setup(crawler);
+		Boolean isStartedUp = taskOperator.prepareExeuction(crawler);
 
 		if (isStartedUp) {
 			logger.debug("setup completed successfully for crawler {} for joblist {}", crawler.getId(), jobs.getId());
@@ -162,7 +161,9 @@ public class JobListRunner implements Supplier<Boolean> {
 				tearDown(setupRes, jobsRes);
 				return true;
 			default:
+				logger.info("start running joblist {}", jobs.getId());
 				jobsRes = runJoblist();
+				logger.info("done running joblist {}", jobs.getId());
 				tearDown(setupRes, jobsRes);
 				return true;
 			}
@@ -195,5 +196,10 @@ public class JobListRunner implements Supplier<Boolean> {
 	@Override
 	public Boolean get() {
 		return run();
+	}
+
+	@Override
+	public long getJobListId() {
+		return this.jobs.getId();
 	}
 }

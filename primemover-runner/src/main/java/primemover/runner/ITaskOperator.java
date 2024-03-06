@@ -10,13 +10,14 @@ public interface ITaskOperator {
 	 * @param crawler to use
 	 * @return true indicates success
 	 */
-	Boolean setup(Crawler crawler);
+	Boolean prepareExeuction(Crawler crawler);
+
 	/**
 	 * Tears down the TaskService
 	 * 
 	 */
 	void tearDown(boolean immediate);
-	
+
 	/**
 	 * This will run a job
 	 * 

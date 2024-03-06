@@ -18,7 +18,6 @@ public class TaskOperatorFactory implements ApplicationContextAware {
 	public ITaskOperator getInstance(Crawler crawler) {
 		ITaskOperator ret = new TaskOperator();
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
-		ret.setup(crawler);
 
 		return ret;
 	}

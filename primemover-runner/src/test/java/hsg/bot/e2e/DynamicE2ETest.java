@@ -35,7 +35,7 @@ class DynamicE2ETest {
 	/**
 	 * source folder for the json-testscripts
 	 */
-	private static String testCasesFolder = "e2e-testcases";
+	private static String testCasesFolder = "./e2e-testcases";
 
 	/**
 	 * get rid of some tests by putting a prefix while developing
@@ -66,6 +66,7 @@ class DynamicE2ETest {
 		LOGGER.debug("running test '{}'", test.getLeft().getName());
 
 		ITaskOperator service = operatorFactory.getInstance(test.getLeft());
+		service.prepareExeuction(test.getLeft());
 		service.runJobList(test.getRight());
 		service.tearDown(true);
 		service = null;
