@@ -18,8 +18,9 @@ public class PageSourceWriter extends HtmlZippedDataWriterBase {
 		super(data);
 
 		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
-		this.identifier = StorageUtility.getIdentifier("page-finalsource", job);
-		this.baseName = datePrefix + "-" + identifier;
+
+		this.identifier = StorageUtility.getIdentifier(datePrefix + "-page-finalsource", job);
+		this.baseName = identifier;
 	}
 
 	@Override
