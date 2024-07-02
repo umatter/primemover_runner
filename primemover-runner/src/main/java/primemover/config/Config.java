@@ -30,6 +30,7 @@ import primemover.capture.KeepAlivePingFactory;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
 import primemover.capture.UrlVerificatorFactory;
+import primemover.lambda.LambdaCallerFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.ITaskManager;
@@ -283,5 +284,10 @@ public class Config {
 	@Bean(name = "ProxyDecoratorFactory")
 	public ProxyDecoratorFactory getProxyDecoratorFactory() {
 		return new ProxyDecoratorFactory();
+	}
+
+	@Bean(name = "LambdaCallerFactory")
+	public LambdaCallerFactory getLambdaCallerFactory() {
+		return new LambdaCallerFactory();
 	}
 }

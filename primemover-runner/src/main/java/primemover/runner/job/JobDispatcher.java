@@ -21,6 +21,7 @@ import primemover.model.jobs.AssertTextInFieldJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.HandleAlertJob;
+import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectJob;
@@ -28,7 +29,6 @@ import primemover.model.jobs.SwitchToJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
 import primemover.runner.context.IJobAwareRunnerContext;
-import primemover.runner.context.IRunnerContext;
 import primemover.runner.job.handler.AlertJobHandler;
 import primemover.runner.job.handler.AssertElementExistsJobHandler;
 import primemover.runner.job.handler.AssertPageLoadedJobHandler;
@@ -38,6 +38,7 @@ import primemover.runner.job.handler.AssertScrolledMaxJobHandler;
 import primemover.runner.job.handler.AssertTextInFieldJobHandler;
 import primemover.runner.job.handler.ClickJobHandler;
 import primemover.runner.job.handler.EnterTextFieldJobHandler;
+import primemover.runner.job.handler.LambdaSelectJobHandler;
 import primemover.runner.job.handler.ScrollByDurationJobHandler;
 import primemover.runner.job.handler.ScrollByLengthJobHandler;
 import primemover.runner.job.handler.SingleSelectUrlJobHandler;
@@ -69,6 +70,7 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 	}
 
 	// populate
+	@Override
 	public void setup() {
 		logger.trace("populating handlers");
 
@@ -119,6 +121,11 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(ClickJob.class, tmp);
 
+		logger.trace("creating LambdaSelectJob-Handler");
+		tmp = new LambdaSelectJobHandler();
+		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
+		addHandler(LambdaSelectJob.class, tmp);
+
 		// ---------------------------------------------------------------
 		// add assert-jobs only for develop and integration
 		// ---------------------------------------------------------------
@@ -162,6 +169,7 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 	}
 
 	// Call the job specific handler
+	@Override
 	public void handle(IJobAwareRunnerContext<?> context) {
 		IJob job = context.getJob();
 		IJobHandler h = dispatch.get(job.getClass());

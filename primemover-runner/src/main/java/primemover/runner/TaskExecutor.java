@@ -50,7 +50,7 @@ public class TaskExecutor {
 	}
 
 	public TaskExecutor() {
-
+		// nothing to do
 	}
 
 	public CompletableFuture<Boolean> run(IJobListRunner runner) {

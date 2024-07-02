@@ -9,7 +9,8 @@ public class ClickJob extends SelectorBaseJob {
 	public ClickJob() {
 	}
 
-	public ClickJob(Long id, String name, String description, String task, SelectorType type, String selector, Boolean expectsPageReload) {
+	public ClickJob(Long id, String name, String description, String task, SelectorType type, String selector,
+			Boolean expectsPageReload) {
 		super(id, name, description, task, type, selector);
 
 		this._expectsPageReload = expectsPageReload;

@@ -32,7 +32,5 @@ public abstract class SelectorBaseJob extends BaseJob {
 	public void setType(SelectorType type) {
 		this.type = type;
 	}
-	
-	
 
 }

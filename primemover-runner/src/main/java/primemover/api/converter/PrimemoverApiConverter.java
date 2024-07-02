@@ -28,6 +28,7 @@ import primemover.model.FirefoxAgent;
 import primemover.model.IAgent;
 import primemover.model.IJob;
 import primemover.model.Joblist;
+import primemover.model.LambdaLinkType;
 import primemover.model.LocationInfo;
 import primemover.model.MediaOutlet;
 import primemover.model.MultiLoginAgent;
@@ -41,6 +42,7 @@ import primemover.model.jobs.BaseJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.HandleAlertJob;
+import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.model.jobs.SingleSelectJob;
@@ -172,6 +174,26 @@ public class PrimemoverApiConverter {
 	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description,
 			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		setBaseFields(job, id, name, description, captchaSolving, false, behaviours);
+	}
+
+	private static LambdaSelectJob convertApiLambdaSelectJob(Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+		LOGGER.debug("converting LambdaSelectJob {}", id);
+		LambdaSelectJob job = new LambdaSelectJob();
+		setBaseFields(job, id, name, description, captchaSolving, behaviours);
+
+		String type = behaviours.get("linkType");
+		if (type == null) {
+			job.setLinkType(LambdaLinkType.FUNCTION_NAME);
+		} else {
+			LambdaLinkType.valueOf(type);
+		}
+
+		job.setLinkValue(behaviours.get("linkValue"));
+		job.setUsername(behaviours.get("username"));
+		job.setUsername(behaviours.get("password"));
+
+		return job;
 	}
 
 	private static VisitJob convertApiVisitJob(Long id, String name, String description,

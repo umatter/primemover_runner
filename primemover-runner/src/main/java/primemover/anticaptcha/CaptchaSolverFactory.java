@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 public class CaptchaSolverFactory implements ApplicationContextAware {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContextAware.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CaptchaSolverFactory.class);
 
 	private ApplicationContext ctx;
 	private boolean isInit = false;
