@@ -28,7 +28,6 @@ import primemover.model.FirefoxAgent;
 import primemover.model.IAgent;
 import primemover.model.IJob;
 import primemover.model.Joblist;
-import primemover.model.LambdaLinkType;
 import primemover.model.LocationInfo;
 import primemover.model.MediaOutlet;
 import primemover.model.MultiLoginAgent;
@@ -42,6 +41,7 @@ import primemover.model.jobs.BaseJob;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.model.jobs.HandleAlertJob;
+import primemover.model.jobs.LambdaLinkType;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.ScrollByDurationJob;
 import primemover.model.jobs.ScrollByLengthJob;
@@ -457,6 +457,10 @@ public class PrimemoverApiConverter {
 			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, true,
 					behaviors);
 			break;
+		case "lambdasingleselectjob":
+		case "lambdaselectjob":
+			res = convertApiLambdaSelectJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
+					behaviors);
 		default:
 			throw new IllegalArgumentException("Invalid Job type found: " + job.getType());
 		}

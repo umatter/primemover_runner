@@ -2,8 +2,6 @@ package primemover.model.jobs;
 
 import javax.annotation.Nullable;
 
-import primemover.model.LambdaLinkType;
-
 public class LambdaSelectJob extends BaseJob {
 
 	private String linkValue;
