@@ -2,16 +2,15 @@ package primemover.service.datawriter;
 
 import java.util.Date;
 
-import primemover.runner.RecordedJobData;
-
-public abstract class RecordedJobDataBaseWriter implements IDataWriter {
-	private RecordedJobData data;
+public abstract class RecordedJobDataBaseWriter<TData extends IRecordedData> implements IDataWriter {
+	private TData data;
 	private String fileName;
 	private String identifier;
 	private String contentType;
-	private String description;	
-	
-	public RecordedJobDataBaseWriter(RecordedJobData data, String identifierPrefix, String fileSufix, String contentType, String description) {
+	private String description;
+
+	public RecordedJobDataBaseWriter(TData data, String identifierPrefix, String fileSufix, String contentType,
+			String description) {
 		super();
 		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
 		this.data = data;
@@ -20,11 +19,10 @@ public abstract class RecordedJobDataBaseWriter implements IDataWriter {
 		this.contentType = contentType;
 	}
 
-	
-	public RecordedJobData getData() {
+	public TData getData() {
 		return this.data;
 	}
-	
+
 	@Override
 	public String getIdentifier() {
 		return identifier;

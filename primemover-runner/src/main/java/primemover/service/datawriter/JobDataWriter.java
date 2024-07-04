@@ -16,17 +16,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.runner.RecordedJobData;
 
-public class JobDataWriter extends RecordedJobDataBaseWriter  {
-	
-	private final static Logger logger = LoggerFactory.getLogger(JobDataWriter.class);	
-	
+public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
+
+	private final static Logger logger = LoggerFactory.getLogger(JobDataWriter.class);
+
 	public JobDataWriter(RecordedJobData data) {
-		super(data, "static-jobdata", "zip", "application/zip", "job data stored as zip" );
+		super(data, "static-jobdata", "zip", "application/zip", "job data stored as zip");
 	}
 
 	private static void writeCookies(OutputStream os, RecordedJobData data) throws IOException {
 		logger.debug("writting cookies");
-		
+
 		Integer cnt = 0;
 
 		StringBuilder tmp = new StringBuilder(1024);
@@ -67,15 +67,15 @@ public class JobDataWriter extends RecordedJobDataBaseWriter  {
 
 		os.write(tmp.toString().getBytes(StandardCharsets.UTF_8));
 	}
-	
+
 	@Override
 	public boolean writeData(OutputStream os) {
 		RecordedJobData data = getData();
 		logger.info("writting jobdata as Zip for job {}", data.getJob().getId());
-		
+
 		// json mapper
 		ObjectMapper mapper = new ObjectMapper();
-		
+
 		// create filename
 		String datePrefix = StorageUtility.formatDateForFilePrefix(new Date());
 		String jobId = data.getJob().getId().toString();
@@ -93,7 +93,7 @@ public class JobDataWriter extends RecordedJobDataBaseWriter  {
 			String screenshot = datePrefix + "_page_screenshot_" + jobId + ".png";
 
 			ZipEntry zipEntry;
-			
+
 			// location data
 			if (data.hasLocationInfo()) {
 				zipEntry = new ZipEntry(locationData);
@@ -102,19 +102,20 @@ public class JobDataWriter extends RecordedJobDataBaseWriter  {
 				byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
 				zipOut.write(bytes);
 			}
-			
+
 			// trafic data
 			if (data.hasHar()) {
 				zipEntry = new ZipEntry(traficData);
 				zipOut.putNextEntry(zipEntry);
-				// create temp stream as the json-library underlying the har-writing might close the stream
+				// create temp stream as the json-library underlying the har-writing might close
+				// the stream
 				ByteArrayOutputStream tmpOs = new ByteArrayOutputStream(4048);
 				data.getHar().writeTo(tmpOs);
 				zipOut.write(tmpOs.toByteArray());
 				tmpOs.close();
 				tmpOs = null;
 			}
-			
+
 			// Page Source
 			if (data.hasPageSource()) {
 				zipEntry = new ZipEntry(pageSourceData);
@@ -122,7 +123,7 @@ public class JobDataWriter extends RecordedJobDataBaseWriter  {
 				byte[] tmpByte = data.getPageSource().getBytes(StandardCharsets.UTF_8);
 				zipOut.write(tmpByte);
 			}
-			
+
 			// Cookies
 			if (data.hasCookies()) {
 				zipEntry = new ZipEntry(cookies);
@@ -145,18 +146,18 @@ public class JobDataWriter extends RecordedJobDataBaseWriter  {
 				byte[] tmpByte = data.getSessionStorage().getBytes(StandardCharsets.UTF_8);
 				zipOut.write(tmpByte);
 			}
-			
+
 			// screenshot
 			if (data.hasScreenshot()) {
 				zipEntry = new ZipEntry(screenshot);
 				zipOut.putNextEntry(zipEntry);
 				zipOut.write(data.getScreenshot());
 			}
-			
+
 			// make sure everything is written
 			zipOut.finish();
 			zipOut.flush();
-			
+
 			logger.debug("Done writing jobdata for job {}", data.getJob().getId());
 			return true;
 		} catch (IOException e) {

@@ -1,4 +1,4 @@
-package primemover.service.datawriter;
+package primemover.service.datawriter.lambda;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -6,6 +6,8 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 
 import primemover.model.IJob;
+import primemover.service.datawriter.SingleZipEntryDataWriterBase;
+import primemover.service.datawriter.StorageUtility;
 
 public class LambdaResultWriter extends SingleZipEntryDataWriterBase {
 

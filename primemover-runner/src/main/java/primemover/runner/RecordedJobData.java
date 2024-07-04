@@ -8,11 +8,13 @@ import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
 
 import com.browserup.harreader.model.Har;
+
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
+import primemover.service.datawriter.IRecordedData;
 
-public class RecordedJobData {
-	
+public class RecordedJobData implements IRecordedData {
+
 	private byte[] screenshot;
 	private Har har;
 	private String pageSource;
@@ -21,11 +23,12 @@ public class RecordedJobData {
 	private String localStorage;
 	private LocationInfo location;
 	private CaptchaSolverResultHolder captchaResults = new CaptchaSolverResultHolder();
-	@Nonnull private IJob job;
-	
+	@Nonnull
+	private IJob job;
+
 	public RecordedJobData(RecordedJobDataBuilder builder) {
 		super();
-		
+
 		this.job = builder.getJob();
 		this.pageSource = builder.getPageSource();
 		this.sessionStorage = builder.getSessionStorage();
@@ -36,8 +39,10 @@ public class RecordedJobData {
 		this.screenshot = builder.getScreenshot();
 		this.captchaResults = builder.getCaptchaResults();
 	}
-	
-	@Nonnull public IJob getJob() {
+
+	@Override
+	@Nonnull
+	public IJob getJob() {
 		return job;
 	}
 
@@ -45,11 +50,10 @@ public class RecordedJobData {
 		return har;
 	}
 
-	
 	public void setHar(Har har) {
 		this.har = har;
 	}
-	
+
 	public boolean hasHar() {
 		return this.har != null;
 	}
@@ -61,7 +65,7 @@ public class RecordedJobData {
 	public void setPageSource(String pageSource) {
 		this.pageSource = pageSource;
 	}
-	
+
 	public boolean hasPageSource() {
 		return StringUtils.hasText(this.pageSource);
 	}
@@ -73,7 +77,7 @@ public class RecordedJobData {
 	public void setCookies(Set<Cookie> cookies) {
 		this.cookies = cookies;
 	}
-	
+
 	public boolean hasCookies() {
 		return this.cookies != null;
 	}
@@ -85,7 +89,7 @@ public class RecordedJobData {
 	public void setSessionStorage(String sessionStorage) {
 		this.sessionStorage = sessionStorage;
 	}
-	
+
 	public boolean hasSessionStorage() {
 		return StringUtils.hasText(this.sessionStorage);
 	}
@@ -97,7 +101,7 @@ public class RecordedJobData {
 	public void setLocalStorage(String localStorage) {
 		this.localStorage = localStorage;
 	}
-	
+
 	public boolean hasLocalStorage() {
 		return StringUtils.hasText(this.localStorage);
 	}
@@ -105,11 +109,11 @@ public class RecordedJobData {
 	public void setScreenshot(byte[] screenshot) {
 		this.screenshot = screenshot;
 	}
-	
+
 	public byte[] getScreenshot() {
 		return this.screenshot;
 	}
-	
+
 	public boolean hasScreenshot() {
 		return this.screenshot != null;
 	}
@@ -121,7 +125,7 @@ public class RecordedJobData {
 	public void setLocation(LocationInfo location) {
 		this.location = location;
 	}
-	
+
 	public boolean hasLocationInfo() {
 		return this.location != null;
 	}
@@ -133,7 +137,7 @@ public class RecordedJobData {
 	public void setCapchaResults(CaptchaSolverResultHolder capchaInfo) {
 		this.captchaResults = capchaInfo;
 	}
-	
+
 	public boolean hasAnyCaptchaResult() {
 		return captchaResults != null && captchaResults.hasAnyCaptchaResult();
 	}

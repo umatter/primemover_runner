@@ -461,6 +461,7 @@ public class PrimemoverApiConverter {
 		case "lambdaselectjob":
 			res = convertApiLambdaSelectJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
 					behaviors);
+			break;
 		default:
 			throw new IllegalArgumentException("Invalid Job type found: " + job.getType());
 		}
@@ -495,14 +496,16 @@ public class PrimemoverApiConverter {
 
 			HashMap<String, MediaOutlet> outlets = new HashMap<>();
 			if (param.getMedia_outlet_urls() == null) {
-				throw new IllegalArgumentException("media outlet urls are missing");
-			}
-			for (primemover.api.model.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
-				MediaOutlet modelOutlet = new MediaOutlet();
-				modelOutlet.setDomain(apiOutlet.getDomain());
-				modelOutlet.setPi(apiOutlet.getPi());
-				modelOutlet.setUrl(apiOutlet.getUrl());
-				outlets.put(modelOutlet.getDomain(), modelOutlet);
+				LOGGER.warn("media outlet urls are missing");
+				// throw new IllegalArgumentException("media outlet urls are missing");
+			} else {
+				for (primemover.api.model.MediaOutlet apiOutlet : param.getMedia_outlet_urls()) {
+					MediaOutlet modelOutlet = new MediaOutlet();
+					modelOutlet.setDomain(apiOutlet.getDomain());
+					modelOutlet.setPi(apiOutlet.getPi());
+					modelOutlet.setUrl(apiOutlet.getUrl());
+					outlets.put(modelOutlet.getDomain(), modelOutlet);
+				}
 			}
 			selectConfig.setOutlets(outlets);
 
@@ -641,6 +644,9 @@ public class PrimemoverApiConverter {
 		LOGGER.debug("converting terms from {}", apiRes);
 
 		List<primemover.api.model.Term> inItems = apiRes.getData();
+		if (inItems == null || inItems.size() == 0) {
+			return new ArrayList<Term>();
+		}
 		ArrayList<Term> res = new ArrayList<Term>(inItems.size());
 
 		for (primemover.api.model.Term inItem : inItems) {

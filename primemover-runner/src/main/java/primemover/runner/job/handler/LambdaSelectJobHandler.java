@@ -23,7 +23,8 @@ import primemover.runner.job.IJobHandler;
 import primemover.service.IStorageService;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
-import primemover.service.datawriter.LambdaResultWriter;
+import primemover.service.datawriter.lambda.LambdaInvocationData;
+import primemover.service.datawriter.lambda.LambdaInvocationWriter;
 
 public class LambdaSelectJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(LambdaSelectJobHandler.class);
@@ -64,19 +65,26 @@ public class LambdaSelectJobHandler implements IJobHandler {
 		}
 
 		try {
+			// prepare recorder
+			LambdaInvocationData data = new LambdaInvocationData();
+			data.setJob(context.getJob());
 
+			// grab some data and type it
 			WebDriver driver = context.getDriver();
 			LambdaSelectJob typedJob = (LambdaSelectJob) context.getJob();
 
 			// prepare input JSON
 			LambdaSelectJobParam param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
 					driver.getPageSource());
-			String result = this.caller.invoke(typedJob.getLinkValue(), mapper.writeValueAsString(param));
+
+			data.setInputJson(mapper.writeValueAsString(param));
+			String result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
+			data.setOutputJson(result);
 
 			LambdaSelectJobResult parsedResult = mapper.readValue(result, LambdaSelectJobResult.class);
 
 			// write result
-			LambdaResultWriter writer = new LambdaResultWriter(typedJob, result);
+			LambdaInvocationWriter writer = new LambdaInvocationWriter(data);
 			IDataWriter cachedWriter = new DataWriterCachingDecorator(writer);
 			for (IStorageService storage : storages) {
 				storage.writeData(typedJob, cachedWriter);
