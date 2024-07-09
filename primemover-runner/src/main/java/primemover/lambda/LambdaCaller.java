@@ -43,7 +43,7 @@ public class LambdaCaller implements AutoCloseable {
 				.build();
 	}
 
-	public String invoke(String functionName, String param) {
+	public InvokeResponse invoke(String functionName, String param) {
 		this.initClient();
 
 		if (this.client == null) {
@@ -64,7 +64,7 @@ public class LambdaCaller implements AutoCloseable {
 			logger.debug("invoking function");
 			res = this.client.invoke(request);
 
-			return res.payload().asUtf8String();
+			return res;
 
 		} catch (Exception ex) {
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import primemover.service.datawriter.RecordedJobDataBaseWriter;
 import primemover.service.datawriter.StorageUtility;
+import software.amazon.awssdk.utils.StringUtils;
 
 public class LambdaInvocationWriter extends RecordedJobDataBaseWriter<LambdaInvocationData> {
 
@@ -40,18 +41,21 @@ public class LambdaInvocationWriter extends RecordedJobDataBaseWriter<LambdaInvo
 
 		// prepare streams
 		try (ZipOutputStream zipOut = new ZipOutputStream(os)) {
-
 			// Input
-			ZipEntry zipEntry = new ZipEntry(inputName);
-			zipOut.putNextEntry(zipEntry);
-			byte[] tmpByte = data.getInputJson().getBytes(StandardCharsets.UTF_8);
-			zipOut.write(tmpByte);
+			if (!StringUtils.isEmpty(data.getInputJson())) {
+				ZipEntry zipEntry = new ZipEntry(inputName);
+				zipOut.putNextEntry(zipEntry);
+				byte[] tmpByte = data.getInputJson().getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
+			}
 
 			// Output
-			zipEntry = new ZipEntry(outputName);
-			zipOut.putNextEntry(zipEntry);
-			tmpByte = data.getOutputJson().getBytes(StandardCharsets.UTF_8);
-			zipOut.write(tmpByte);
+			if (!StringUtils.isEmpty(data.getOutputJson())) {
+				ZipEntry zipEntry = new ZipEntry(outputName);
+				zipOut.putNextEntry(zipEntry);
+				byte[] tmpByte = data.getOutputJson().getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
+			}
 
 			// make sure everything is written
 			zipOut.finish();

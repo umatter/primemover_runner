@@ -4,6 +4,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -25,12 +29,15 @@ import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.lambda.LambdaInvocationData;
 import primemover.service.datawriter.lambda.LambdaInvocationWriter;
+import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 
 public class LambdaSelectJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(LambdaSelectJobHandler.class);
 
 	@Autowired(required = false)
-	List<IStorageService> storages = new ArrayList<IStorageService>();
+	private List<IStorageService> storages = new ArrayList<IStorageService>();
+
+	private XPathFactory factory = XPathFactory.newInstance();
 
 	@Autowired
 	private LambdaCallerFactory callerFac;
@@ -63,44 +70,55 @@ public class LambdaSelectJobHandler implements IJobHandler {
 		if (caller == null) {
 			throw new IllegalStateException("no LambdaCaller created");
 		}
+		// grab some data and type it
+		WebDriver driver = context.getDriver();
+		LambdaSelectJob typedJob = (LambdaSelectJob) context.getJob();
+
+		// prepare recorder
+		LambdaInvocationData data = new LambdaInvocationData();
+		data.setJob(context.getJob());
+
+		Exception ex = null;
 
 		try {
-			// prepare recorder
-			LambdaInvocationData data = new LambdaInvocationData();
-			data.setJob(context.getJob());
-
-			// grab some data and type it
-			WebDriver driver = context.getDriver();
-			LambdaSelectJob typedJob = (LambdaSelectJob) context.getJob();
 
 			// prepare input JSON
 			LambdaSelectJobParam param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
 					driver.getPageSource());
 
 			data.setInputJson(mapper.writeValueAsString(param));
-			String result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
-			data.setOutputJson(result);
 
-			LambdaSelectJobResult parsedResult = mapper.readValue(result, LambdaSelectJobResult.class);
+			InvokeResponse result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
+			data.setOutputJson(mapper.writeValueAsString(result));
 
-			// write result
-			LambdaInvocationWriter writer = new LambdaInvocationWriter(data);
-			IDataWriter cachedWriter = new DataWriterCachingDecorator(writer);
-			for (IStorageService storage : storages) {
-				storage.writeData(typedJob, cachedWriter);
-			}
+			LambdaSelectJobResult parsedResult = mapper.readValue(result.payload().asUtf8String(),
+					LambdaSelectJobResult.class);
+
+			// Validate XPath
+			XPath xpath = factory.newXPath();
+			XPathExpression expr = xpath.compile(parsedResult.getXpath());
 
 			// select xpath
-			WebElement element = driver.findElement(By.xpath(parsedResult.getXpath()));
+			WebElement element = driver.findElement(By.xpath(parsedResult.getXpath())); // NoSuchElementException
 			// Wait for Element
-			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2));
 			wait.until(ExpectedConditions.elementToBeClickable(element));
 			element.click();
 
 		} catch (Exception e) {
 			logger.warn("error executing lambda", e);
-			throw new RuntimeException("error executing lamgda", e);
+			ex = e;
+		}
 
+		// write result
+		LambdaInvocationWriter writer = new LambdaInvocationWriter(data);
+		IDataWriter cachedWriter = new DataWriterCachingDecorator(writer);
+		for (IStorageService storage : storages) {
+			storage.writeData(typedJob, cachedWriter);
+		}
+
+		if (ex != null) {
+			throw new RuntimeException("error executing lambda job", ex);
 		}
 	}
 
