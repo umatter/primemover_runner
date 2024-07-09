@@ -189,7 +189,12 @@ public class PrimemoverApiConverter {
 			LambdaLinkType.valueOf(type);
 		}
 
-		job.setLinkValue(behaviours.get("linkValue"));
+		String linkValue = behaviours.get("linkValue");
+
+		if (StringUtils.isEmpty(linkValue)) {
+			throw new IllegalArgumentException("paramenter linkValue is missing or empty");
+		}
+		job.setLinkValue(linkValue);
 		job.setUsername(behaviours.get("username"));
 		job.setUsername(behaviours.get("password"));
 
