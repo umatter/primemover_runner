@@ -34,6 +34,7 @@ import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
+import primemover.model.jobs.VisitJob;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.ChromeContext;
@@ -466,29 +467,40 @@ public class TaskOperator implements ITaskOperator {
 		// run job list
 		try {
 			logger.info("start running joblist {} of crawler {}", jobs.getId(), this.context.getCrawler().getId());
-			Boolean previousResult = true;
+			boolean previousResult = true;
 			IJob previousJob = null;
 			List<IJob> jobList = jobs.getJobs();
 
 			for (int i = 0; i < jobList.size(); i++) {
 				IJob job = jobList.get(i);
 
-				if (previousResult) {
+				boolean runCurrentJob = previousResult;
+
+				// fallback from failure
+				if (job instanceof VisitJob) {
+					runCurrentJob = true;
+				}
+
+				if (runCurrentJob) {
+					boolean currentResult = previousResult;
 					IJobAwareRunnerContext<?> jobAwareContext = getJobAwareContext(job);
 
 					if (skipIpRecording) {
-						runJob(jobAwareContext, IpRecordingTiming.NONE);
+						currentResult = runJob(jobAwareContext, IpRecordingTiming.NONE);
 					} else if (i == 0) {
-						runJob(jobAwareContext, IpRecordingTiming.BEFORE_JOB);
+						currentResult = runJob(jobAwareContext, IpRecordingTiming.BEFORE_JOB);
 					} else if (i == jobList.size() - 1) {
-						runJob(jobAwareContext, IpRecordingTiming.AFTER_JOB);
+						currentResult = runJob(jobAwareContext, IpRecordingTiming.AFTER_JOB);
 					} else {
-						runJob(jobAwareContext, IpRecordingTiming.NONE);
+						currentResult = runJob(jobAwareContext, IpRecordingTiming.NONE);
 					}
 
+					logger.info("finished job ({}) with {}", job.getId(), currentResult ? "success" : "failure");
+
 					previousJob = job;
+					previousResult = currentResult;
 				} else {
-					logger.warn("skipping job ({}) due to error in previous job ({})", job.getId(),
+					logger.info("skipping job ({}) due to error in previous job ({})", job.getId(),
 							previousJob == null ? -1 : previousJob.getId());
 					jobService.updateJobState(job, JobState.SKIPPED, null, null, ZonedDateTime.now(),
 							ZonedDateTime.now());
