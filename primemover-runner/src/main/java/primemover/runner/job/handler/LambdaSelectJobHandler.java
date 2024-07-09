@@ -8,6 +8,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -90,6 +91,10 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 			InvokeResponse result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
 			data.setOutputJson(mapper.writeValueAsString(result));
+
+			if (!StringUtils.isEmpty(result.functionError())) {
+				throw new RuntimeException("Lambda Error: " + result.functionError());
+			}
 
 			LambdaSelectJobResult parsedResult = mapper.readValue(result.payload().asUtf8String(),
 					LambdaSelectJobResult.class);
