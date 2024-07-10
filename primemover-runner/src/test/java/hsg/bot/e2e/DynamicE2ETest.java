@@ -3,7 +3,6 @@ package hsg.bot.e2e;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -91,7 +90,7 @@ class DynamicE2ETest {
 		}
 
 		File[] files = path.listFiles();
-		files = Arrays.copyOfRange(files, 2, 3);
+		// files = Arrays.copyOfRange(files, 2, 3);
 
 		Stream<File> fileStream = Stream.of(files).filter(file -> !file.isDirectory());
 		if (disablePrefix != null) {

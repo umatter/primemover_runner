@@ -259,7 +259,7 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	private Boolean runJob(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming ipRecording) {
-		boolean runJobResult = false;
+		boolean runJobResult = true;
 
 		IJob job = jobContext.getJob();
 		IJobDataRecorder dataRecorder = jobContext.getJobDataRecorder();
@@ -397,17 +397,20 @@ public class TaskOperator implements ITaskOperator {
 				}
 			}
 
-			if (writeRes) {
+			if (writeRes && runJobResult) {
 				logger.info("Done running job {}", job.getId());
 				jobService.updateJobState(job, JobState.SUCCESS, null, null, null, ZonedDateTime.now()); // setting
 																											// endtime
 			} else {
 				logger.warn("Done running job with warning {}", job.getId());
-				jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, null, null, ZonedDateTime.now()); // setting
-																													// endtime
-			}
 
-			runJobResult = true;
+				if (!runJobResult) {
+					jobService.updateJobState(job, JobState.FAILURE, null, null, null, ZonedDateTime.now()); // setting
+				} else {
+					jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, null, null, ZonedDateTime.now()); // setting
+				}
+				// endtime
+			}
 
 		} catch (Exception ex) {
 			logger.error("Exception executing job {}", job.getId(), ex);
