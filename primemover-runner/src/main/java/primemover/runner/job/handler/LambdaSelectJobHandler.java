@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.lambda.LambdaCaller;
@@ -46,6 +48,12 @@ public class LambdaSelectJobHandler implements IJobHandler {
 	private LambdaCaller caller = null;
 
 	private ObjectMapper mapper = new ObjectMapper();
+
+	public LambdaSelectJobHandler() {
+		super();
+		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY); // amazon invocation result needs higher
+																		// visibility...
+	}
 
 	private void init() {
 		logger.debug("initializing job");
@@ -93,7 +101,13 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			data.setOutputJson(mapper.writeValueAsString(result));
 
 			if (!StringUtils.isEmpty(result.functionError())) {
-				throw new RuntimeException("Lambda Error: " + result.functionError());
+				logger.error("Lambda error of on AWS: {}", result.functionError());
+				throw new RuntimeException("Lambda Error (functionError): " + result.functionError());
+			}
+
+			if (!(result.statusCode() >= 200 && result.statusCode() < 300)) {
+				logger.error("AWS responded with status code {}", result.statusCode());
+				throw new RuntimeException("Lambda Error (status code): " + result.statusCode());
 			}
 
 			LambdaSelectJobResult parsedResult = mapper.readValue(result.payload().asUtf8String(),

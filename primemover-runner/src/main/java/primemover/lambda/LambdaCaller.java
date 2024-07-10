@@ -43,16 +43,17 @@ public class LambdaCaller implements AutoCloseable {
 				.build();
 	}
 
-	public InvokeResponse invoke(String functionName, String param) {
+	public InvokeResponse invoke(String functionName, String param) throws LambdaException {
 		this.initClient();
 
 		if (this.client == null) {
-			throw new IllegalStateException("Lambda client is not initialized");
+			throw new LambdaException("Lambda client is not initialized");
 		}
 
 		InvokeResponse res = null;
 
 		try {
+			logger.info("calling Lambda function: {}", functionName);
 			SdkBytes payload = SdkBytes.fromUtf8String(param);
 
 			// Setup an InvokeRequest.
@@ -69,7 +70,7 @@ public class LambdaCaller implements AutoCloseable {
 		} catch (Exception ex) {
 
 			logger.error("error invoking function", ex);
-			throw new IllegalStateException("Failure calling Lambda function");
+			throw new LambdaException("Failure calling Lambda function", ex);
 		}
 
 	}

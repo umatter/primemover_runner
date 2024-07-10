@@ -32,6 +32,7 @@ import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.capture.UrlVerificatorFactory;
+import primemover.lambda.LambdaCallerFactory;
 import primemover.model.LocationInfo;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
@@ -286,4 +287,8 @@ public class TestConfig {
 		return new KeepAlivePingFactory();
 	}
 
+	@Bean(name = "LambdaCallerFactory")
+	public LambdaCallerFactory getLambdaCallerFactory() {
+		return new LambdaCallerFactory();
+	}
 }
