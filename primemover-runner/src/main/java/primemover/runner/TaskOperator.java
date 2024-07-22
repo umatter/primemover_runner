@@ -34,7 +34,6 @@ import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.LocationInfo;
 import primemover.model.MultiLoginAgent;
-import primemover.model.jobs.VisitJob;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.ChromeContext;
@@ -480,7 +479,7 @@ public class TaskOperator implements ITaskOperator {
 				boolean runCurrentJob = previousResult;
 
 				// fallback from failure
-				if (job instanceof VisitJob) {
+				if (job.resetPreviousFailure()) {
 					runCurrentJob = true;
 				}
 

@@ -161,7 +161,8 @@ public class PrimemoverApiConverter {
 	}
 
 	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description,
-			CaptchaSolvingType captchaSolving, Boolean isFailsave, Map<String, String> behaviours) {
+			CaptchaSolvingType captchaSolving, boolean isFailsave, boolean isResetPreviousFailureDefault,
+			Map<String, String> behaviours) {
 		LOGGER.debug("setting base fields for job {}", id);
 		job.setId(id);
 		job.setName(name);
@@ -169,11 +170,24 @@ public class PrimemoverApiConverter {
 		job.setCaptchaSolving(captchaSolving);
 		job.setIsFailsave(isFailsave);
 		job.setTask(behaviours.get("task"));
+
+		// set reset field
+		boolean isResetPreviousFailure = isResetPreviousFailureDefault;
+		String resetFromBehviours = behaviours.get("resetPreviousFailure");
+		if (!StringUtils.isEmpty(resetFromBehviours)) {
+			isResetPreviousFailure = Boolean.valueOf(resetFromBehviours);
+		}
+		job.setResetPreviousFailure(isResetPreviousFailure);
+	}
+
+	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description,
+			CaptchaSolvingType captchaSolving, boolean resetPreviousFailureDefault, Map<String, String> behaviours) {
+		setBaseFields(job, id, name, description, captchaSolving, false, resetPreviousFailureDefault, behaviours);
 	}
 
 	private static <JobType extends BaseJob> void setBaseFields(JobType job, Long id, String name, String description,
 			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
-		setBaseFields(job, id, name, description, captchaSolving, false, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, false, false, behaviours);
 	}
 
 	private static LambdaSelectJob convertApiLambdaSelectJob(Long id, String name, String description,
@@ -205,7 +219,7 @@ public class PrimemoverApiConverter {
 			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		LOGGER.debug("converting VisitJob {}", id);
 		VisitJob job = new VisitJob();
-		setBaseFields(job, id, name, description, captchaSolving, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, true, behaviours); // will reset failure by default!
 		job.setUrl(behaviours.get("url"));
 
 		return job;
