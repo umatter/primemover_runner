@@ -1,6 +1,6 @@
 package primemover.model.jobs;
 
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 
 public class AssertElementExistsJob extends SelectorBaseJob {
 
@@ -8,7 +8,7 @@ public class AssertElementExistsJob extends SelectorBaseJob {
 		super();
 	}
 
-	public AssertElementExistsJob(Long id, String name, String description, SelectorType type, String selector) {
+	public AssertElementExistsJob(Long id, String name, String description, HtmlSelectorType type, String selector) {
 		super(id, name, description, null, type, selector);
 	}
 

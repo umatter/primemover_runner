@@ -25,7 +25,7 @@ import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;
 import primemover.model.MultiLoginAgent;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.IRunnerContext;
@@ -203,7 +203,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 		// special treatment of Amazon -> needs Button click
 		try {
-			WebElement button = SelectingHelper.getElementByWebdriver(context.getDriver(), SelectorType.TEXT,
+			WebElement button = SelectingHelper.getElementByWebdriver(context.getDriver(), HtmlSelectorType.TEXT,
 					"Continue shopping");
 			if (button != null) {
 				// click and wait for page refresh

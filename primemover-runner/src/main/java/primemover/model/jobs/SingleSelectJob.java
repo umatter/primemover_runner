@@ -1,14 +1,14 @@
 package primemover.model.jobs;
 
 import primemover.model.DecisionType;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 
 public class SingleSelectJob extends SelectorBaseJob {
 
 	private DecisionType decision;
 
 	private String criteriaSelector;
-	private SelectorType criteriaType;
+	private HtmlSelectorType criteriaType;
 	private String criteriaExtractor; // regular expression
 	private Attribute criteriaBase = Attribute.TEXT;
 
@@ -36,11 +36,11 @@ public class SingleSelectJob extends SelectorBaseJob {
 		this.criteriaExtractor = newVal;
 	}
 
-	public SelectorType getCriteriaType() {
+	public HtmlSelectorType getCriteriaType() {
 		return this.criteriaType;
 	}
 
-	public void setCriteriaType(SelectorType type) {
+	public void setCriteriaType(HtmlSelectorType type) {
 		this.criteriaType = type;
 	}
 
@@ -49,8 +49,8 @@ public class SingleSelectJob extends SelectorBaseJob {
 	}
 
 	// new job version 2
-	public SingleSelectJob(Long id, String name, String description, String task, SelectorType clickType,
-			String clickSelector, DecisionType decision, String criteriaSelector, SelectorType criteriaType,
+	public SingleSelectJob(Long id, String name, String description, String task, HtmlSelectorType clickType,
+			String clickSelector, DecisionType decision, String criteriaSelector, HtmlSelectorType criteriaType,
 			String criteriaExtractor, Attribute criteriaBase) {
 		super(id, name, description, task, clickType, clickSelector);
 		this.decision = decision;
@@ -61,7 +61,7 @@ public class SingleSelectJob extends SelectorBaseJob {
 	}
 
 	// old job version 1
-	public SingleSelectJob(Long id, String name, String description, String task, SelectorType type, String selector,
+	public SingleSelectJob(Long id, String name, String description, String task, HtmlSelectorType type, String selector,
 			DecisionType decision, Attribute criteriaBase) {
 		super(id, name, description, task, type, selector);
 		this.decision = decision;

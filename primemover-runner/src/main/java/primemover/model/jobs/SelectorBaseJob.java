@@ -1,17 +1,17 @@
 package primemover.model.jobs;
 
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 
 public abstract class SelectorBaseJob extends BaseJob {
 
 	private String selector;
-	private SelectorType type;
+	private HtmlSelectorType type;
 
 	public SelectorBaseJob() {
 		super();
 	}
 
-	public SelectorBaseJob(Long id, String name, String description, String task, SelectorType type, String selector) {
+	public SelectorBaseJob(Long id, String name, String description, String task, HtmlSelectorType type, String selector) {
 		super(id, name, description, task);
 		this.type = type;
 		this.selector = selector;
@@ -25,11 +25,11 @@ public abstract class SelectorBaseJob extends BaseJob {
 		this.selector = selector;
 	}
 
-	public SelectorType getType() {
+	public HtmlSelectorType getType() {
 		return type;
 	}
 
-	public void setType(SelectorType type) {
+	public void setType(HtmlSelectorType type) {
 		this.type = type;
 	}
 

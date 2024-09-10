@@ -18,7 +18,7 @@ import primemover.model.IAgent;
 import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
 import primemover.model.SelectionConfiguration;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.Attribute;
 import primemover.model.jobs.ClickJob;
@@ -94,13 +94,13 @@ class RunGoogleSearchOnFirefoxTest {
 
 		jobIdStart++;
 		SwitchToJob trySwitchToJob = new SwitchToJob(jobIdStart, "switching to agreement frame",
-				"google accept aggreement", null, SelectorType.XPATH, "//iframe");
+				"google accept aggreement", null, HtmlSelectorType.XPATH, "//iframe");
 		trySwitchToJob.setIsFailsave(true);
 		jobs.appendJob(trySwitchToJob);
 
 		jobIdStart++;
 		ClickJob tryClickJob = new ClickJob(jobIdStart, "click accept aggreement", "google accept aggreement", null,
-				SelectorType.XPATH, "//*[@id=\"L2AGLb\"]/div", false);
+				HtmlSelectorType.XPATH, "//*[@id=\"L2AGLb\"]/div", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 
@@ -125,25 +125,25 @@ class RunGoogleSearchOnFirefoxTest {
 		jobs.appendJob(waitJob);
 
 		// go to settings
-		ClickJob tryClickJob = new ClickJob(6l, "click settings buttons", "google settings", null, SelectorType.XPATH,
+		ClickJob tryClickJob = new ClickJob(6l, "click settings buttons", "google settings", null, HtmlSelectorType.XPATH,
 				"//*[@id=\"Mses6b\"]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 
 		// set to 40 results
-		tryClickJob = new ClickJob(7l, "click settings buttons", "google settings", null, SelectorType.XPATH,
+		tryClickJob = new ClickJob(7l, "click settings buttons", "google settings", null, HtmlSelectorType.XPATH,
 				"//*[@id=\"dEjpnf\"]/li[1]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
-		tryClickJob = new ClickJob(8l, "click settings buttons", "google settings", null, SelectorType.XPATH,
+		tryClickJob = new ClickJob(8l, "click settings buttons", "google settings", null, HtmlSelectorType.XPATH,
 				"//*[@id=\"result_slider\"]/ol/li[3]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
-		tryClickJob = new ClickJob(9l, "click settings buttons", "google settings", null, SelectorType.XPATH,
+		tryClickJob = new ClickJob(9l, "click settings buttons", "google settings", null, HtmlSelectorType.XPATH,
 				"//*[@id=\"result_slider\"]/ol/li[3]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
-		tryClickJob = new ClickJob(10l, "click settings buttons", "google settings", null, SelectorType.XPATH,
+		tryClickJob = new ClickJob(10l, "click settings buttons", "google settings", null, HtmlSelectorType.XPATH,
 				"//*[@id=\"result_slider\"]/ol/li[3]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
@@ -153,7 +153,7 @@ class RunGoogleSearchOnFirefoxTest {
 		jobs.appendJob(waitJob);
 
 		// save
-		tryClickJob = new ClickJob(12l, "click settings buttons", "google settings", null, SelectorType.XPATH,
+		tryClickJob = new ClickJob(12l, "click settings buttons", "google settings", null, HtmlSelectorType.XPATH,
 				"//*[@id=\"form-buttons\"]/div[1]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
@@ -187,7 +187,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 
 		// quick wait for search to finish
@@ -196,7 +196,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// select url
 		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select first entry", "select first entry", null,
-				SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.FIRST, Attribute.HREF);
+				HtmlSelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.FIRST, Attribute.HREF);
 		jobs.appendJob(singleSelectUrlJob);
 
 		// wait for search result
@@ -215,7 +215,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(5l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 
 		// quick wait for search to finish
@@ -224,7 +224,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// select url
 		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(7l, "select first entry", "select first entry", null,
-				SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST, Attribute.HREF);
+				HtmlSelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST, Attribute.HREF);
 		jobs.appendJob(singleSelectUrlJob);
 
 		// wait for search result
@@ -243,7 +243,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "news.yahoo.com", TypingModeType.DIRECT, true);
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "news.yahoo.com", TypingModeType.DIRECT, true);
 		jobs.appendJob(enterJob);
 
 		// quick wait for search to finish
@@ -259,7 +259,7 @@ class RunGoogleSearchOnFirefoxTest {
 		// ".//div[@id='rso']/div/div/div/a | .//div[@id='rso']/div/div/div/div/a",
 		// DecisionType.CALCULATED);
 		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select calculated entry",
-				"select calculated entry", null, SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a",
+				"select calculated entry", null, HtmlSelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a",
 				DecisionType.CALCULATED, Attribute.HREF);
 		jobs.appendJob(singleSelectUrlJob);
 
@@ -279,7 +279,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung",
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Aufmerksamkeitsdefizit-Hyperaktivitätsstörung",
 				TypingModeType.SIMULATED_NOTYPOS, true);
 		jobs.appendJob(enterJob);
 
@@ -289,7 +289,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// select url
 		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select first entry", "select first entry", null,
-				SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST, Attribute.HREF);
+				HtmlSelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST, Attribute.HREF);
 		jobs.appendJob(singleSelectUrlJob);
 
 		// wait for search result
@@ -308,7 +308,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(4l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist real",
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist real",
 				TypingModeType.SIMULATED_NOTYPOS, true);
 		jobs.appendJob(enterJob);
 
@@ -318,7 +318,7 @@ class RunGoogleSearchOnFirefoxTest {
 
 		// select url
 		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(6l, "select first entry", "select first entry", null,
-				SelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST, Attribute.HREF);
+				HtmlSelectorType.XPATH, ".//div[@class=\"yuRUbf\"]/a", DecisionType.LAST, Attribute.HREF);
 		jobs.appendJob(singleSelectUrlJob);
 
 		// wait for search result

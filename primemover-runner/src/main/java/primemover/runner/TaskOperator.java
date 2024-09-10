@@ -156,6 +156,26 @@ public class TaskOperator implements ITaskOperator {
 
 	private ContextBase<?> startupMultilogin(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
 			ICaptchaSolver captchaSolver) {
+		MultiLoginAgent typedAgent = (MultiLoginAgent) crawler.getAgent();
+
+		// ensure multilogin profile (create or return)
+		// needs to be done before setting params to the profile (Plugins, Proxy, etc)
+		MulitLoginBrowserProfile bp;
+
+		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
+			try {
+				bp = browserProfileFactory.getItem(crawler, recorder);
+				agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
+			} catch (Exception ex) {
+				logger.warn("could not create MultiLoginProfile for agent {}", typedAgent.getId(), ex);
+
+				throw new IllegalStateException("could not create MultiLoginProfile", ex);
+			}
+		} else {
+			bp = browserProfileFactory.getItem(typedAgent.getMultiLoginId());
+		}
+
+		// build context
 		MultiloginContext mlContext = new MultiloginContext();
 		mlContext.setCrawler(crawler);
 		mlContext.setRecordingProxy(recorder);
@@ -165,30 +185,6 @@ public class TaskOperator implements ITaskOperator {
 
 		Boolean done = false;
 		Integer retryCount = 0;
-
-		MultiLoginAgent typedAgent = (MultiLoginAgent) crawler.getAgent();
-
-		// ensure multilogin profile
-		MulitLoginBrowserProfile bp;
-
-		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
-			try {
-				String verifiyId = agentService.getMultiLoginIdFromServer(typedAgent);
-
-				if (StringUtils.isEmpty(verifiyId)) {
-					bp = browserProfileFactory.getItem(crawler, recorder);
-					agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
-				} else {
-					bp = browserProfileFactory.getItem(verifiyId);
-				}
-			} catch (Exception ex) {
-				logger.warn("could not create MultiLoginProfile for agent {}", typedAgent.getId(), ex);
-
-				throw new IllegalStateException("could not create MultiLoginProfile", ex);
-			}
-		} else {
-			bp = browserProfileFactory.getItem(typedAgent.getMultiLoginId());
-		}
 
 		// startup
 		while (!done && retryCount < maxRetryCountMultiLogin) {

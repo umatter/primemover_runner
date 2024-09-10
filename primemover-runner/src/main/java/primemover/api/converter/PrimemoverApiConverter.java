@@ -34,7 +34,7 @@ import primemover.model.MultiLoginAgent;
 import primemover.model.Outlet;
 import primemover.model.ScrollDirection;
 import primemover.model.SelectionConfiguration;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.Term;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.BaseJob;
@@ -258,7 +258,7 @@ public class PrimemoverApiConverter {
 		LOGGER.debug("converting EnterTextFieldJob {}", id);
 		EnterTextFieldJob job = new EnterTextFieldJob();
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
-		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setType(HtmlSelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setValue(behaviours.get("text"));
 
@@ -293,7 +293,7 @@ public class PrimemoverApiConverter {
 		ClickJob job = new ClickJob();
 
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
-		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setType(HtmlSelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 
 		if (behaviours.containsKey("expectsPageReload")) {
@@ -310,7 +310,7 @@ public class PrimemoverApiConverter {
 		LOGGER.debug("converting SwitchJob {}", id);
 		SwitchToJob job = new SwitchToJob();
 		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
-		job.setType(SelectorType.valueOf(behaviours.get("selectionType")));
+		job.setType(HtmlSelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 
 		return job;
@@ -325,9 +325,9 @@ public class PrimemoverApiConverter {
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
 
 		String clickSelector = null;
-		SelectorType clickType = null;
+		HtmlSelectorType clickType = null;
 		String criteriaSelector = null;
-		SelectorType criteriaType = null;
+		HtmlSelectorType criteriaType = null;
 		DecisionType decisionType = DecisionType.valueOf(behaviours.get("decisionType"));
 
 		boolean dataComplete = false;
@@ -337,7 +337,7 @@ public class PrimemoverApiConverter {
 			LOGGER.debug("found simple job version");
 			clickSelector = behaviours.get("selector");
 			criteriaSelector = clickSelector;
-			clickType = SelectorType.valueOf(behaviours.get("selectionType"));
+			clickType = HtmlSelectorType.valueOf(behaviours.get("selectionType"));
 			criteriaType = clickType;
 
 			// mandatory field for calculated-type
@@ -352,11 +352,11 @@ public class PrimemoverApiConverter {
 		if (behaviours.containsKey("clickSelectionType") && behaviours.containsKey("clickSelector")) {
 			LOGGER.debug("found extended job version");
 			clickSelector = behaviours.get("clickSelector");
-			clickType = SelectorType.valueOf(behaviours.get("clickSelectionType"));
+			clickType = HtmlSelectorType.valueOf(behaviours.get("clickSelectionType"));
 
 			if (behaviours.containsKey("criteriaSelector") || behaviours.containsKey("criteriaSelectionType")) {
 				criteriaSelector = behaviours.get("criteriaSelector");
-				criteriaType = SelectorType.valueOf(behaviours.get("criteriaSelectionType"));
+				criteriaType = HtmlSelectorType.valueOf(behaviours.get("criteriaSelectionType"));
 			} else {
 				criteriaSelector = clickSelector;
 				criteriaType = clickType;

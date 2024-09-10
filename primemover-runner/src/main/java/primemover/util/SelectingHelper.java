@@ -23,9 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
+import primemover.model.HtmlSelectorType;
+import primemover.model.ISelectorType;
 import primemover.model.MediaOutlet;
 import primemover.model.SelectionConfiguration;
-import primemover.model.SelectorType;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectJob;
 import primemover.service.IStorageService;
@@ -43,23 +44,28 @@ public class SelectingHelper {
 
 	private Random rand = new Random();
 
-	public static List<WebElement> getElementsByWebdriver(WebDriver driver, SelectorType type, String selector) {
+	public static List<WebElement> getElementsByWebdriver(WebDriver driver, ISelectorType type, String selector) {
 		logger.debug("grabing elements by {} with selector {}", type, selector);
 		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-		List<WebElement> elements;
-		switch (type) {
+		if (!(type instanceof HtmlSelectorType)) {
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
+
+		List<WebElement> elements = new ArrayList();
+		switch ((HtmlSelectorType) type) {
 		case CLASS:
 			// Wait for Element
-			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className(selector)));
+			elements.addAll(wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.className(selector))));
+			break;
 		case CSS:
-			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(selector)));
+			elements.addAll(wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(selector))));
 			break;
 		case ID:
-			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(selector)));
+			elements.addAll(wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.id(selector))));
 			break;
 		case XPATH:
-			elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(selector)));
+			elements.addAll(wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(selector))));
 			break;
 		default:
 			throw new UnsupportedOperationException("Not implemented yet");
@@ -76,12 +82,16 @@ public class SelectingHelper {
 	 * @param selector
 	 * @return
 	 */
-	public static WebElement getElementByWebdriver(WebDriver driver, SelectorType type, String selector) {
+	public static WebElement getElementByWebdriver(WebDriver driver, ISelectorType type, String selector) {
 		logger.debug("grabing element by {} with selector {}", type, selector);
 		WebElement element;
 		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 
-		switch (type) {
+		if (!(type instanceof HtmlSelectorType)) {
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
+
+		switch ((HtmlSelectorType) type) {
 		case CLASS:
 			element = wait.until(ExpectedConditions.presenceOfElementLocated(By.className(selector)));
 			break;
@@ -106,7 +116,7 @@ public class SelectingHelper {
 	}
 
 	public static WebElement getElementByWebdriver(WebDriver driver, SelectorBaseJob selectorJob) {
-		SelectorType type = selectorJob.getType();
+		HtmlSelectorType type = selectorJob.getType();
 		String selector = selectorJob.getSelector();
 
 		return getElementByWebdriver(driver, type, selector);

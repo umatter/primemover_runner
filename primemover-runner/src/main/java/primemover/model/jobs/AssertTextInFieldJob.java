@@ -1,6 +1,6 @@
 package primemover.model.jobs;
 
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 
 public class AssertTextInFieldJob extends SelectorBaseJob {
 	
@@ -17,7 +17,7 @@ public class AssertTextInFieldJob extends SelectorBaseJob {
 	public AssertTextInFieldJob() {
 	}
 
-	public AssertTextInFieldJob(Long id, String name, String description, SelectorType type, String selector, String value) {
+	public AssertTextInFieldJob(Long id, String name, String description, HtmlSelectorType type, String selector, String value) {
 		super(id, name, description, null, type, selector);
 		this.value = value;
 	}

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.EnterTextFieldJob;
 import primemover.runner.context.IJobAwareRunnerContext;
@@ -38,7 +38,7 @@ public class EnterTextFieldJobHandler implements IJobHandler {
 			try {
 				retriesCount++;
 				logger.debug("typing text. Trial {} of {}", retriesCount, 5);
-				SelectorType selectorType = typedJob.getType();
+				HtmlSelectorType selectorType = typedJob.getType();
 				String selector = typedJob.getSelector();
 
 				// captcha before

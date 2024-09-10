@@ -17,7 +17,7 @@ import primemover.model.Joblist;
 import primemover.model.MediaOutlet;
 import primemover.model.MultiLoginAgent;
 import primemover.model.SelectionConfiguration;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.jobs.ClickJob;
 import primemover.model.jobs.VisitJob;
 import primemover.model.jobs.WaitJob;
@@ -86,7 +86,7 @@ class RunAntiCaptchaTest {
 		jobs.appendJob(waitJob);
 
 		ClickJob tryClickJob = new ClickJob(3l, "click accept aggreement", "google accept aggreement", null,
-				SelectorType.XPATH, "//*[@id=\"recaptcha-demo-submit\"]", false);
+				HtmlSelectorType.XPATH, "//*[@id=\"recaptcha-demo-submit\"]", false);
 		tryClickJob.setIsFailsave(true);
 		jobs.appendJob(tryClickJob);
 

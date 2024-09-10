@@ -1,19 +1,18 @@
 package primemover.model;
 
-public enum SelectorType {
-	XPATH(1), //
-	CSS(2), //
-	CLASS(3), //
-	ID(4), //
-	TEXT(5);
+public enum UrlSelectorType implements ISelectorType {
+
+	REGEXP(10);
 
 	private final int code;
 
-	private SelectorType(int code) {
+	private UrlSelectorType(int code) {
 		this.code = code;
 	}
 
+	@Override
 	public int getCode() {
 		return this.code;
 	}
+
 }

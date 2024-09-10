@@ -1,6 +1,6 @@
 package primemover.model.jobs;
 
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.TypingModeType;
 
 public class EnterTextFieldJob extends SelectorBaseJob {
@@ -8,14 +8,14 @@ public class EnterTextFieldJob extends SelectorBaseJob {
 	private Boolean appendReturn;
 	private String value;
 	
-	public EnterTextFieldJob(Long id, String name, String description, String task, SelectorType type, String fieldSelector, String value, TypingModeType typingMode, Boolean appendEnter) {
+	public EnterTextFieldJob(Long id, String name, String description, String task, HtmlSelectorType type, String fieldSelector, String value, TypingModeType typingMode, Boolean appendEnter) {
 		super(id, name, description, task, type, fieldSelector);
 		this.value = value;
 		this.typingMode = typingMode;
 		this.appendReturn = appendEnter;
 	}
 	
-	public EnterTextFieldJob(Long id, String name, String description, String task, SelectorType type, String fieldSelector, String value, TypingModeType typingMode) {
+	public EnterTextFieldJob(Long id, String name, String description, String task, HtmlSelectorType type, String fieldSelector, String value, TypingModeType typingMode) {
 		this(id, name, description, task, type, fieldSelector, value, typingMode, true);
 	}
 	

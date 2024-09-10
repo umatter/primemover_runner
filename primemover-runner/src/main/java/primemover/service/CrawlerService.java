@@ -27,7 +27,7 @@ import primemover.model.Crawler;
 import primemover.model.DecisionType;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.Attribute;
 import primemover.model.jobs.EnterTextFieldJob;
@@ -122,7 +122,7 @@ public class CrawlerService implements ICrawlerService {
 
 		// enter search term
 		EnterTextFieldJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist doof",
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung ist doof",
 				TypingModeType.SIMULATED_KEEPINGTYPOS, true);
 		jobs.appendJob(enterJob);
 
@@ -132,7 +132,7 @@ public class CrawlerService implements ICrawlerService {
 
 		// select url
 		SingleSelectJob singleSelectUrlJob = new SingleSelectJob(1l, "select random entry", "select first entry", null,
-				SelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM, Attribute.HREF);
+				HtmlSelectorType.XPATH, ".//div[@id='rso']/div/div/div/a", DecisionType.RANDOM, Attribute.HREF);
 		jobs.appendJob(singleSelectUrlJob);
 
 		// wait for search result

@@ -10,7 +10,7 @@ import primemover.model.ChromeAgent;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
 import primemover.model.Joblist;
-import primemover.model.SelectorType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.AssertTextInFieldJob;
 import primemover.model.jobs.EnterTextFieldJob;
@@ -49,12 +49,12 @@ class Typing {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_NOTYPOS,
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_NOTYPOS,
 				false);
 		jobs.appendJob(enterJob);
 
 		// verify search term
-		AssertTextInFieldJob assertJob = new AssertTextInFieldJob(1l, "verify", "", SelectorType.XPATH,
+		AssertTextInFieldJob assertJob = new AssertTextInFieldJob(1l, "verify", "", HtmlSelectorType.XPATH,
 				"//input[@name='q']", "Klimaerwärmung");
 		jobs.appendJob(assertJob);
 
@@ -74,7 +74,7 @@ class Typing {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_KEEPINGTYPOS,
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_KEEPINGTYPOS,
 				false);
 		jobs.appendJob(enterJob);
 
@@ -96,7 +96,7 @@ class Typing {
 
 		// enter search term
 		SelectorBaseJob enterJob = new EnterTextFieldJob(1l, "enter value to text field", "enter value to text field",
-				null, SelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_FIXINGTYPOS,
+				null, HtmlSelectorType.XPATH, "//input[@name='q']", "Klimaerwärmung", TypingModeType.SIMULATED_FIXINGTYPOS,
 				false);
 		jobs.appendJob(enterJob);
 
