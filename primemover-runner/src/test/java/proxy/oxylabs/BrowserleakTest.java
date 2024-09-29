@@ -63,6 +63,8 @@ public class BrowserleakTest {
 		if (operator instanceof TaskOperator) {
 			((TaskOperator) operator).setSkipIpRecording(true);
 		}
+
+		operator.prepareExeuction(crawler);
 	}
 
 	Joblist createJobList() {
