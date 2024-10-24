@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import primemover.capture.BasicAuthorization;
 import primemover.capture.RecordingProxy;
 import primemover.model.MultiLoginAgent;
 import primemover.model.MultiLoginIBrowserType;
@@ -131,7 +133,7 @@ public class MulitLoginBrowserProfile {
 			}
 
 			if (responseCode != 204) {
-				logger.warn("Could not update proxy on profile {}, MultiLogin response was {}: {}", this.profileId,
+				logger.warn("Could not update extensions on profile {}, MultiLogin response was {}: {}", this.profileId,
 						responseCode, responseMessage);
 				return false;
 			}
@@ -164,10 +166,21 @@ public class MulitLoginBrowserProfile {
 		con.setRequestProperty("Content-Type", "application/json; utf-8");
 		con.setDoOutput(true);
 
+		Optional<BasicAuthorization> auth = proxy.getAuthorization();
+
+		String username = "";
+		String password = "";
+
+		if (auth.isPresent()) {
+			username = auth.get().getUsername();
+			password = auth.get().getPassword();
+		}
+
 		// Request data
 		String jsonInputString = "{\"network\": {" + "    \"proxy\": {" + "      \"type\": \"HTTP\","
-				+ "      \"host\": \"" + proxy.getIp() + "\"," + "      \"port\": \"" + proxy.getPort() + "\","
-				+ "      \"username\": \"\"," + "      \"password\": \"\"" + "    }," + " \"dns\": []" + "}}";
+				+ "      \"host\": \"" + proxy.getIp() + "\"," + "      \"port\": \"" + proxy.getHttpPort() + "\","
+				+ "      \"username\": \"" + username + "\"," + "      \"password\": \"" + password + "\"" + "    },"
+				+ " \"dns\": []" + "}}";
 
 		try (OutputStream os = con.getOutputStream()) {
 			byte[] input = jsonInputString.getBytes("utf-8");
@@ -374,6 +387,15 @@ public class MulitLoginBrowserProfile {
 		MultiLoginIBrowserType browser = MultiLoginIBrowserType.MIMIC;
 		String agentId = agent.getName() + "_AgentId " + agent.getId();
 
+		Optional<BasicAuthorization> auth = proxy.getAuthorization();
+
+		String username = "";
+		String password = "";
+		if (auth.isPresent()) {
+			username = auth.get().getUsername();
+			password = auth.get().getPassword();
+		}
+
 		// replacement values
 		Map<String, String> tokens = new HashMap<String, String>();
 		tokens.put("%%AGENTID%%", agentId);
@@ -381,9 +403,9 @@ public class MulitLoginBrowserProfile {
 		tokens.put("%%BROWSER%%", browser.getMultiLoginValue());
 		tokens.put("%%PROXYTYPE%%", proxy.getType());
 		tokens.put("%%PROXYHOST%%", proxy.getIp());
-		tokens.put("%%PROXYPORT%%", proxy.getPort().toString());
-		tokens.put("%%PROXYUSERNAME%%", proxy.getUsername());
-		tokens.put("%%PROXYPASSWORD%%", proxy.getPassword());
+		tokens.put("%%PROXYPORT%%", proxy.getHttpsPort().toString());
+		tokens.put("%%PROXYUSERNAME%%", username);
+		tokens.put("%%PROXYPASSWORD%%", password);
 
 		return defaultTemplateLoader.replaceTokens(template, tokens);
 	}

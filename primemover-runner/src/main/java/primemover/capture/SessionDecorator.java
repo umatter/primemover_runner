@@ -21,14 +21,14 @@ import primemover.model.proxy.Utils;
 public class SessionDecorator implements IProxy {
 
 	@Value("${geosurf.overwrite.user:}")
-	private static String geosurfUserOverwrite;
+	private String geosurfUserOverwrite;
 	@Value("${geosurf.overwrite.password:}")
-	private static String geosurfPasswordOverwrite;
+	private String geosurfPasswordOverwrite;
 
 	@Value("${oxylabs.overwrite.user:}")
-	private static String oxylabsUserOverwrite;
+	private String oxylabsUserOverwrite;
 	@Value("${oxylabs.overwrite.password:}")
-	private static String oxylabsPasswordOverwrite;
+	private String oxylabsPasswordOverwrite;
 
 	private final IProxy innerProxy;
 	private final String sessionId;

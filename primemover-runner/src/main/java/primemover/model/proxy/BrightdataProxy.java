@@ -9,7 +9,7 @@ public class BrightdataProxy extends HttpProxy {
 	private BrightdataOsEnum os = null;
 
 	public BrightdataProxy(String url, Integer port, String username, String password, String location,
-			BrightdataOsEnum os) {
+			@Nullable BrightdataOsEnum os) {
 		super(url, port, username, password);
 		this.location = location;
 		this.os = os;
@@ -27,11 +27,11 @@ public class BrightdataProxy extends HttpProxy {
 		this.location = location;
 	}
 
-	public BrightdataOsEnum getOperatingSystem() {
+	public @Nullable BrightdataOsEnum getOperatingSystem() {
 		return os;
 	}
 
-	public void setOperatingSystem(BrightdataOsEnum os) {
+	public void setOperatingSystem(@Nullable BrightdataOsEnum os) {
 		this.os = os;
 	}
 

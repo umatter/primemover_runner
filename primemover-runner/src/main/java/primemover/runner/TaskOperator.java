@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.browserup.harreader.model.Har;
-
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
@@ -165,7 +163,7 @@ public class TaskOperator implements ITaskOperator {
 		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
 			try {
 				bp = browserProfileFactory.getItem(crawler, recorder);
-				agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
+				// agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
 			} catch (Exception ex) {
 				logger.warn("could not create MultiLoginProfile for agent {}", typedAgent.getId(), ex);
 
@@ -272,7 +270,7 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			// start MITM
-			this.context.getRecordingProxy().startCapturing(job.getDescription(), job.getId() + '_' + job.getName());
+			this.context.getRecordingProxy().startCapturing(job.getId() + '_' + job.getName());
 
 			// running job
 			try {
@@ -331,7 +329,7 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			// capture trafic data
-			Har har = context.getRecordingProxy().stopCapturing();
+			String har = context.getRecordingProxy().stopCapturing();
 			dataRecorder.setHar(har);
 
 			// capture page data

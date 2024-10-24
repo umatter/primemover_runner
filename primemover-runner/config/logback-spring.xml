@@ -7,7 +7,7 @@
 	 
 	 <logger name="primemover.api" level="WARN" /> 
      <logger name="org.apache" level="WARN"/>
-     <logger name="org.littleshoot" level="WARN"/>
+     <logger name="org.littleshoot" level="DEBUG"/>
         	  
     <springProfile name="dev,staging">        
         <root level="DEBUG">

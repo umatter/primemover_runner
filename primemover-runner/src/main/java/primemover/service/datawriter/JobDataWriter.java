@@ -1,6 +1,5 @@
 package primemover.service.datawriter;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -107,13 +106,7 @@ public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 			if (data.hasHar()) {
 				zipEntry = new ZipEntry(traficData);
 				zipOut.putNextEntry(zipEntry);
-				// create temp stream as the json-library underlying the har-writing might close
-				// the stream
-				ByteArrayOutputStream tmpOs = new ByteArrayOutputStream(4048);
-				data.getHar().writeTo(tmpOs);
-				zipOut.write(tmpOs.toByteArray());
-				tmpOs.close();
-				tmpOs = null;
+				zipOut.write(data.getHar().getBytes());
 			}
 
 			// Page Source

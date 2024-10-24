@@ -40,22 +40,6 @@ public class BrowserleakTest {
 		crawler = new Crawler();
 		crawler.setAgent(agent);
 
-		/*
-		 * Configuration config = new Configuration(); config.setId(1);
-		 * config.setDescription("Test Configuration browserleaks");
-		 * config.setName("browserleaks.com");
-		 * 
-		 * 
-		 * SelectionConfiguration selConfig = new SelectionConfiguration();
-		 * selConfig.setId(1); selConfig.setPi(-1); selConfig.setPsi(0);
-		 * selConfig.setKappa(1); selConfig.setTau(1);
-		 * selConfig.setBeta(0.62368980888047); selConfig.setAlpha(0); HashMap<String,
-		 * MediaOutlet> outlets = new HashMap<>(); selConfig.setOutlets(outlets);
-		 * config.setSelectionConfiguration(selConfig);
-		 * 
-		 * crawler.setConfig(config);
-		 */
-
 		crawler.setProxy(proxy);
 
 		operator = operatorFactory.getInstance(crawler);
@@ -88,8 +72,10 @@ public class BrowserleakTest {
 	}
 
 	void runStateProxyWithHeaders(boolean useMultiLoginAgent) {
+
 		OxylabsProxy targetProxy = new OxylabsProxy("pr.oxylabs.io", 7777, "primemover_runner", "Primemover12345",
 				"cc-US-city-chicago");
+
 		setup(targetProxy, useMultiLoginAgent);
 
 		Joblist jobs = createJobList();

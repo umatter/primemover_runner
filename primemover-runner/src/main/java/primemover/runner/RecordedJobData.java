@@ -7,8 +7,6 @@ import javax.annotation.Nonnull;
 import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
 
-import com.browserup.harreader.model.Har;
-
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 import primemover.service.datawriter.IRecordedData;
@@ -16,7 +14,7 @@ import primemover.service.datawriter.IRecordedData;
 public class RecordedJobData implements IRecordedData {
 
 	private byte[] screenshot;
-	private Har har;
+	private String har;
 	private String pageSource;
 	private Set<Cookie> cookies;
 	private String sessionStorage;
@@ -46,11 +44,11 @@ public class RecordedJobData implements IRecordedData {
 		return job;
 	}
 
-	public Har getHar() {
+	public String getHar() {
 		return har;
 	}
 
-	public void setHar(Har har) {
+	public void setHar(String har) {
 		this.har = har;
 	}
 

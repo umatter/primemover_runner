@@ -35,7 +35,7 @@ public class GeosurfBrowserleakTest {
 	public void setup(IProxy proxy, boolean useMultiLoginAgent) {
 
 		if (useMultiLoginAgent) {
-			agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", "72c8610a-7041-4693-809d-b4e4a2643cf2", "");
+			agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", "", "");
 		} else {
 			agent = new ChromeAgent(1l, "Chrome", "Chrome", "");
 		}
@@ -65,6 +65,7 @@ public class GeosurfBrowserleakTest {
 		crawler.setProxy(proxy);
 
 		operator = operatorFactory.getInstance(crawler);
+		operator.prepareExeuction(crawler);
 	}
 
 	Joblist createJobList() {
@@ -115,6 +116,12 @@ public class GeosurfBrowserleakTest {
 
 		Joblist jobs = createJobList();
 		operator.runJobList(jobs);
+
+		try {
+			Thread.sleep(600000);
+		} catch (Exception ex) {
+
+		}
 
 		operator.tearDown(true);
 	}

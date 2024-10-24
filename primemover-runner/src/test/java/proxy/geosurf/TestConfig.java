@@ -19,8 +19,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
+import primemover.capture.KeepAlivePingFactory;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
+import primemover.capture.UrlVerificatorFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
@@ -186,5 +188,15 @@ public class TestConfig {
 	@Bean(name = "ProxyDecoratorFactory")
 	public ProxyDecoratorFactory getProxyDecoratorFactory() {
 		return new ProxyDecoratorFactory();
+	}
+
+	@Bean(name = "UrlVerificatorFactory")
+	UrlVerificatorFactory getUrlVerificatorFactory() {
+		return new UrlVerificatorFactory();
+	}
+
+	@Bean(name = "KeepAlivePingFactory")
+	KeepAlivePingFactory getKeepAlivePingFactory() {
+		return new KeepAlivePingFactory();
 	}
 }

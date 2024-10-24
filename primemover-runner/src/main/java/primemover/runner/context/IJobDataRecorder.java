@@ -4,15 +4,13 @@ import java.util.Set;
 
 import org.openqa.selenium.Cookie;
 
-import com.browserup.harreader.model.Har;
-
 import primemover.anticaptcha.CaptchaSolverResult;
 import primemover.model.LocationInfo;
 import primemover.runner.RecordedJobData;
 
 public interface IJobDataRecorder {
 
-	void setHar(Har har);
+	void setHar(String har);
 
 	void setPageSource(String pageSource);
 
