@@ -1,18 +1,24 @@
 package primemover.service;
 
 import java.net.Proxy;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import primemover.api.converter.PrimemoverApiConverter;
 import primemover.api.model.IpResult;
+import primemover.capture.BasicAuthorization;
 import primemover.model.LocationInfo;
 import primemover.service.token.TokenRequestInterceptor;
 
@@ -34,17 +40,27 @@ public class IpService {
 	@Autowired
 	TokenRequestInterceptor requestInterceptor;
 
-	public IpService(Proxy proxy) {
-		setProxy(proxy);
+	public IpService(Proxy proxy, Optional<BasicAuthorization> basicAuth) {
+		setProxy(proxy, basicAuth);
 	}
 
 	public IpService() {
 	}
 
-	public void setProxy(Proxy proxy) {
+	public void setProxy(Proxy proxy, Optional<BasicAuthorization> basicAuth) {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setProxy(proxy);
-		restTemplate = new RestTemplate(requestFactory);
+		RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder().requestFactory(() -> requestFactory);
+
+		if (basicAuth.isPresent()) {
+			restTemplateBuilder.defaultHeader(HttpHeaders.PROXY_AUTHORIZATION,
+					"Basic " + Base64.getEncoder()
+							.encodeToString((basicAuth.get().getUsername() + ':' + basicAuth.get().getPassword())
+									.getBytes(StandardCharsets.UTF_8)));
+		}
+
+		this.restTemplate = restTemplateBuilder.build();
+
 		isInit.set(true);
 	}
 

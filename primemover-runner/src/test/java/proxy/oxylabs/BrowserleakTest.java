@@ -2,10 +2,19 @@ package proxy.oxylabs;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.ZonedDateTime;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 
+import lombok.extern.slf4j.Slf4j;
 import primemover.model.ChromeAgent;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
@@ -16,28 +25,35 @@ import primemover.model.jobs.WaitJob;
 import primemover.model.proxy.IProxy;
 import primemover.model.proxy.OxylabsProxy;
 import primemover.runner.ITaskOperator;
+import primemover.runner.TaskExecutor;
 import primemover.runner.TaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
+@Slf4j
 @SpringBootTest
+@ActiveProfiles({ "dev", "test" })
+@ExtendWith(MockitoExtension.class)
+@ContextConfiguration(classes = TestConfig.class)
 public class BrowserleakTest {
 
 	@Autowired
 	private TaskOperatorFactory operatorFactory;
-
+	@Autowired
+	private TaskExecutor taskExecutor;
 	private ITaskOperator operator;
 	private IAgent agent;
-	Crawler crawler;
+	private Crawler crawler;
 
-	public void setup(IProxy proxy, boolean useMultiLoginAgent) {
+	private void setup(IProxy proxy, boolean useMultiLoginAgent) {
 
 		if (useMultiLoginAgent) {
 			agent = new MultiLoginAgent(1l, "Multilogin", "Multilogin", "", null, null);
 		} else {
-			agent = new ChromeAgent(1l, "Chrome", "Chrome", "");
+			agent = new ChromeAgent(1l, "Firefox", "Firefox", "");
 		}
 
 		crawler = new Crawler();
+		crawler.setId(1L);
 		crawler.setAgent(agent);
 
 		crawler.setProxy(proxy);
@@ -48,11 +64,12 @@ public class BrowserleakTest {
 			((TaskOperator) operator).setSkipIpRecording(true);
 		}
 
-		operator.prepareExeuction(crawler);
 	}
 
 	Joblist createJobList() {
 		Joblist jobs = new Joblist();
+		jobs.setId(1L);
+		jobs.setStartTime(ZonedDateTime.now());
 
 		// IP Test
 		VisitJob visitJob = new VisitJob(1l, "browserleak.com IP Test", "visit browserleak.com/ip",
@@ -62,16 +79,16 @@ public class BrowserleakTest {
 		jobs.appendJob(waitJob);
 
 		// Ad-blocker and Proxy-Detection test
-		visitJob = new VisitJob(1l, "browserleak.com detector", "visit browserleak.com/proxy",
+		visitJob = new VisitJob(2l, "browserleak.com detector", "visit browserleak.com/proxy",
 				"https://browserleaks.com/proxy", "https://browserleaks.com/proxy");
 		jobs.appendJob(visitJob);
-		waitJob = new WaitJob(1l, "wait", "wait", null, 10);
+		waitJob = new WaitJob(3l, "wait", "wait", null, 10);
 		jobs.appendJob(waitJob);
 
 		return jobs;
 	}
 
-	void runStateProxyWithHeaders(boolean useMultiLoginAgent) {
+	void runStateProxyWithHeaders(boolean useMultiLoginAgent) throws InterruptedException, ExecutionException {
 
 		OxylabsProxy targetProxy = new OxylabsProxy("pr.oxylabs.io", 7777, "primemover_runner", "Primemover12345",
 				"cc-US-city-chicago");
@@ -80,19 +97,18 @@ public class BrowserleakTest {
 
 		Joblist jobs = createJobList();
 
-		boolean success = operator.runJobList(jobs);
-		operator.tearDown(true);
+		CompletableFuture<Boolean> success = taskExecutor.run(crawler, jobs);
 
-		assertTrue(success, "joblist didn't finish successfully");
+		assertTrue(success.get(), "joblist didn't finish successfully");
 	}
 
 	@Test
-	void runStateProxyWithHeadersNonMultiLogin() {
+	void runStateProxyWithHeadersNonMultiLogin() throws InterruptedException, ExecutionException {
 		runStateProxyWithHeaders(false);
 	}
 
 	@Test
-	void runStateProxyWithHeadersMultiLogin() {
+	void runStateProxyWithHeadersMultiLogin() throws InterruptedException, ExecutionException {
 		runStateProxyWithHeaders(true);
 	}
 }

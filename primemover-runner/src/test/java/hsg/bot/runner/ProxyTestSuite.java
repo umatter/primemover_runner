@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import lombok.extern.slf4j.Slf4j;
 import primemover.model.ChromeAgent;
 import primemover.model.Crawler;
 import primemover.model.IAgent;
@@ -17,6 +18,7 @@ import primemover.model.proxy.HttpProxy;
 import primemover.runner.ITaskOperator;
 import primemover.runner.TaskOperatorFactory;
 
+@Slf4j
 @SpringBootTest
 class ProxyTestSuite {
 

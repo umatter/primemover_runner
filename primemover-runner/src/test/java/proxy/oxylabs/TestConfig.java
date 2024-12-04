@@ -9,9 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -25,15 +26,17 @@ import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.KeepAlivePingFactory;
-import primemover.capture.NoRecordingProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
 import primemover.capture.UrlVerificatorFactory;
+import primemover.capture.wiremock.WireMockRecorderProxy;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
+import primemover.runner.TaskExecutor;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.JobDispatcher;
+import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.service.AgentService;
 import primemover.service.FileStorageService;
 import primemover.service.IJobService;
@@ -44,7 +47,8 @@ import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
 import primemover.util.SelectingHelper;
 
-@SpringBootConfiguration
+@Profile("test")
+@Configuration
 public class TestConfig {
 
 	@Value("${backend.requestTimeoutSeconds:60}")
@@ -206,9 +210,19 @@ public class TestConfig {
 
 	@Bean(name = "RecordingProxy")
 	public IRecorderProxy getRecordingProxy() {
-		return new NoRecordingProxy();
-		// return new WireMockRecorderProxy();
+		// return new NoRecordingProxy();
+		return new WireMockRecorderProxy();
 		// return new BrowserUpRecorderProxy();
+	}
+
+	@Bean(name = "TaskExecutor", initMethod = "setup")
+	TaskExecutor getTaskExecutor() {
+		return new TaskExecutor();
+	}
+
+	@Bean(name = "jobListRunnerFactory")
+	JobListRunnerFactory getJobListRunnerFactory() {
+		return new JobListRunnerFactory();
 	}
 
 }

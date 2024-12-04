@@ -20,7 +20,6 @@ public class VisitJobHandler implements IJobHandler {
 		boolean success = false;
 		WebDriver driver = context.getDriver();
 		VisitJob typedJob = (VisitJob) context.getJob();
-		NavigationHelper navHelper = new NavigationHelper(driver, 2 * 60 * 1000l); // 2 Minuten
 
 		logger.debug("running job");
 
@@ -28,6 +27,7 @@ public class VisitJobHandler implements IJobHandler {
 		CaptchaJobHelper.solveCaptcha(context, JobPosition.BEFORE);
 
 		logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
+		NavigationHelper navHelper = new NavigationHelper(driver, 2 * 60 * 1000l); // 2 Minuten
 		driver.navigate().to(typedJob.getUrl());
 
 		// Wait for DOM-reload

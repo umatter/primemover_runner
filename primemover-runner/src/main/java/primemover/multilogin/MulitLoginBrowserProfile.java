@@ -403,7 +403,7 @@ public class MulitLoginBrowserProfile {
 		tokens.put("%%BROWSER%%", browser.getMultiLoginValue());
 		tokens.put("%%PROXYTYPE%%", proxy.getType());
 		tokens.put("%%PROXYHOST%%", proxy.getIp());
-		tokens.put("%%PROXYPORT%%", proxy.getHttpsPort().toString());
+		tokens.put("%%PROXYPORT%%", proxy.getHttpPort().toString());
 		tokens.put("%%PROXYUSERNAME%%", username);
 		tokens.put("%%PROXYPASSWORD%%", password);
 

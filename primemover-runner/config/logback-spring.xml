@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="true">
+<configuration debug="false">
 	<property name="LOG_LEVEL_PATTERN" value="%X{} %5p" />
     	
 	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
@@ -7,9 +7,9 @@
 	 
 	 <logger name="primemover.api" level="WARN" /> 
      <logger name="org.apache" level="WARN"/>
-     <logger name="org.littleshoot" level="DEBUG"/>
-        	  
-    <springProfile name="dev,staging">        
+     <logger name="org.littleshoot" level="WARN"/>
+    		  
+    <springProfile name="dev,staging,test">        
         <root level="DEBUG">
 		    <appender-ref ref="CONSOLE" />
 		</root>

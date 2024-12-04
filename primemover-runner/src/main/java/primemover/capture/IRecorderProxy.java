@@ -6,12 +6,15 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import primemover.model.proxy.IProxy;
+import primemover.runner.context.IRunnerContext;
 
 public interface IRecorderProxy {
 
-	void initProxy(IProxy targetProxy);
+	boolean initProxy(IProxy targetProxy);
 
 	void closeProxy(boolean immediate);
+
+	boolean applyContext(IRunnerContext<?> context);
 
 	InetAddress getAddress();
 
@@ -21,7 +24,9 @@ public interface IRecorderProxy {
 
 	int getHttpPort();
 
-	int getHttpsPort();
+	default Optional<Integer> getHttpsPort() {
+		return Optional.empty();
+	}
 
 	public void startCapturing();
 
@@ -32,5 +37,4 @@ public interface IRecorderProxy {
 	public @Nullable String newPage(String ref);
 
 	public @Nullable String stopCapturing();
-
 }

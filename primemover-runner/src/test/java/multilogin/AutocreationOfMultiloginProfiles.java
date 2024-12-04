@@ -35,7 +35,7 @@ class AutocreationOfMultiloginProfiles {
 	@BeforeEach
 	public void setup() {
 		// create a recording proxy
-		recorder = recorderFactory.createRecordingProxy();
+		recorder = recorderFactory.createRecordingProxy(null);
 
 		crawler = new Crawler();
 	}

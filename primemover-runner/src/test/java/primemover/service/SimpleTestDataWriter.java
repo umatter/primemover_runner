@@ -2,8 +2,9 @@ package primemover.service;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
-import com.mysql.cj.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import primemover.service.datawriter.IDataWriter;
 
@@ -13,9 +14,12 @@ public class SimpleTestDataWriter implements IDataWriter {
 	private String description = "description";
 	private String contentType = "test/data";
 	private Boolean hasOutput = true;
-	private byte[] testData = StringUtils.getBytes("test-data", "UTF-8");
 
 	private boolean wasWriteCalled = false;
+
+	private static byte[] getTestData() throws UnsupportedEncodingException {
+		return StringUtils.getBytes("test-data", "UTF-8");
+	}
 
 	public boolean wasWriteCalled() {
 		return wasWriteCalled;
@@ -54,7 +58,7 @@ public class SimpleTestDataWriter implements IDataWriter {
 		wasWriteCalled = true;
 		try {
 			if (hasOutput()) {
-				os.write(testData);
+				os.write(getTestData());
 			}
 		} catch (IOException e) {
 			return false;

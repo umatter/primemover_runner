@@ -23,9 +23,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
+import primemover.model.HtmlSelectorType;
 import primemover.model.IJob;
 import primemover.model.MultiLoginAgent;
-import primemover.model.HtmlSelectorType;
 import primemover.multilogin.MulitLoginBrowserProfile;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.IRunnerContext;
@@ -134,7 +134,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 		try {
 			// load empty page
-			NavigationHelper navHelper = new NavigationHelper(context.getDriver(), 10000);
+			NavigationHelper navHelper = new NavigationHelper(context.getDriver(), 1000);
 			context.getDriver().get(emptyPageUrl);
 			navHelper.waitForPageLoad();
 

@@ -119,8 +119,7 @@ public class TaskOperator implements ITaskOperator {
 		ffContext.setRecordingProxy(recorder);
 
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
-		firefoxOptions.merge(capabilities);
-		firefoxOptions.setAcceptInsecureCerts(true);
+		firefoxOptions = firefoxOptions.merge(capabilities);
 		captchaSolver.setOptions(crawler, firefoxOptions, recorder);
 		ffContext.setFirefoxOptions(firefoxOptions);
 		ffContext.setDriver(new FirefoxDriver(firefoxOptions));
@@ -135,13 +134,16 @@ public class TaskOperator implements ITaskOperator {
 		chContext.setRecordingProxy(recorder);
 
 		ChromeOptions chromeOptions = new ChromeOptions();
-		chromeOptions.merge(capabilities);
+		chromeOptions = chromeOptions.merge(capabilities); // Bound to changes in the versions for application of
+															// desired capabilities...
 		chromeOptions.addArguments("--start-maximized");
 		// make navigator.webriver disappear
 		// see
 		// https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec
 		chromeOptions.addArguments("--disable-blink-features");
 		chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+
+		logger.debug("chrome options", chromeOptions);
 
 		captchaSolver.setOptions(crawler, chromeOptions, recorder);
 
@@ -531,6 +533,7 @@ public class TaskOperator implements ITaskOperator {
 
 				// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
 				capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+				// capabilities.setCapability("webSocketUrl", true);
 
 				// stop recorder if in retry
 				RecordingProxy recorder = null;

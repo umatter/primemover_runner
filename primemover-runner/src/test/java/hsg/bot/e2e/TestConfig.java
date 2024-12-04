@@ -114,7 +114,7 @@ public class TestConfig {
 		IpService mockIpService = createIpServiceMock();
 
 		IpServiceFactory mockIpServiceFactory = mock(IpServiceFactory.class);
-		when(mockIpServiceFactory.getInstance((Proxy) any())).thenReturn(mock(IpService.class));
+		when(mockIpServiceFactory.getInstance((Proxy) any(), any())).thenReturn(mock(IpService.class));
 		when(mockIpServiceFactory.getInstance((RecordingProxy) any())).thenReturn(mockIpService);
 
 		return mockIpServiceFactory;

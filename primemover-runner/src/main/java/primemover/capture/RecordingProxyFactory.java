@@ -27,10 +27,6 @@ public class RecordingProxyFactory implements ApplicationContextAware {
 		isInit = true;
 	}
 
-	public RecordingProxy createRecordingProxy() {
-		return this.createRecordingProxy(null);
-	}
-
 	public RecordingProxy createRecordingProxy(@Nullable IProxy chainedProxy) {
 		if (!isInit) {
 			throw new IllegalStateException("set the appliation context before usage.");
@@ -41,7 +37,7 @@ public class RecordingProxyFactory implements ApplicationContextAware {
 		ctx.getAutowireCapableBeanFactory().autowireBean(ret);
 
 		if (chainedProxy == null) {
-			ret.setup();
+			ret.setup(null);
 		} else {
 			ret.setup(chainedProxy);
 		}

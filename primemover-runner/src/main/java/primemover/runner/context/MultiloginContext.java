@@ -1,8 +1,10 @@
 package primemover.runner.context;
 
+import org.openqa.selenium.MutableCapabilities;
+
 import primemover.multilogin.MulitLoginBrowserProfile;
 
-public class MultiloginContext extends ContextBase {
+public class MultiloginContext<OptionsType extends MutableCapabilities> extends ContextBase<OptionsType> {
 	private MulitLoginBrowserProfile profile;
 
 	public MultiloginContext() {

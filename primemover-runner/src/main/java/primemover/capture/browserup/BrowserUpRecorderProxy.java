@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
@@ -39,6 +40,7 @@ import primemover.capture.SessionDecorator;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
+import primemover.runner.context.IRunnerContext;
 import software.amazon.awssdk.utils.StringUtils;
 
 public class BrowserUpRecorderProxy implements IRecorderProxy {
@@ -86,7 +88,7 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 	private BrowserUpProxyServer proxy = null;
 
 	@Override
-	public void initProxy(IProxy targetProxy) {
+	public boolean initProxy(IProxy targetProxy) {
 
 		log.debug("buidling recorder");
 
@@ -121,8 +123,8 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 				.serverKeyGenerator(new ECKeyGenerator())//
 				.cacheConcurrencyLevel(16) // 8 is default
 				.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
-				// .trustAllServers(true)
-				.trustAllServers(true).build();
+				.trustAllServers(true) //
+				.build();
 
 		proxy = new BrowserUpProxyServer();
 
@@ -167,10 +169,10 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 			String password = decoratedProxy.getPassword();
 			if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password)) {
 				proxy.chainedProxyAuthorization(username, password, AuthType.BASIC);
-
 			}
 			proxy.setChainedProxy(new InetSocketAddress(decoratedProxy.getUrl(), decoratedProxy.getPort()));
 			// proxy.setChainedProxyNonProxyHosts(Arrays.asList("app.multiloginapp.com"));
+			// proxy.setChainedProxyHTTPS(true);
 
 			if (targetProxy instanceof HttpProxy) {
 				HttpProxy typedTargetProxy = (HttpProxy) targetProxy;
@@ -220,6 +222,8 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 		proxy.start();
 
 		log.debug("Proxy started on port {}", proxy.getPort());
+
+		return true;
 	}
 
 	@Override
@@ -254,8 +258,8 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 	}
 
 	@Override
-	public int getHttpsPort() {
-		return proxy.getPort();
+	public Optional<Integer> getHttpsPort() {
+		return Optional.of(proxy.getPort());
 	}
 
 	@Override
@@ -293,5 +297,10 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 	@Override
 	public @Nullable String stopCapturing() {
 		return harToString(proxy.endHar());
+	}
+
+	@Override
+	public boolean applyContext(IRunnerContext<?> context) {
+		return true;
 	}
 }

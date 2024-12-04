@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.model.proxy.IProxy;
+import primemover.runner.context.IRunnerContext;
 import primemover.service.IpService;
 
 /**
@@ -89,14 +90,16 @@ public class RecordingProxy {
 	 * 
 	 * @param targetProxy
 	 */
-	public void reset(IProxy targetProxy) {
+	public void reset(IProxy targetProxy, IRunnerContext<?> context) {
 		tearDown();
 		setup(targetProxy);
 	}
 
 	private void buildMitmProxy(IProxy targetProxy) {
 		// simple decorator for usernames with session parameters
-		recorderProxy.initProxy(targetProxy);
+		if (!recorderProxy.initProxy(targetProxy)) {
+			throw new IllegalStateException("proxy failed to initialize");
+		}
 	}
 
 	private boolean verifyConnectivity() {
@@ -153,20 +156,18 @@ public class RecordingProxy {
 		throw new IllegalStateException("Proxy was not started properly");
 	}
 
-	protected void setup() {
-		this.setup(null);
-	}
-
 	public java.net.Proxy getProxy() {
 		InetAddress address = recorderProxy.getAddress();
-		int port = recorderProxy.getHttpsPort();
+		int port = recorderProxy.getHttpPort();
+
 		SocketAddress socket = new InetSocketAddress(address, port);
 		return new java.net.Proxy(Type.HTTP, socket);
 	}
 
 	public void applyProxy(IpService ipService) {
 		java.net.Proxy javaProxy = getProxy();
-		ipService.setProxy(javaProxy);
+
+		ipService.setProxy(javaProxy, this.recorderProxy.getAuthorization());
 	}
 
 	public DesiredCapabilities applyProxy(DesiredCapabilities cap) {
@@ -176,31 +177,38 @@ public class RecordingProxy {
 
 		InetAddress adr = recorderProxy.getAddress();
 		String host = adr.getHostAddress();
-		String httpPort = String.valueOf(recorderProxy.getHttpPort());
-		String httpsPort = String.valueOf(recorderProxy.getHttpsPort());
+
 		Optional<BasicAuthorization> auth = recorderProxy.getAuthorization();
 
-		// String hostIp = adr.getHostAddress();
-		// seleniumProxy.setHttpProxy(adr.getHostName() + ":" + port);
-		// seleniumProxy.setSslProxy(adr.getHostName() + ":" + port);
-
+		String httpPort = String.valueOf(recorderProxy.getHttpPort());
 		String httpProxy = host + ":" + httpPort;
-		String httpsProxy = host + ":" + httpsPort;
-
 		if (auth.isPresent()) {
 			final String authPrefix = auth.get().getUsername() + ":" + auth.get().getPassword() + "@";
 			httpProxy = authPrefix + httpProxy;
-			httpsProxy = authPrefix + httpsProxy;
+		}
+		seleniumProxy.setHttpProxy(httpProxy);
+		Optional<Integer> optHttpsPort = recorderProxy.getHttpsPort();
+
+		if (optHttpsPort.isPresent()) {
+			String httpsPort = String
+					.valueOf(recorderProxy.getHttpsPort().orElseGet(() -> recorderProxy.getHttpPort()));
+			String httpsProxy = host + ":" + httpsPort;
+			if (auth.isPresent()) {
+				final String authPrefix = auth.get().getUsername() + ":" + auth.get().getPassword() + "@";
+				httpsProxy = authPrefix + httpsProxy;
+			}
+			seleniumProxy.setSslProxy(httpsProxy);
 		}
 
-		seleniumProxy.setHttpProxy(httpProxy);
-		seleniumProxy.setSslProxy(httpsProxy);
 		seleniumProxy.setProxyType(ProxyType.MANUAL);
 		cap.setCapability(CapabilityType.PROXY, seleniumProxy);
-		// cap.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+		cap.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
 
 		LOGGER.debug("setting http-proxy to {}", seleniumProxy.getHttpProxy());
-		LOGGER.debug("setting https-proxy to {}", seleniumProxy.getSslProxy());
+
+		if (optHttpsPort.isPresent()) {
+			LOGGER.debug("setting https-proxy to {}", seleniumProxy.getSslProxy());
+		}
 
 		return cap;
 	}
@@ -221,7 +229,7 @@ public class RecordingProxy {
 		return recorderProxy.getHttpPort();
 	}
 
-	public Integer getHttpsPort() {
+	public Optional<Integer> getHttpsPort() {
 		return recorderProxy.getHttpsPort();
 	}
 
@@ -239,5 +247,9 @@ public class RecordingProxy {
 
 	public String stopCapturing() {
 		return recorderProxy.stopCapturing();
+	}
+
+	boolean applyContext(IRunnerContext<?> context) {
+		return this.recorderProxy.applyContext(context);
 	}
 }

@@ -7,12 +7,12 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.SocketUtils;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.common.ProxySettings;
@@ -22,6 +22,7 @@ import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.SessionDecorator;
 import primemover.model.proxy.IProxy;
+import primemover.runner.context.IRunnerContext;
 
 public class WireMockRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(WireMockRecorderProxy.class);
@@ -47,9 +48,7 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 	private WireMockServer wireMockServer;
 
 	@Override
-	public void initProxy(IProxy targetProxy) {
-		int dynamicPort = SocketUtils.findAvailableTcpPort();
-
+	public boolean initProxy(IProxy targetProxy) {
 		SessionDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
 		log.debug("generated session-id: {}", decoratedProxy.getSessionId());
 
@@ -60,11 +59,11 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 		wireMockServer = new WireMockServer(options() //
 				.enableBrowserProxying(true) //
 				.proxyPassThrough(true) //
-				// .proxyVia(proxySettings) //
+				.proxyVia(proxySettings) //
 				.preserveHostHeader(true) //
 				.preserveUserAgentProxyHeader(true) //
 				.dynamicPort() //
-				.dynamicHttpsPort() //
+				// .dynamicHttpsPort() //
 				.caKeystorePassword(certPassword) //
 				.caKeystorePath("/cert/2024/ca-cert.p12") //
 				.caKeystoreType(certType) //
@@ -76,7 +75,13 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 		wireMockServer.stubFor(
 				get(urlEqualTo("https://localhost/blank")).willReturn(aResponse().withBody("This is a blank page.")));
 
-		log.info("proxy started on port {} (http) and {} (https)", wireMockServer.port(), wireMockServer.httpsPort());
+		if (wireMockServer.isHttpsEnabled()) {
+			log.info("proxy started on port {} (http) and {} (https)", wireMockServer.port(),
+					wireMockServer.httpsPort());
+		} else {
+			log.info("proxy started on port {} (http)", wireMockServer.port());
+
+		}
 
 		// add / remove extra header
 		// stubFor(get(urlMatching(".*"))
@@ -85,6 +90,8 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 		// .withAdditionalRequestHeader("User-Agent", "Mozilla/5.0 (iPhone; U; CPU
 		// iPhone)")));
 		// .withRemoveRequestHeader("User-Agent")));
+
+		return true;
 	}
 
 	@Override
@@ -108,8 +115,12 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 	}
 
 	@Override
-	public int getHttpsPort() {
-		return wireMockServer.httpsPort();
+	public Optional<Integer> getHttpsPort() {
+		if (wireMockServer.isHttpsEnabled()) {
+			return Optional.of(wireMockServer.httpsPort());
+		}
+
+		return Optional.empty();
 	}
 
 	@Override
@@ -140,6 +151,11 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 	public String stopCapturing() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean applyContext(IRunnerContext<?> context) {
+		return true;
 	}
 
 }

@@ -52,7 +52,7 @@ public class SelectingHelper {
 			throw new UnsupportedOperationException("Not implemented yet");
 		}
 
-		List<WebElement> elements = new ArrayList();
+		List<WebElement> elements = new ArrayList<>();
 		switch ((HtmlSelectorType) type) {
 		case CLASS:
 			// Wait for Element

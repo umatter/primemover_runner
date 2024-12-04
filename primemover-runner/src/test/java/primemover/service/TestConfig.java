@@ -37,17 +37,6 @@ import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
 import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.JobDispatcher;
-import primemover.service.AgentService;
-import primemover.service.AwsS3StorageService;
-import primemover.service.CrawlerService;
-import primemover.service.FileStorageService;
-import primemover.service.ICrawlerService;
-import primemover.service.IJobService;
-import primemover.service.IStorageService;
-import primemover.service.IpService;
-import primemover.service.IpServiceFactory;
-import primemover.service.OutletService;
-import primemover.service.TermsService;
 import primemover.service.datawriter.WriterUtil;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
@@ -101,7 +90,7 @@ public class TestConfig {
 		IpService mockIpService = createIpServiceMock();
 
 		IpServiceFactory mockIpServiceFactory = mock(IpServiceFactory.class);
-		when(mockIpServiceFactory.getInstance((Proxy) any())).thenReturn(mock(IpService.class));
+		when(mockIpServiceFactory.getInstance((Proxy) any(), any())).thenReturn(mock(IpService.class));
 		when(mockIpServiceFactory.getInstance((RecordingProxy) any())).thenReturn(mockIpService);
 
 		return mockIpServiceFactory;

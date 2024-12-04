@@ -106,7 +106,8 @@ public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 			if (data.hasHar()) {
 				zipEntry = new ZipEntry(traficData);
 				zipOut.putNextEntry(zipEntry);
-				zipOut.write(data.getHar().getBytes());
+				byte[] tmpByte = data.getHar().getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
 			}
 
 			// Page Source

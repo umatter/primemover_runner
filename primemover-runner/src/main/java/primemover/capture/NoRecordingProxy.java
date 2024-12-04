@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import primemover.model.proxy.IProxy;
+import primemover.runner.context.IRunnerContext;
 
 public class NoRecordingProxy implements IRecorderProxy {
 
@@ -40,12 +41,16 @@ public class NoRecordingProxy implements IRecorderProxy {
 
 	private SessionDecorator proxy;
 
+	IRunnerContext<?> context;
+
 	@Override
-	public void initProxy(IProxy targetProxy) {
+	public boolean initProxy(IProxy targetProxy) {
 		if (targetProxy == null) {
-			return;
+			return true;
 		}
 		proxy = sessionDecoratorFactory.decorateProxy(targetProxy);
+
+		return true;
 	}
 
 	@Override
@@ -73,8 +78,8 @@ public class NoRecordingProxy implements IRecorderProxy {
 	}
 
 	@Override
-	public int getHttpsPort() {
-		return proxy.getPort().intValue();
+	public Optional<Integer> getHttpsPort() {
+		return Optional.of(proxy.getPort().intValue());
 	}
 
 	@Override
@@ -103,6 +108,13 @@ public class NoRecordingProxy implements IRecorderProxy {
 	public String stopCapturing() {
 		// no recording
 		return null;
+	}
+
+	@Override
+	public boolean applyContext(IRunnerContext<?> context) {
+		this.context = context;
+
+		return true;
 	}
 
 }

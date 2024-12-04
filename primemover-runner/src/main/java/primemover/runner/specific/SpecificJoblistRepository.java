@@ -14,7 +14,7 @@ public class SpecificJoblistRepository {
 	}
 
 	private List<Specific> readFolder() {
-		ArrayList<Specific> out = new ArrayList();
+		ArrayList<Specific> out = new ArrayList<>();
 
 		return out;
 	}
