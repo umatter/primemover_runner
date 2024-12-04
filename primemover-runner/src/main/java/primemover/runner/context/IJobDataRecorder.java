@@ -1,5 +1,6 @@
 package primemover.runner.context;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.openqa.selenium.Cookie;
@@ -24,9 +25,9 @@ public interface IJobDataRecorder {
 
 	void setLocation(LocationInfo location);
 
-	void setCapchaResultBefore(CaptchaSolverResult capchaInfo);
+	void setCapchaResultBefore(Optional<CaptchaSolverResult> capchaInfo);
 
-	void setCapchaResultAfter(CaptchaSolverResult capchaInfo);
+	void setCapchaResultAfter(Optional<CaptchaSolverResult> capchaInfo);
 
 	RecordedJobData getRecordings();
 }

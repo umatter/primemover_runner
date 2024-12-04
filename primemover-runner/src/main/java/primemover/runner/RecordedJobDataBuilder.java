@@ -1,9 +1,11 @@
 package primemover.runner;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.openqa.selenium.Cookie;
 
@@ -56,7 +58,10 @@ public class RecordedJobDataBuilder {
 		return this.pageSource;
 	}
 
-	public RecordedJobDataBuilder setCookies(Set<Cookie> cookies) {
+	public RecordedJobDataBuilder setCookies(@Nullable Set<Cookie> cookies) {
+		if (cookies == null) {
+			cookies = new HashSet<>();
+		}
 		this.cookies = Collections.unmodifiableSet(cookies);
 		return this;
 	}

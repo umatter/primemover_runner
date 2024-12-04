@@ -34,7 +34,7 @@ public class CaptchaJobHelper {
 				logger.debug("running captcha (AFTER) for job {}", job.getId());
 				Optional<CaptchaSolverResult> afterResult = Optional
 						.of(context.getCaptchaSolver().solve(context, job, true));
-				context.getJobDataRecorder().setCapchaResultAfter(afterResult.orElse(null));
+				context.getJobDataRecorder().setCapchaResultAfter(afterResult);
 				return afterResult;
 			}
 
@@ -44,7 +44,7 @@ public class CaptchaJobHelper {
 				logger.debug("running captcha (BEFORE) for job {}", job.getId());
 				Optional<CaptchaSolverResult> beforeResult = Optional
 						.of(context.getCaptchaSolver().solve(context, job, true));
-				context.getJobDataRecorder().setCapchaResultBefore(beforeResult.orElse(null));
+				context.getJobDataRecorder().setCapchaResultBefore(beforeResult);
 				return beforeResult;
 			}
 			break;

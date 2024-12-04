@@ -1,8 +1,10 @@
 package primemover.runner.context;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.openqa.selenium.Cookie;
 
@@ -23,7 +25,9 @@ public class JobDataRecorder implements IJobDataRecorder {
 	private String localStorage = null;
 	private byte[] screenshot = null;
 	private LocationInfo location = null;
+	@Nullable
 	private CaptchaSolverResult capchaInfoBefore = null;
+	@Nullable
 	private CaptchaSolverResult capchaInfoAfter = null;
 
 	public JobDataRecorder(IJob job) {
@@ -67,13 +71,13 @@ public class JobDataRecorder implements IJobDataRecorder {
 	}
 
 	@Override
-	public void setCapchaResultBefore(CaptchaSolverResult captchaInfo) {
-		this.capchaInfoBefore = captchaInfo;
+	public void setCapchaResultBefore(Optional<CaptchaSolverResult> captchaInfo) {
+		this.capchaInfoBefore = captchaInfo.orElse(null);
 	}
 
 	@Override
-	public void setCapchaResultAfter(CaptchaSolverResult captchaInfo) {
-		this.capchaInfoAfter = captchaInfo;
+	public void setCapchaResultAfter(Optional<CaptchaSolverResult> captchaInfo) {
+		this.capchaInfoAfter = captchaInfo.orElse(null);
 	}
 
 	@Override
