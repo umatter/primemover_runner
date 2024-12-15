@@ -14,6 +14,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -65,14 +66,15 @@ public class IpService {
 		isInit.set(true);
 	}
 
-	@Retryable
+	@Retryable(noRetryFor = IllegalStateException.class)
 	public LocationInfo getLocationInfo() {
 		if (!isInit.get()) {
 			throw new IllegalStateException("Init proxy before using");
 		}
 		String url = endpointPathReports;
 
-		logger.debug("grabbing location info from {}", url);
+		logger.debug("grabbing location info from {}. Retry {}", url,
+				RetrySynchronizationManager.getContext().getRetryCount());
 		try {
 			IpResult apiRes = restTemplate.getForObject(url, IpResult.class);
 			LocationInfo res = PrimemoverApiConverter.convertFromApi(apiRes);

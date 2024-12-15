@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 
 import primemover.api.converter.PrimemoverApiConverter;
@@ -30,7 +31,8 @@ public class OutletService {
 
 	@Retryable
 	public List<Outlet> getOutlets() {
-		logger.debug("loading outlets from {}", endpointPath);
+		logger.debug("loading outlets from {}. Retry {}", endpointPath,
+				RetrySynchronizationManager.getContext().getRetryCount());
 		OutletResult apiRes = restTemplate.getForObject(endpointPath, OutletResult.class);
 		List<Outlet> res = PrimemoverApiConverter.convertFromApi(apiRes);
 

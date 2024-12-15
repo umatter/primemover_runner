@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 
 import primemover.model.IJob;
 import primemover.service.datawriter.IDataWriter;
@@ -66,7 +67,8 @@ public class AwsS3StorageService implements IStorageService {
 	@Retryable
 	@Override
 	public Boolean writeData(IJob job, IDataWriter writer) {
-		logger.debug("Start writing to AWS S3 for job {}", job.getId());
+		logger.debug("Start writing to AWS S3 for job {}, retry {}", job.getId(),
+				RetrySynchronizationManager.getContext().getRetryCount());
 		if (isInit == false) {
 			throw new IllegalStateException("call init() first");
 		}

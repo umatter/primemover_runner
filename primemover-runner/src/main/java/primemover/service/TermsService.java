@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 
 import primemover.api.converter.PrimemoverApiConverter;
@@ -30,7 +31,8 @@ public class TermsService {
 
 	@Retryable
 	public List<Term> getTerms() {
-		logger.debug("loading jobs from {}", endpointPath);
+		logger.debug("loading jobs from {}. Retry {}", endpointPath,
+				RetrySynchronizationManager.getContext().getRetryCount());
 		TermResult apiRes = restTemplate.getForObject(endpointPath, TermResult.class);
 		List<Term> res = PrimemoverApiConverter.convertFromApi(apiRes);
 

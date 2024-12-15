@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
@@ -152,7 +153,7 @@ public class CrawlerService implements ICrawlerService {
 	@Override
 	public List<Pair<Crawler, Joblist>> getCurrentTasks() {
 		String url = calculateCrawlerUrl(null);
-		logger.debug("loading jobs from {}", url);
+		logger.debug("loading jobs from {}. Retry {}", url, RetrySynchronizationManager.getContext().getRetryCount());
 		CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);
 		logger.debug("starting to convert");
 		List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes, captchaSolvingDefault);
@@ -184,7 +185,8 @@ public class CrawlerService implements ICrawlerService {
 	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
 		try {
 			String url = calculateCrawlerUrl(id);
-			logger.debug("loading jobs from {}", url);
+			logger.debug("loading jobs from {}. Retry {}", url,
+					RetrySynchronizationManager.getContext().getRetryCount());
 			CrawlerResult apiRes = restTemplate.getForObject(url, CrawlerResult.class);
 
 			List<Pair<Crawler, Joblist>> res = PrimemoverApiConverter.convertFromApi(apiRes, captchaSolvingDefault);
@@ -212,7 +214,8 @@ public class CrawlerService implements ICrawlerService {
 		data.put("mimetype", mimeType);
 		data.put("filename", filename);
 
-		logger.trace("writing Job-Report data", data);
+		logger.trace("writing Job-Report data. Retry {}", RetrySynchronizationManager.getContext().getRetryCount(),
+				data);
 
 		HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 
@@ -245,7 +248,7 @@ public class CrawlerService implements ICrawlerService {
 		data.put("filename", filename);
 		data.put("path", path);
 
-		logger.trace("writing S3-Report data", data);
+		logger.trace("writing S3-Report data. Retry{}", RetrySynchronizationManager.getContext().getRetryCount(), data);
 
 		HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 

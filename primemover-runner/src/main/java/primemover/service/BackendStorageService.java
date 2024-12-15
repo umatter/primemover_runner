@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 
 import primemover.model.IJob;
 import primemover.service.datawriter.IDataWriter;
@@ -26,7 +27,9 @@ public class BackendStorageService implements IStorageService {
 	@Override
 	public Boolean writeData(IJob job, IDataWriter writer) {
 		try (ByteArrayOutputStream os = new ByteArrayOutputStream(4048)) {
-			logger.trace("Start writing data for job {}", job.getId());
+
+			logger.trace("Start writing data for job {}. Retry {}", job.getId(),
+					RetrySynchronizationManager.getContext().getRetryCount());
 
 			if (writer.writeData(os)) {
 				byte[] bytesEncoded = Base64.getEncoder().encode(os.toByteArray());

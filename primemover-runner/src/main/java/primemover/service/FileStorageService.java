@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 
 import primemover.model.IJob;
 import primemover.service.datawriter.IDataWriter;
@@ -24,6 +25,7 @@ public class FileStorageService implements IStorageService {
 	@Retryable
 	@Override
 	public Boolean writeData(IJob job, IDataWriter writer) {
+		logger.info("writing job data. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
 		// create a folder for the job
 		Path jobFolder = Paths.get(targetFolder + "/" + job.getId().toString() + "/");
 		jobFolder = localDir.resolve(jobFolder);

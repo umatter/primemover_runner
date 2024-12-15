@@ -15,6 +15,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -72,6 +73,7 @@ public class JobService implements IJobService {
 	@Override
 	public Boolean updateJoblistState(Joblist jobs, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
+		logger.info("updateing joblist-state. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
 		return updateJoblistState(jobs.getId(), state, startTime, endTime, processed, processing);
 	}
 
@@ -118,6 +120,7 @@ public class JobService implements IJobService {
 	@Retryable
 	@Override
 	public Boolean updateCaptchaStateOnJob(final IJob job, Boolean captchaFound, Boolean captchaSolved) {
+		logger.info("updateing captcha-state. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
 		return updateJobState(job.getId(), null, captchaFound, captchaSolved, null, null);
 	}
 
@@ -125,6 +128,7 @@ public class JobService implements IJobService {
 	@Override
 	public Boolean updateJobState(final IJob job, final JobState state, Boolean captchaFound,
 			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
+		logger.info("updateing job-state. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
 		return updateJobState(job.getId(), state, captchaFound, captchaSolved, startTime, endTime);
 	}
 

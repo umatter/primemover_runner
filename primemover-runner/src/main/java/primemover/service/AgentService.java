@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -51,6 +52,8 @@ public class AgentService {
 
 	@Retryable
 	public Boolean updateMultiloginProfile(MultiLoginAgent agent, String newProfile) {
+		logger.info("updating multilogin profile. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
+
 		String url = calculateAgentUrl(agent.getId());
 
 		HttpHeaders headers = new HttpHeaders();
