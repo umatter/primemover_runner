@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.RestTemplate;
 
 import primemover.api.converter.PrimemoverApiConverter;
@@ -27,6 +28,7 @@ public class OutletService {
 	public OutletService() {
 	}
 
+	@Retryable
 	public List<Outlet> getOutlets() {
 		logger.debug("loading outlets from {}", endpointPath);
 		OutletResult apiRes = restTemplate.getForObject(endpointPath, OutletResult.class);

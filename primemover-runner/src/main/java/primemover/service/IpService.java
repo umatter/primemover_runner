@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -64,6 +65,7 @@ public class IpService {
 		isInit.set(true);
 	}
 
+	@Retryable
 	public LocationInfo getLocationInfo() {
 		if (!isInit.get()) {
 			throw new IllegalStateException("Init proxy before using");

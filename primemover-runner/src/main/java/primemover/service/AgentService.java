@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -48,6 +49,7 @@ public class AgentService {
 		return url;
 	}
 
+	@Retryable
 	public Boolean updateMultiloginProfile(MultiLoginAgent agent, String newProfile) {
 		String url = calculateAgentUrl(agent.getId());
 
@@ -74,6 +76,7 @@ public class AgentService {
 		}
 	}
 
+	@Retryable
 	public String getMultiLoginIdFromServer(MultiLoginAgent agent) {
 		String url = calculateAgentUrl(agent.getId());
 

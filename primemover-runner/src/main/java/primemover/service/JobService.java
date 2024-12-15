@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -67,6 +68,7 @@ public class JobService implements IJobService {
 		return url;
 	}
 
+	@Retryable
 	@Override
 	public Boolean updateJoblistState(Joblist jobs, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
@@ -113,11 +115,13 @@ public class JobService implements IJobService {
 		}
 	}
 
+	@Retryable
 	@Override
 	public Boolean updateCaptchaStateOnJob(final IJob job, Boolean captchaFound, Boolean captchaSolved) {
 		return updateJobState(job.getId(), null, captchaFound, captchaSolved, null, null);
 	}
 
+	@Retryable
 	@Override
 	public Boolean updateJobState(final IJob job, final JobState state, Boolean captchaFound,
 			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {

@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
@@ -25,9 +26,9 @@ import primemover.api.model.CrawlerResult;
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.DecisionType;
+import primemover.model.HtmlSelectorType;
 import primemover.model.Joblist;
 import primemover.model.MultiLoginAgent;
-import primemover.model.HtmlSelectorType;
 import primemover.model.TypingModeType;
 import primemover.model.jobs.Attribute;
 import primemover.model.jobs.EnterTextFieldJob;
@@ -147,6 +148,7 @@ public class CrawlerService implements ICrawlerService {
 	 * 
 	 * @see primemover.service.ICrawlerService#getCurrentTasks()
 	 */
+	@Retryable
 	@Override
 	public List<Pair<Crawler, Joblist>> getCurrentTasks() {
 		String url = calculateCrawlerUrl(null);
@@ -177,6 +179,7 @@ public class CrawlerService implements ICrawlerService {
 		return res;
 	}
 
+	@Retryable
 	@Override
 	public List<Pair<Crawler, Joblist>> getTasksForCrawler(Long id) {
 		try {
@@ -197,6 +200,7 @@ public class CrawlerService implements ICrawlerService {
 		return null;
 	}
 
+	@Retryable
 	@Override
 	public Boolean writeJobData(Long jobId, String filename, String description, String mimeType, String fileContent) {
 		HttpHeaders headers = new HttpHeaders();
@@ -229,6 +233,7 @@ public class CrawlerService implements ICrawlerService {
 		}
 	}
 
+	@Retryable
 	@Override
 	public Boolean writeS3JobData(Long jobId, String filename, String path, String description) {
 		HttpHeaders headers = new HttpHeaders();
