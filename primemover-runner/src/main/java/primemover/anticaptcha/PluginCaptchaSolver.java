@@ -56,6 +56,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 	@Override
 	public boolean setOptions(Crawler crawler, MutableCapabilities options, RecordingProxy recorder) {
+
 		// Multilogin
 		if (crawler.getAgent() instanceof MultiLoginAgent) {
 			LOGGER.debug("Checking for Multilogin-Plugin");

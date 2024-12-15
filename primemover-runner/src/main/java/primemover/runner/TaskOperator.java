@@ -14,7 +14,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
@@ -532,7 +531,8 @@ public class TaskOperator implements ITaskOperator {
 				DesiredCapabilities capabilities = new DesiredCapabilities();
 
 				// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
-				capabilities.setCapability(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+				// capabilities.setCapability(CapabilityType., true);
+				capabilities.setAcceptInsecureCerts(true);
 				// capabilities.setCapability("webSocketUrl", true);
 
 				// stop recorder if in retry

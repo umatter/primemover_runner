@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.common.ProxySettings;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 
 import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
@@ -52,14 +53,9 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 		SessionDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
 		log.debug("generated session-id: {}", decoratedProxy.getSessionId());
 
-		ProxySettings proxySettings = new ProxySettings(decoratedProxy.getUrl(), decoratedProxy.getPort());
-		proxySettings.setUsername(decoratedProxy.getUsername());
-		proxySettings.setPassword(decoratedProxy.getPassword());
-
-		wireMockServer = new WireMockServer(options() //
+		WireMockConfiguration options = options() //
 				.enableBrowserProxying(true) //
 				.proxyPassThrough(true) //
-				.proxyVia(proxySettings) //
 				.preserveHostHeader(true) //
 				.preserveUserAgentProxyHeader(true) //
 				.dynamicPort() //
@@ -69,7 +65,18 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 				.caKeystoreType(certType) //
 				.disableConnectionReuse(false) //
 				.notifier(new Slf4jNotifier(true)) //
-				.usingFilesUnderDirectory("/"));
+				.usingFilesUnderDirectory("/");
+
+		if (targetProxy != null) {
+			ProxySettings proxySettings = new ProxySettings(decoratedProxy.getUrl(), decoratedProxy.getPort());
+			proxySettings.setUsername(decoratedProxy.getUsername());
+			proxySettings.setPassword(decoratedProxy.getPassword());
+
+			options.proxyVia(proxySettings);
+		}
+
+		wireMockServer = new WireMockServer(options);
+
 		wireMockServer.start();
 
 		wireMockServer.stubFor(

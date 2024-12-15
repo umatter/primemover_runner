@@ -16,6 +16,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -71,6 +74,21 @@ public class Config {
 
 	@Value("${backend.connectionTimeoutSeconds:10}")
 	private Long connectionTimeoutSeconds;
+
+	@Bean
+	public RetryTemplate retryTemplate() {
+		RetryTemplate retryTemplate = new RetryTemplate();
+
+		FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
+		fixedBackOffPolicy.setBackOffPeriod(2000l);
+		retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
+
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+		retryPolicy.setMaxAttempts(3);
+		retryTemplate.setRetryPolicy(retryPolicy);
+
+		return retryTemplate;
+	}
 
 	@Bean(name = "jobListRunnerFactory")
 	JobListRunnerFactory getJobListRunnerFactory() {

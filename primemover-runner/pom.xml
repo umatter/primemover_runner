@@ -64,6 +64,11 @@
 			<artifactId>selenium-chrome-driver</artifactId>
 			<version>${selenium.version}</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.retry</groupId>
+		    <artifactId>spring-retry</artifactId>
+		</dependency>
 	    <dependency>
 		    <groupId>io.opentelemetry</groupId>
 		    <artifactId>opentelemetry-exporter-jaeger</artifactId>
