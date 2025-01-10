@@ -46,6 +46,9 @@ import software.amazon.awssdk.utils.StringUtils;
 public class BrowserUpRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(BrowserUpRecorderProxy.class);
 
+	@Value("${recorder.enabled:true}")
+	private Boolean recordingEnabled;
+
 	@Value("${recorder.certificate.type}")
 	private String certType;
 
@@ -123,8 +126,11 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 				.serverKeyGenerator(new RSAKeyGenerator())//
 				.cacheConcurrencyLevel(16) // 8 is default
 				.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
-				// .trustAllServers(true) //
 				.build();
+
+		// proxy.setMitmDisabled(true);
+		proxy.setMitmManager(mitmManager);
+		proxy.setMitmDisabled(!recordingEnabled);
 
 		proxy = new BrowserUpProxyServer();
 
@@ -133,9 +139,6 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 		resolver.getHostRemappings();
 		log.debug("resolver: {}", resolver);
 		proxy.setHostNameResolver(resolver);
-
-		// proxy.setMitmDisabled(true);
-		proxy.setMitmManager(mitmManager);
 
 		// set defaults
 		proxy.setConnectTimeout(connectTimeoutSeconds, TimeUnit.SECONDS);
@@ -280,6 +283,10 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 
 	@Override
 	public void startCapturing(String ref) {
+		if (!recordingEnabled) {
+			return;
+		}
+
 		proxy.newHar(ref);
 	}
 
@@ -297,16 +304,28 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 
 	@Override
 	public @Nullable String newPage() {
+		if (!recordingEnabled) {
+			return null;
+		}
+
 		return harToString(proxy.newPage());
 	}
 
 	@Override
 	public @Nullable String newPage(String ref) {
+		if (!recordingEnabled) {
+			return null;
+		}
+
 		return harToString(proxy.newPage(ref));
 	}
 
 	@Override
 	public @Nullable String stopCapturing() {
+		if (!recordingEnabled) {
+			return null;
+		}
+
 		return harToString(proxy.endHar());
 	}
 

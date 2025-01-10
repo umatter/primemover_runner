@@ -28,6 +28,9 @@ import primemover.runner.context.IRunnerContext;
 public class WireMockRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(WireMockRecorderProxy.class);
 
+	@Value("${recorder.enabled:true")
+	private boolean recordingEnabled;
+
 	@Value("${recorder.certificate.type}")
 	private String certType;
 
