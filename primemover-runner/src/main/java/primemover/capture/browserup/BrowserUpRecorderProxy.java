@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import com.browserup.bup.BrowserUpProxyServer;
 import com.browserup.bup.mitm.CertificateAndKeySource;
 import com.browserup.bup.mitm.KeyStoreFileCertificateSource;
-import com.browserup.bup.mitm.keys.ECKeyGenerator;
+import com.browserup.bup.mitm.keys.RSAKeyGenerator;
 import com.browserup.bup.mitm.manager.ImpersonatingMitmManager;
 import com.browserup.bup.proxy.CaptureType;
 import com.browserup.bup.proxy.auth.AuthType;
@@ -120,10 +120,10 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 		// RootCertificateGenerator
 		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
 				.rootCertificateSource(existingCertificateSource)//
-				.serverKeyGenerator(new ECKeyGenerator())//
+				.serverKeyGenerator(new RSAKeyGenerator())//
 				.cacheConcurrencyLevel(16) // 8 is default
 				.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
-				.trustAllServers(true) //
+				// .trustAllServers(true) //
 				.build();
 
 		proxy = new BrowserUpProxyServer();
@@ -158,6 +158,21 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 			}
 		});
 
+		// add protocol
+		/*
+		 * proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
+		 * 
+		 * @Override public HttpFilters filterRequest(HttpRequest originalRequest) {
+		 * return new HttpFiltersAdapter(originalRequest) {
+		 * 
+		 * @Override public HttpResponse proxyToServerRequest(HttpObject httpObject) {
+		 * if (httpObject instanceof HttpRequest) { if (((HttpRequest)
+		 * httpObject).getUri().contains("app.multiloginapp.com:443")) { ((HttpRequest)
+		 * httpObject).setUri("https://app.multiloginapp.com:443"); }
+		 * 
+		 * } return null; } }; } });
+		 */
+
 		if (targetProxy != null) {
 			log.debug("using chained proxy {}:{}", targetProxy.getUrl(), targetProxy.getPort());
 
@@ -172,14 +187,10 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 			}
 			proxy.setChainedProxy(new InetSocketAddress(decoratedProxy.getUrl(), decoratedProxy.getPort()));
 			// proxy.setChainedProxyNonProxyHosts(Arrays.asList("app.multiloginapp.com"));
-			// proxy.setChainedProxyHTTPS(true);
 
 			if (targetProxy instanceof HttpProxy) {
 				HttpProxy typedTargetProxy = (HttpProxy) targetProxy;
-
-				if (typedTargetProxy.useHttps()) {
-					proxy.setChainedProxyHTTPS(true);
-				}
+				proxy.setChainedProxyHTTPS(typedTargetProxy.useHttps());
 			}
 
 			// create session-identifier and set session-headers

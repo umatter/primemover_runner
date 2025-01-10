@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
@@ -113,12 +114,17 @@ public class TaskOperator implements ITaskOperator {
 
 	private ContextBase<?> startupFirefox(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
 			ICaptchaSolver captchaSolver) {
+
+		WebDriverManager.firefoxdriver().setup();
+
 		FirefoxContext ffContext = new FirefoxContext();
 		ffContext.setCrawler(crawler);
 		ffContext.setRecordingProxy(recorder);
 
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
 		firefoxOptions = firefoxOptions.merge(capabilities);
+		firefoxOptions.setAcceptInsecureCerts(true);
+
 		captchaSolver.setOptions(crawler, firefoxOptions, recorder);
 		ffContext.setFirefoxOptions(firefoxOptions);
 		ffContext.setDriver(new FirefoxDriver(firefoxOptions));
@@ -128,6 +134,9 @@ public class TaskOperator implements ITaskOperator {
 
 	private ContextBase<?> startupChrome(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
 			ICaptchaSolver captchaSolver) {
+
+		WebDriverManager.chromedriver().setup();
+
 		ChromeContext chContext = new ChromeContext();
 		chContext.setCrawler(crawler);
 		chContext.setRecordingProxy(recorder);
@@ -141,6 +150,7 @@ public class TaskOperator implements ITaskOperator {
 		// https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec
 		chromeOptions.addArguments("--disable-blink-features");
 		chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+		chromeOptions.setAcceptInsecureCerts(true);
 
 		logger.debug("chrome options", chromeOptions);
 

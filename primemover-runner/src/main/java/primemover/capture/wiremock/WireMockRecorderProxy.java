@@ -59,13 +59,15 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 				.preserveHostHeader(true) //
 				.preserveUserAgentProxyHeader(true) //
 				.dynamicPort() //
-				// .dynamicHttpsPort() //
+				.dynamicHttpsPort() //
 				.caKeystorePassword(certPassword) //
-				.caKeystorePath("/cert/2024/ca-cert.p12") //
+				.caKeystorePath(certPath) //
 				.caKeystoreType(certType) //
 				.disableConnectionReuse(false) //
 				.notifier(new Slf4jNotifier(true)) //
-				.usingFilesUnderDirectory("/");
+				.usingFilesUnderDirectory("/") //
+				.maxHttpClientConnections(1000) //
+				.disableConnectionReuse(false);
 
 		if (targetProxy != null) {
 			ProxySettings proxySettings = new ProxySettings(decoratedProxy.getUrl(), decoratedProxy.getPort());

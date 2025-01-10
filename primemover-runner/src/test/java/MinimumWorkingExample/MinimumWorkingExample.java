@@ -32,46 +32,24 @@ import io.netty.handler.codec.http.HttpResponse;
 
 public class MinimumWorkingExample {
 
+	// --------> Change to your test-profile. Set the proxy to "localhost:48000" on
+	// that profile.
 	private static String profileId = "9405f040-6e2e-4f4d-b013-399262270aff";
 
 	public MinimumWorkingExample() {
-		// TODO Auto-generated constructor stub
 	}
 
 	public void run() throws IOException, JSONException, InterruptedException {
 
-		// create a RootCertificateGenerator that generates EC Certificate Authorities;
-		// you may also load your
-		// own EC certificate and private key using any other CertificateAndKeySource
-		// implementation
-		// (KeyStoreFileCertificateSource, PemFileCertificateSource, etc.).
+		// RootCertificateGenerator
 		RootCertificateGenerator rootCertificateGenerator = RootCertificateGenerator.builder()
 				.keyGenerator(new ECKeyGenerator()).build();
 
-		// save the newly-generated Root Certificate and Private Key -- the .cer file
-		// can be imported
-		// directly into a browser
-		// rootCertificateGenerator.saveRootCertificateAsPemFile(new
-		// File("out/certificate.cer"));
-		// rootCertificateGenerator.savePrivateKeyAsPemFile(new
-		// File("out/private-key.pem"), "CHANGEME-password");
-
-		// or save the certificate and private key as a PKCS12 keystore, for later use
-		// rootCertificateGenerator.saveRootCertificateAndKey("PKCS12", new
-		// File("out/keystore.p12"), "primemover", "CHANGEME-password");
-
-		// CertificateAndKeySource existingCertificateSource = new
-		// KeyStoreFileCertificateSource(this.certType,
-		// new File(this.certPath), this.certAlias, this.certPassword);
-
-		// tell the ImpersonatingMitmManager to generate EC keys and to use the EC
-		// RootCertificateGenerator
 		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
 				.rootCertificateSource(rootCertificateGenerator)//
 				.serverKeyGenerator(new RSAKeyGenerator())//
 				.cacheConcurrencyLevel(16) // 8 is default
 				.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
-				// .trustAllServers(true) //
 				.build();
 
 		BrowserUpProxyServer proxy = new BrowserUpProxyServer();
@@ -81,7 +59,17 @@ public class MinimumWorkingExample {
 		proxy.setHostNameResolver(resolver);
 
 		proxy.setMitmDisabled(true);
+
+		// ---------------------------------------------------------------------------
+		// activating the man-in-the-middle for recording purposes makes the proxy
+		// use self-signed certificates for every connection. We need that to record
+		// the in- and outgoing network traffic without being detected.
+		// The real project uses pre-created root-certificates which are installed in
+		// the system. Those need to be recognized and accepted by the Multilogin
+		// trust store.
+		// ----->>>> uncomment the following line to see the effect
 		// proxy.setMitmManager(mitmManager);
+		// ---------------------------------------------------------------------------
 
 		// allow some time
 		proxy.setConnectTimeout(60, TimeUnit.SECONDS);

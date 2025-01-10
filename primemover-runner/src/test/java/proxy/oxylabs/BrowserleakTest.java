@@ -104,11 +104,13 @@ public class BrowserleakTest {
 
 	@Test
 	void runStateProxyWithHeadersNonMultiLogin() throws InterruptedException, ExecutionException {
+		System.setProperty("javax.net.debug", "ssl:handshake");
 		runStateProxyWithHeaders(false);
 	}
 
 	@Test
 	void runStateProxyWithHeadersMultiLogin() throws InterruptedException, ExecutionException {
+		System.setProperty("javax.net.debug", "ssl:handshake");
 		runStateProxyWithHeaders(true);
 	}
 }
