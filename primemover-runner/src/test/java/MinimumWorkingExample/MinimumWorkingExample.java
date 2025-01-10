@@ -66,7 +66,9 @@ public class MinimumWorkingExample {
 		// the in- and outgoing network traffic without being detected.
 		// The real project uses pre-created root-certificates which are installed in
 		// the system. Those need to be recognized and accepted by the Multilogin
-		// trust store.
+		// trust store. Currently Multilogin fails to creat a trusted certification
+		// path.
+		//
 		// ----->>>> uncomment the following line to see the effect
 		// proxy.setMitmManager(mitmManager);
 		// ---------------------------------------------------------------------------
