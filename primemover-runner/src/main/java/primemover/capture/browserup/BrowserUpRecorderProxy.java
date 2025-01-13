@@ -116,23 +116,31 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 		 * File("out/keystore.p12"), "primemover", "CHANGEME-password");
 		 */
 
-		CertificateAndKeySource existingCertificateSource = new KeyStoreFileCertificateSource(this.certType,
-				new File(this.certPath), this.certAlias, this.certPassword);
-
-		// tell the ImpersonatingMitmManager to generate EC keys and to use the EC
-		// RootCertificateGenerator
-		ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
-				.rootCertificateSource(existingCertificateSource)//
-				.serverKeyGenerator(new RSAKeyGenerator())//
-				.cacheConcurrencyLevel(16) // 8 is default
-				.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
-				.build();
-
-		// proxy.setMitmDisabled(true);
-		proxy.setMitmManager(mitmManager);
-		proxy.setMitmDisabled(!recordingEnabled);
-
 		proxy = new BrowserUpProxyServer();
+
+		if (recordingEnabled) {
+			log.info("enabling recording: {}", recordingEnabled);
+			CertificateAndKeySource existingCertificateSource = new KeyStoreFileCertificateSource(this.certType,
+					new File(this.certPath), this.certAlias, this.certPassword);
+
+			// tell the ImpersonatingMitmManager to generate EC keys and to use the EC
+			// RootCertificateGenerator
+			ImpersonatingMitmManager mitmManager = ImpersonatingMitmManager.builder()
+					.rootCertificateSource(existingCertificateSource)//
+					.serverKeyGenerator(new RSAKeyGenerator())//
+					.cacheConcurrencyLevel(16) // 8 is default
+					.cacheExpirationInterval(120, TimeUnit.MINUTES) // 5 Minutes is default
+					.build();
+
+			proxy.setMitmDisabled(false);
+			proxy.setMitmManager(mitmManager);
+
+			// enable more detailed HAR capture. Recording everything.
+			proxy.enableHarCaptureTypes(CaptureType.getRequestCaptureTypes());
+			proxy.enableHarCaptureTypes(CaptureType.getResponseCaptureTypes());
+		} else {
+			proxy.setMitmDisabled(true);
+		}
 
 		// set DNS resolver
 		NativeResolver resolver = new NativeResolver();
@@ -160,21 +168,6 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 				};
 			}
 		});
-
-		// add protocol
-		/*
-		 * proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
-		 * 
-		 * @Override public HttpFilters filterRequest(HttpRequest originalRequest) {
-		 * return new HttpFiltersAdapter(originalRequest) {
-		 * 
-		 * @Override public HttpResponse proxyToServerRequest(HttpObject httpObject) {
-		 * if (httpObject instanceof HttpRequest) { if (((HttpRequest)
-		 * httpObject).getUri().contains("app.multiloginapp.com:443")) { ((HttpRequest)
-		 * httpObject).setUri("https://app.multiloginapp.com:443"); }
-		 * 
-		 * } return null; } }; } });
-		 */
 
 		if (targetProxy != null) {
 			log.debug("using chained proxy {}:{}", targetProxy.getUrl(), targetProxy.getPort());
@@ -228,10 +221,6 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 				});
 			}
 		}
-
-		// enable more detailed HAR capture. Recording everything.
-		proxy.enableHarCaptureTypes(CaptureType.getRequestCaptureTypes());
-		proxy.enableHarCaptureTypes(CaptureType.getResponseCaptureTypes());
 
 		proxy.start();
 

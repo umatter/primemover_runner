@@ -31,10 +31,10 @@ import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.api.deserializer.RelaxedZonedDateTimeDeserializer;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.KeepAlivePingFactory;
+import primemover.capture.NoRecordingProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.RecordingProxyFactory;
 import primemover.capture.UrlVerificatorFactory;
-import primemover.capture.browserup.BrowserUpRecorderProxy;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.multilogin.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.MultiLoginDefaultTemplateLoader;
@@ -313,8 +313,8 @@ public class Config {
 
 	@Bean(name = "RecordingProxy")
 	public IRecorderProxy getRecordingProxy() {
-		// return new NoRecordingProxy();
+		return new NoRecordingProxy();
 		// return new WireMockRecorderProxy();
-		return new BrowserUpRecorderProxy();
+		// return new BrowserUpRecorderProxy();
 	}
 }
