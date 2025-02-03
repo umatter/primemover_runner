@@ -32,9 +32,9 @@ public class VisitJobHandler implements IJobHandler {
 
 		// Wait for DOM-reload
 		try {
-			navHelper.waitForPageLoad();
+			navHelper.waitForPageLoad(typedJob.getUrl());
 		} catch (Exception e) {
-			logger.debug("simple page load wait (DOM) failed for job {}.", typedJob.getId());
+			logger.warn("simple page load wait (DOM) failed for job {}.", typedJob.getId(), e);
 			// second chance below
 		}
 
@@ -43,7 +43,7 @@ public class VisitJobHandler implements IJobHandler {
 			primemover.util.Waiter.waitUntilJSReady(context.getDriver(), 5, 12); // check every 5 seconds for 1 Minutes
 			success = true;
 		} catch (Exception e) {
-			logger.debug("page ready load wait failed for job {}.", typedJob.getId());
+			logger.warn("page ready load wait failed for job {}.", typedJob.getId(), e);
 		}
 
 		// captcha after

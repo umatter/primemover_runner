@@ -1,9 +1,11 @@
 package primemover.util;
 
 import java.time.Duration;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -55,16 +57,27 @@ public class NavigationHelper {
 		}
 	}
 
-	public void waitForPageLoad() {
+	public void waitForPageLoad(String target) throws InterruptedException {
 		logger.debug("start waiting for page load for {}", driver.getCurrentUrl());
 		boolean done = false;
 		long start_millis = System.currentTimeMillis();
 		long cur_millis = start_millis;
 
-		// check for extension loading
+		// WORKAROUND for extension failure of Multilogin
 		if (driver.getCurrentUrl().startsWith("chrome-extension://")) {
-			logger.debug("extension loaded");
-			return;
+			logger.warn("Extension {} still loading. Trying workaround! Start running in new tab for {}...",
+					driver.getCurrentUrl(), target);
+
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+
+			js.executeScript("window.open('" + target + "', '_blank');");
+			Thread.sleep(500);
+
+			TreeSet<String> sortedHandles = new TreeSet<String>(driver.getWindowHandles());
+
+			driver.switchTo().window(sortedHandles.last());
+			// driver.switchTo().newWindow(WindowType.TAB);
+			// driver.navigate().to(target);
 		}
 
 		// initial wait to allow browser to navigate

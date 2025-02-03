@@ -5,9 +5,11 @@ import javax.annotation.Nullable;
 
 public class CaptchaSolverResult {
 	// some default results
-	public static CaptchaSolverResult _PLUGINFAILURE = of(false, false, false, 0, false, true, null);
-	public static CaptchaSolverResult _NOCAPTCHADETECTED = of(true, false, false, 0, false, false, null);
+	public static CaptchaSolverResult _PLUGINFAILURE = of(true, false, false, false, 0, false, true, null);
+	public static CaptchaSolverResult _NOCAPTCHADETECTED = of(true, true, false, false, 0, false, false, null);
+	public static CaptchaSolverResult DISABLED = of(false, false, false, false, 0, false, false, null);
 
+	private boolean pluginEnabled = true;
 	private boolean pluginWorking = true;
 	private boolean captchaDetected = false;
 	private long solvingSeconds;
@@ -20,6 +22,14 @@ public class CaptchaSolverResult {
 
 	@Nullable
 	private String captchaType;
+
+	public void setPluginEnabled(boolean enabled) {
+		this.pluginEnabled = enabled;
+	}
+
+	public boolean isPluginEnabled() {
+		return pluginEnabled;
+	}
 
 	public boolean isCaptchaDetected() {
 		return captchaDetected;
@@ -77,9 +87,11 @@ public class CaptchaSolverResult {
 		this.solvingSeconds = solvingSeconds;
 	}
 
-	static public @Nonnull CaptchaSolverResult of(boolean pluginWorking, boolean captchaDetected, boolean captchaSolved,
-			long solvingSeconds, boolean hasSolvingTimeout, boolean hasError, @Nullable String captchaType) {
+	static public @Nonnull CaptchaSolverResult of(boolean pluginEnabled, boolean pluginWorking, boolean captchaDetected,
+			boolean captchaSolved, long solvingSeconds, boolean hasSolvingTimeout, boolean hasError,
+			@Nullable String captchaType) {
 		CaptchaSolverResult out = new CaptchaSolverResult();
+		out.setPluginEnabled(pluginEnabled);
 		out.setPluginWorking(pluginWorking);
 		out.setCaptchaDetected(captchaDetected);
 		out.setCaptchaSolved(captchaSolved);

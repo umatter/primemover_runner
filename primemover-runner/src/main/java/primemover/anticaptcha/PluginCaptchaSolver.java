@@ -38,6 +38,8 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 	@Autowired
 	MultiLoginBrowserProfileFactory mlProfileFactory;
 
+	@Value("${anticaptcha.enabled:true}")
+	private Boolean enabled;
 	@Value("${anticaptcha.extension.firefox}")
 	private String firefoxExtensionPath;
 	@Value("${anticaptcha.extension.chrome}")
@@ -56,7 +58,12 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 	@Override
 	public boolean setOptions(Crawler crawler, MutableCapabilities options, RecordingProxy recorder) {
+		if (!enabled) {
+			LOGGER.info("Anticaptcha plugin disabled");
+			return false;
+		}
 
+		LOGGER.info("Anticaptcha plugin enabled");
 		// Multilogin
 		if (crawler.getAgent() instanceof MultiLoginAgent) {
 			LOGGER.debug("Checking for Multilogin-Plugin");
@@ -128,20 +135,20 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 	@Override
 	public boolean setupDriver(IRunnerContext<?> context) {
-		LOGGER.debug("initialising plugin in open browser for crawler {}", context.getCrawler().getId());
-		if (!this.pluginAvailable) {
+		if (!this.enabled || !this.pluginAvailable) {
 			return true; // Plugin not available
 		}
 
+		LOGGER.debug("initialising plugin in open browser for crawler {}", context.getCrawler().getId());
 		try {
 			// load empty page
 			NavigationHelper navHelper = new NavigationHelper(context.getDriver(), 1000);
 			context.getDriver().get(emptyPageUrl);
-			navHelper.waitForPageLoad();
+			navHelper.waitForPageLoad(emptyPageUrl);
 
 			// wait for Plugin initial load
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 
@@ -153,11 +160,13 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 			// wait for Plugin to accept key
 			try {
-				Thread.sleep(3000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 
 			this.pluginInitialised = true;
+
+			LOGGER.debug("anti-captcha plugin initialised");
 
 			return true;
 		} catch (Exception e) {
@@ -170,8 +179,10 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 
 	@Override
 	public CaptchaSolverResult solve(IRunnerContext<?> context, IJob job, Boolean submit) {
+		if (!this.enabled) {
+			return CaptchaSolverResult.DISABLED;
+		}
 		if (!this.pluginInitialised) {
-			LOGGER.debug("Plugin not available for job {}", job.getId());
 			return CaptchaSolverResult._PLUGINFAILURE; // Plugin not working
 		}
 
@@ -198,7 +209,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 		} catch (NoSuchElementException ex) {
 			LOGGER.warn("Captcha not solved within {} seconds", maxSolvingSeconds);
 
-			return CaptchaSolverResult.of(true, true, false, maxSolvingSeconds, true, true, null);
+			return CaptchaSolverResult.of(true, true, true, false, maxSolvingSeconds, true, true, null);
 		}
 		timing.stop();
 
@@ -218,7 +229,7 @@ public class PluginCaptchaSolver implements ICaptchaSolver {
 			// nothing to do
 		}
 
-		return CaptchaSolverResult.of(true, true, false, timing.getTime(TimeUnit.SECONDS), false, false, null);
+		return CaptchaSolverResult.of(true, true, true, false, timing.getTime(TimeUnit.SECONDS), false, false, null);
 
 	}
 }

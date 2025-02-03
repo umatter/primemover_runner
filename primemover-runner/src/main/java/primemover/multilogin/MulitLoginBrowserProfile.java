@@ -328,6 +328,7 @@ public class MulitLoginBrowserProfile {
 			runApiWait();
 
 			// success
+			logger.info("started profile {}", this.profileId);
 			return jsonResponse.getString("value");
 		}
 

@@ -40,7 +40,8 @@ public class BrightdataProxy extends HttpProxy {
 		// curl --proxy brd.superproxy.io:22225 --proxy-user
 		// brd-customer-<USERNAME>-zone-<ZONE>-os-windows:<PASSWORD> "<TARGET SITE>"
 		StringBuilder builder = new StringBuilder() //
-				.append("brd-customer-").append(super.getUsername())// username
+				// .append("brd-customer-")
+				.append(super.getUsername())// username
 				.append("-").append(this.getLocation());// location
 		if (os != null) {
 			builder.append("-os-").append(os.getOperatingSystem());
