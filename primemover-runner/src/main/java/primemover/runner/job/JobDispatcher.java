@@ -1,50 +1,19 @@
 package primemover.runner.job;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
 import primemover.config.StartupMode;
 import primemover.model.IJob;
-import primemover.model.jobs.AssertElementExistsJob;
-import primemover.model.jobs.AssertPageLoadedJob;
-import primemover.model.jobs.AssertProxyByGeosurfJob;
-import primemover.model.jobs.AssertProxyByPrimemoverApiJob;
-import primemover.model.jobs.AssertScrolledMaxJob;
-import primemover.model.jobs.AssertTextInFieldJob;
-import primemover.model.jobs.ClickJob;
-import primemover.model.jobs.EnterTextFieldJob;
-import primemover.model.jobs.HandleAlertJob;
-import primemover.model.jobs.LambdaSelectJob;
-import primemover.model.jobs.ScrollByDurationJob;
-import primemover.model.jobs.ScrollByLengthJob;
-import primemover.model.jobs.SingleSelectJob;
-import primemover.model.jobs.SwitchToJob;
-import primemover.model.jobs.VisitJob;
-import primemover.model.jobs.WaitJob;
+import primemover.model.jobs.*;
 import primemover.runner.context.IJobAwareRunnerContext;
-import primemover.runner.job.handler.AlertJobHandler;
-import primemover.runner.job.handler.AssertElementExistsJobHandler;
-import primemover.runner.job.handler.AssertPageLoadedJobHandler;
-import primemover.runner.job.handler.AssertProxyByGeosurfJobHandler;
-import primemover.runner.job.handler.AssertProxyByPrimemoverApiJobHandler;
-import primemover.runner.job.handler.AssertScrolledMaxJobHandler;
-import primemover.runner.job.handler.AssertTextInFieldJobHandler;
-import primemover.runner.job.handler.ClickJobHandler;
-import primemover.runner.job.handler.EnterTextFieldJobHandler;
-import primemover.runner.job.handler.LambdaSelectJobHandler;
-import primemover.runner.job.handler.ScrollByDurationJobHandler;
-import primemover.runner.job.handler.ScrollByLengthJobHandler;
-import primemover.runner.job.handler.SingleSelectUrlJobHandler;
-import primemover.runner.job.handler.SwitchToJobHandler;
-import primemover.runner.job.handler.VisitJobHandler;
-import primemover.runner.job.handler.WaitJobHandler;
+import primemover.runner.job.handler.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 

@@ -1,9 +1,7 @@
 package primemover.util;
 
-import org.openqa.selenium.WebElement;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import org.openqa.selenium.WebElement;
 import primemover.model.MediaOutlet;
 
 public class SelectionItem {

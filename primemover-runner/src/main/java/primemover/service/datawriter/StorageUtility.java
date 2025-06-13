@@ -1,9 +1,9 @@
 package primemover.service.datawriter;
 
+import primemover.model.IJob;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import primemover.model.IJob;
 
 
 public class StorageUtility {

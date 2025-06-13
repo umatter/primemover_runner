@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>primemover</groupId>
+  <artifactId>parent-project</artifactId>
+  <version>2.2.0</version>
+  <packaging>pom</packaging>
+  <name>primemover</name>
+
+  <parent>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-parent</artifactId>
+	<version>3.4.5 </version>
+  </parent>
+
+  <modules>
+    <module>primemover-generated</module>
+    <module>primemover-runner</module>
+  </modules>
+	
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+  </properties>
+
+  <dependencies>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-aspects</artifactId>
+		</dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Optionally: parameterized tests support -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+  </build>
+
+</project>

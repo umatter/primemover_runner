@@ -1,15 +1,13 @@
 package primemover.runner;
 
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
 import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
-
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 import primemover.service.datawriter.IRecordedData;
+
+import javax.annotation.Nonnull;
+import java.util.Set;
 
 public class RecordedJobData implements IRecordedData {
 

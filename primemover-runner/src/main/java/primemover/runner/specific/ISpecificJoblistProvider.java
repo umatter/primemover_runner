@@ -1,8 +1,8 @@
 package primemover.runner.specific;
 
-import java.util.Optional;
-
 import primemover.runner.context.IRunnerContext;
+
+import java.util.Optional;
 
 public interface ISpecificJoblistProvider {
 

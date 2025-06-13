@@ -1,21 +1,19 @@
 package primemover.runner.job.handler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import primemover.model.geosurf.IpInfo;
 import primemover.model.jobs.AssertProxyByGeosurfJob;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AssertProxyByPrimemoverApiJobHandler implements IJobHandler {
 

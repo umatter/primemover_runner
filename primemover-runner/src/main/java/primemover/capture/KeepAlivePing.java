@@ -1,10 +1,10 @@
 package primemover.capture;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Make a 'ping' to avoid closing of the proxy. We use the UrlVerificator to

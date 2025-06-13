@@ -1,822 +1,892 @@
 {
-    "data": [{
-            "id": 1,
-            "user_id": 1,
-            "proxy_id": 1,
-            "agent_id": 1,
-            "configuration_id": 1,
-            "name": "Kunde",
-            "description": "Nulla voluptate sunt sit sequi modi officiis. Sunt deleniti temporibus nisi eos delectus cupiditate et. Voluptatem amet quis architecto laudantium.",
-            "active": 0,
-            "updated_at": "2020-08-14T12:07:34.000+02:00",
-            "created_at": "2020-08-14T12:07:34.000+02:00",
-            "queues": [{
-                    "id": 1,
-                    "name": "Kuphal",
-                    "description": "Dolores asperiores accusantium eligendi voluptas. Accusantium voluptates est expedita dolor inventore. Dolores aut impedit minus provident.",
-                    "active": 0,
-                    "started": 0,
-                    "success": 0,
-                    "failure": 0,
-                    "order": 1,
-                    "user_id": 1,
-                    "crawler_id": 1,
-                    "start_at": "2020-08-14T14:07:34.000+02:00",
-                    "updated_at": "2020-08-14T12:07:34.000+02:00",
-                    "created_at": "2020-08-14T12:07:34.000+02:00",
-                    "jobs": [{
-                            "id": 1,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "visit_webpage_browserbar",
-                            "description": "Visit webpage",
-                            "type": "visitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 2,
-                                    "name": "url",
-                                    "description": "Target URL",
-                                    "value": "https:\/\/www.motherjones.com\/",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 2,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "wait for reading",
-                            "description": "wait for reading",
-                            "type": "waitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 2,
-                                    "name": "seconds",
-                                    "description": "Target URL",
-                                    "value": "30",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 3,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "visit_webpage_browserbar",
-                            "description": "Visit webpage",
-                            "type": "visitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 3,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "visitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 2,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 4,
-                                    "name": "url",
-                                    "description": "Target URL",
-                                    "value": "https:\/\/www.washingtonpost.com\/",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 2,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 4,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "wait for reading",
-                            "description": "wait for reading",
-                            "type": "waitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 1,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "waitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 2,
-                                    "name": "seconds",
-                                    "description": "Target URL",
-                                    "value": "30",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 5,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "visit_webpage_browserbar",
-                            "description": "Visit webpage",
-                            "type": "visitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 5,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "visitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 3,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 6,
-                                    "name": "url",
-                                    "description": "Target URL",
-                                    "value": "https:\/\/edition.cnn.com\/",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 3,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 6,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "wait for reading",
-                            "description": "wait for reading",
-                            "type": "waitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 1,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "waitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 2,
-                                    "name": "seconds",
-                                    "description": "Target URL",
-                                    "value": "30",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 7,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "visit_webpage_browserbar",
-                            "description": "Visit webpage",
-                            "type": "visitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 7,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "visitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 4,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 8,
-                                    "name": "url",
-                                    "description": "Target URL",
-                                    "value": "https:\/\/www.google.com\/",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 4,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 8,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "enter_field",
-                            "description": "Enter field",
-                            "type": "entertextfieldjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 10,
-                                    "name": "text",
-                                    "description": "Text to enter",
-                                    "value": "climate crisis",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 11,
-                                    "name": "selectionType",
-                                    "description": "selectionType",
-                                    "value": "XPATH",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 12,
-                                    "name": "selector",
-                                    "description": "selector",
-                                    "value": "//input[@name='q']",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 9,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "select_single",
-                            "description": "Select and click",
-                            "type": "singleselecturljob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 13,
-                                    "name": "type",
-                                    "description": "Click",
-                                    "value": "singleselecturljob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 11,
-                                    "name": "selectionType",
-                                    "description": "selectionType",
-                                    "value": "XPATH",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 14,
-                                    "name": "selector",
-                                    "description": "Target link",
-                                    "value": ".//div[@id='rso']/div/div/div/a",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                 	"id": 14,
-                                    "name": "decisionType",
-                                    "description": "Target link",
-                                    "value": "RANDOM",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 10,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "wait for reading",
-                            "description": "wait for reading",
-                            "type": "waitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 1,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "waitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 2,
-                                    "name": "seconds",
-                                    "description": "Target URL",
-                                    "value": "30",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 11,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "visit_webpage_browserbar",
-                            "description": "Visit webpage",
-                            "type": "visitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 7,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "visitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 4,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 8,
-                                    "name": "url",
-                                    "description": "Target URL",
-                                    "value": "https:\/\/www.google.com\/",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 4,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 12,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "enter_field",
-                            "description": "Enter field",
-                            "type": "entertextfieldjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 9,
-                                    "name": "type",
-                                    "description": "Enter field",
-                                    "value": "entertextfieldjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 10,
-                                    "name": "text",
-                                    "description": "Text to enter",
-                                    "value": "lgbt americans",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 11,
-                                    "name": "selectionType",
-                                    "description": "selectionType",
-                                    "value": "XPATH",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 12,
-                                    "name": "selector",
-                                    "description": "selector",
-                                    "value": "//input[@name='q']",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 13,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "select_single",
-                            "description": "Select and click",
-                            "type": "singleselecturljob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 13,
-                                    "name": "type",
-                                    "description": "Click",
-                                    "value": "singleselecturljob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 11,
-                                    "name": "selectionType",
-                                    "description": "selectionType",
-                                    "value": "XPATH",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 14,
-                                    "name": "selector",
-                                    "description": "Target link",
-                                    "value": ".//div[@id='rso']/div/div/div/a",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                 	"id": 14,
-                                    "name": "decisionType",
-                                    "description": "Target link",
-                                    "value": "RANDOM",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 14,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "wait for reading",
-                            "description": "wait for reading",
-                            "type": "waitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 1,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "waitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 2,
-                                    "name": "seconds",
-                                    "description": "Target URL",
-                                    "value": "30",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 15,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "visit_webpage_browserbar",
-                            "description": "Visit webpage",
-                            "type": "visitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 7,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "visitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 4,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 8,
-                                    "name": "url",
-                                    "description": "Target URL",
-                                    "value": "https:\/\/www.google.com\/",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 4,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 16,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "enter_field",
-                            "description": "Enter field",
-                            "type": "entertextfieldjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 9,
-                                    "name": "type",
-                                    "description": "Enter field",
-                                    "value": "entertextfieldjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 10,
-                                    "name": "text",
-                                    "description": "Text to enter",
-                                    "value": "Kamala Harris",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 11,
-                                    "name": "selectionType",
-                                    "description": "selectionType",
-                                    "value": "XPATH",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 12,
-                                    "name": "selector",
-                                    "description": "selector",
-                                    "value": "//input[@name='q']",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 17,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "select_single",
-                            "description": "Select and click",
-                            "type": "singleselecturljob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 13,
-                                    "name": "type",
-                                    "description": "Click",
-                                    "value": "singleselecturljob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 11,
-                                    "name": "selectionType",
-                                    "description": "selectionType",
-                                    "value": "XPATH",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 5,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 14,
-                                    "name": "selector",
-                                    "description": "Target link",
-                                    "value": ".//div[@id='rso']/div/div/div/a",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                 	"id": 14,
-                                    "name": "decisionType",
-                                    "description": "Target link",
-                                    "value": "RANDOM",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 6,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }, {
-                            "id": 18,
-                            "user_id": 1,
-                            "queue_id": 1,
-                            "name": "wait for reading",
-                            "description": "wait for reading",
-                            "type": "waitjob",
-                            "started": 0,
-                            "success": 0,
-                            "failure": 0,
-                            "order": 1,
-                            "active": 1,
-                            "updated_at": "2020-08-14T14:07:34.000000Z",
-                            "created_at": "2020-08-14T14:07:34.000000Z",
-                            "behaviors": [{
-                                    "id": 1,
-                                    "name": "type",
-                                    "description": "Visit webpage",
-                                    "value": "waitjob",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }, {
-                                    "id": 2,
-                                    "name": "seconds",
-                                    "description": "Target URL",
-                                    "value": "30",
-                                    "active": 1,
-                                    "user_id": 1,
-                                    "job_id": 1,
-                                    "updated_at": "2020-08-14T14:07:34.000000Z",
-                                    "created_at": "2020-08-14T14:07:34.000000Z"
-                                }
-                            ]
-                        }						
-                    ]
-                }
-            ],
-            "agent": {
-                "id": 1,
-                "user_id": 1,
-                "name": "Parisian",
-                "description": "Vel in et ab asperiores perferendis. Laborum iusto voluptatem odio. Deserunt doloribus fuga natus qui. Reprehenderit tempore ut delectus alias.",
-                "identification": "Multilogin",
-                "multilogin_id": "fec6f490-7c12-4551-afe3-163ea11a5b3b",
-                "active": 0,
-                "updated_at": "2020-08-14T12:07:34.000000Z",
-                "created_at": "2020-08-14T12:07:34.000000Z"
-            },
-            "proxy": {
-                "id": 1,
-                "user_id": 1,
-                "name": "Multilogin Proxy",
-                "description": "Proxy for Multilogin",
-                "hostname": "us-30m.geosurf.io",
-                "port": 8000,
-                "username": "000000+US-MA-BOSTON+000000-378870",
-                "password": "CHANGEME-password",
-                "active": 1,
-                "updated_at": "2020-08-14T14:07:34.000000Z",
-                "created_at": "2020-08-14T14:07:34.000000Z"
-            },
-            "configuration": {
-            	"updated_at": "2020-08-14T12:07:34.000000Z",
-                "created_at": "2020-08-14T12:07:34.000000Z",
-	            "name":"Configuration created through API",
-	            "description":"A basic Configuration",
-	            "params":[
-	               {
-	                  "pi":-0.8441270315193785,
-	                  "psi":-0.15200161677194193,
-	                  "kappa":"",
-	                  "tau":"",
-	                  "beta":"",
-	                  "alpha":"",
-	                  "search_terms":[
-	                     "intimate partner",
-	                     "american energy"
-	                  ],
-	                  "media_outlet_urls":[
-	                     "https://whoradio.iheart.com/",
-	                     "https://www.newschannel10.com/"
-	                  ]
-	               }
-	            ]
-	         }
-     }
-    ],
-    "columns": ["name", "description", "active", "updated_at"],
-    "version": "1.0.0",
-    "author": "https:\/\/primemover.example"
+	"data": [
+		{
+			"id": 1,
+			"user_id": 1,
+			"proxy_id": 1,
+			"agent_id": 1,
+			"configuration_id": 1,
+			"name": "Kunde",
+			"description": "Nulla voluptate sunt sit sequi modi officiis. Sunt deleniti temporibus nisi eos delectus cupiditate et. Voluptatem amet quis architecto laudantium.",
+			"active": 0,
+			"updated_at": "2020-08-14T12:07:34.000+02:00",
+			"created_at": "2020-08-14T12:07:34.000+02:00",
+			"queues": [
+				{
+					"id": 1,
+					"name": "Kuphal",
+					"description": "Dolores asperiores accusantium eligendi voluptas. Accusantium voluptates est expedita dolor inventore. Dolores aut impedit minus provident.",
+					"active": 0,
+					"started": 0,
+					"success": 0,
+					"failure": 0,
+					"order": 1,
+					"user_id": 1,
+					"crawler_id": 1,
+					"start_at": "2020-08-14T14:07:34.000+02:00",
+					"updated_at": "2020-08-14T12:07:34.000+02:00",
+					"created_at": "2020-08-14T12:07:34.000+02:00",
+					"jobs": [
+						{
+							"id": 1,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "visit_webpage_browserbar",
+							"description": "Visit webpage",
+							"type": "visitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 2,
+									"name": "url",
+									"description": "Target URL",
+									"value": "https:\/\/www.motherjones.com\/",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 2,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "wait for reading",
+							"description": "wait for reading",
+							"type": "waitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 2,
+									"name": "seconds",
+									"description": "Target URL",
+									"value": "30",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 3,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "visit_webpage_browserbar",
+							"description": "Visit webpage",
+							"type": "visitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 3,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "visitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 2,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 4,
+									"name": "url",
+									"description": "Target URL",
+									"value": "https:\/\/www.washingtonpost.com\/",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 2,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 4,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "wait for reading",
+							"description": "wait for reading",
+							"type": "waitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 1,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "waitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 2,
+									"name": "seconds",
+									"description": "Target URL",
+									"value": "30",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 5,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "visit_webpage_browserbar",
+							"description": "Visit webpage",
+							"type": "visitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 5,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "visitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 3,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 6,
+									"name": "url",
+									"description": "Target URL",
+									"value": "https:\/\/edition.cnn.com\/",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 3,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 6,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "wait for reading",
+							"description": "wait for reading",
+							"type": "waitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 1,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "waitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 2,
+									"name": "seconds",
+									"description": "Target URL",
+									"value": "30",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 7,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "visit_webpage_browserbar",
+							"description": "Visit webpage",
+							"type": "visitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 7,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "visitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 4,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 8,
+									"name": "url",
+									"description": "Target URL",
+									"value": "https:\/\/www.google.com\/",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 4,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 8,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "enter_field",
+							"description": "Enter field",
+							"type": "entertextfieldjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 10,
+									"name": "text",
+									"description": "Text to enter",
+									"value": "climate crisis",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 11,
+									"name": "selectionType",
+									"description": "selectionType",
+									"value": "XPATH",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 12,
+									"name": "selector",
+									"description": "selector",
+									"value": "//input[@name='q']",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 9,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "select_single",
+							"description": "Select and click",
+							"type": "singleselecturljob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 13,
+									"name": "type",
+									"description": "Click",
+									"value": "singleselecturljob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 11,
+									"name": "selectionType",
+									"description": "selectionType",
+									"value": "XPATH",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 14,
+									"name": "selector",
+									"description": "Target link",
+									"value": ".//div[@id='rso']/div/div/div/a",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 14,
+									"name": "decisionType",
+									"description": "Target link",
+									"value": "RANDOM",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 10,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "wait for reading",
+							"description": "wait for reading",
+							"type": "waitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 1,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "waitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 2,
+									"name": "seconds",
+									"description": "Target URL",
+									"value": "30",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 11,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "visit_webpage_browserbar",
+							"description": "Visit webpage",
+							"type": "visitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 7,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "visitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 4,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 8,
+									"name": "url",
+									"description": "Target URL",
+									"value": "https:\/\/www.google.com\/",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 4,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 12,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "enter_field",
+							"description": "Enter field",
+							"type": "entertextfieldjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 9,
+									"name": "type",
+									"description": "Enter field",
+									"value": "entertextfieldjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 10,
+									"name": "text",
+									"description": "Text to enter",
+									"value": "lgbt americans",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 11,
+									"name": "selectionType",
+									"description": "selectionType",
+									"value": "XPATH",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 12,
+									"name": "selector",
+									"description": "selector",
+									"value": "//input[@name='q']",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 13,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "select_single",
+							"description": "Select and click",
+							"type": "singleselecturljob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 13,
+									"name": "type",
+									"description": "Click",
+									"value": "singleselecturljob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 11,
+									"name": "selectionType",
+									"description": "selectionType",
+									"value": "XPATH",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 14,
+									"name": "selector",
+									"description": "Target link",
+									"value": ".//div[@id='rso']/div/div/div/a",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 14,
+									"name": "decisionType",
+									"description": "Target link",
+									"value": "RANDOM",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 14,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "wait for reading",
+							"description": "wait for reading",
+							"type": "waitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 1,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "waitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 2,
+									"name": "seconds",
+									"description": "Target URL",
+									"value": "30",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 15,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "visit_webpage_browserbar",
+							"description": "Visit webpage",
+							"type": "visitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 7,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "visitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 4,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 8,
+									"name": "url",
+									"description": "Target URL",
+									"value": "https:\/\/www.google.com\/",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 4,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 16,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "enter_field",
+							"description": "Enter field",
+							"type": "entertextfieldjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 9,
+									"name": "type",
+									"description": "Enter field",
+									"value": "entertextfieldjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 10,
+									"name": "text",
+									"description": "Text to enter",
+									"value": "Kamala Harris",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 11,
+									"name": "selectionType",
+									"description": "selectionType",
+									"value": "XPATH",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 12,
+									"name": "selector",
+									"description": "selector",
+									"value": "//input[@name='q']",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 17,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "select_single",
+							"description": "Select and click",
+							"type": "singleselecturljob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 13,
+									"name": "type",
+									"description": "Click",
+									"value": "singleselecturljob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 11,
+									"name": "selectionType",
+									"description": "selectionType",
+									"value": "XPATH",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 5,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 14,
+									"name": "selector",
+									"description": "Target link",
+									"value": ".//div[@id='rso']/div/div/div/a",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 14,
+									"name": "decisionType",
+									"description": "Target link",
+									"value": "RANDOM",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 6,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						},
+						{
+							"id": 18,
+							"user_id": 1,
+							"queue_id": 1,
+							"name": "wait for reading",
+							"description": "wait for reading",
+							"type": "waitjob",
+							"started": 0,
+							"success": 0,
+							"failure": 0,
+							"order": 1,
+							"active": 1,
+							"updated_at": "2020-08-14T14:07:34.000000Z",
+							"created_at": "2020-08-14T14:07:34.000000Z",
+							"behaviors": [
+								{
+									"id": 1,
+									"name": "type",
+									"description": "Visit webpage",
+									"value": "waitjob",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								},
+								{
+									"id": 2,
+									"name": "seconds",
+									"description": "Target URL",
+									"value": "30",
+									"active": 1,
+									"user_id": 1,
+									"job_id": 1,
+									"updated_at": "2020-08-14T14:07:34.000000Z",
+									"created_at": "2020-08-14T14:07:34.000000Z"
+								}
+							]
+						}
+					]
+				}
+			],
+			"agent": {
+				"id": 1,
+				"user_id": 1,
+				"name": "Parisian",
+				"description": "Vel in et ab asperiores perferendis. Laborum iusto voluptatem odio. Deserunt doloribus fuga natus qui. Reprehenderit tempore ut delectus alias.",
+				"identification": "Multilogin",
+				"multilogin_id": "fec6f490-7c12-4551-afe3-163ea11a5b3b",
+				"active": 0,
+				"updated_at": "2020-08-14T12:07:34.000000Z",
+				"created_at": "2020-08-14T12:07:34.000000Z"
+			},
+			"proxy": {
+				"id": 1,
+				"user_id": 1,
+				"name": "Multilogin Proxy",
+				"description": "Proxy for Multilogin",
+				"hostname": "us-30m.geosurf.io",
+				"port": 8000,
+				"username": "000000+US-MA-BOSTON+000000-378870",
+				"password": "CHANGEME-password",
+				"active": 1,
+				"updated_at": "2020-08-14T14:07:34.000000Z",
+				"created_at": "2020-08-14T14:07:34.000000Z"
+			},
+			"configuration": {
+				"updated_at": "2020-08-14T12:07:34.000000Z",
+				"created_at": "2020-08-14T12:07:34.000000Z",
+				"name": "Configuration created through API",
+				"description": "A basic Configuration",
+				"params": [
+					{
+						"pi": -0.8441270315193785,
+						"psi": -0.15200161677194193,
+						"kappa": "",
+						"tau": "",
+						"beta": "",
+						"alpha": "",
+						"search_terms": [
+							"intimate partner",
+							"american energy"
+						],
+						"media_outlet_urls": [
+							"https://whoradio.iheart.com/",
+							"https://www.newschannel10.com/"
+						]
+					}
+				]
+			}
+		}
+	],
+	"columns": [
+		"name",
+		"description",
+		"active",
+		"updated_at"
+	],
+	"version": "1.0.0",
+	"author": "https:\/\/primemover.example"
 }

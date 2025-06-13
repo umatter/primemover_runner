@@ -1,14 +1,13 @@
 package primemover.service;
 
-import java.net.Proxy;
-import java.util.Optional;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
 import primemover.capture.BasicAuthorization;
 import primemover.capture.RecordingProxy;
+
+import java.net.Proxy;
+import java.util.Optional;
 
 public class IpServiceFactory implements ApplicationContextAware {
 	private ApplicationContext ctx;

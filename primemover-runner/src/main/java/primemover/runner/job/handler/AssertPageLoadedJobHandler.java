@@ -1,14 +1,13 @@
 package primemover.runner.job.handler;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.Page;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AssertPageLoadedJobHandler implements IJobHandler {
 

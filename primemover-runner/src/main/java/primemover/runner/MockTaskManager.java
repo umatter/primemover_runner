@@ -1,19 +1,18 @@
 package primemover.runner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import primemover.model.Crawler;
+import primemover.model.Joblist;
+import primemover.runner.joblist.JobListRunner;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import primemover.model.Crawler;
-import primemover.model.Joblist;
-import primemover.runner.joblist.JobListRunner;
 
 public class MockTaskManager implements ITaskManager {
 	private static Logger logger = LoggerFactory.getLogger(MockTaskManager.class);

@@ -1,19 +1,18 @@
 package primemover.runner.job.handler;
 
-import java.time.Duration;
-
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
 import primemover.model.jobs.HandleAlertJob;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
+
+import java.time.Duration;
 
 public class AlertJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(AlertJobHandler.class);

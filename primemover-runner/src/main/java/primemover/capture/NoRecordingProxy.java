@@ -1,14 +1,13 @@
 package primemover.capture;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import primemover.model.proxy.IProxy;
+import primemover.runner.context.IRunnerContext;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
-import primemover.model.proxy.IProxy;
-import primemover.runner.context.IRunnerContext;
 
 public class NoRecordingProxy implements IRecorderProxy {
 

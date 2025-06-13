@@ -1,19 +1,18 @@
 package primemover.service;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
-
 import primemover.model.IJob;
 import primemover.service.datawriter.IDataWriter;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FileStorageService implements IStorageService {
 	private static Logger logger = LoggerFactory.getLogger(FileStorageService.class);

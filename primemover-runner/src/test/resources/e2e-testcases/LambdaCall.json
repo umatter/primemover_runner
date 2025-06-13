@@ -1,213 +1,212 @@
 {
-    "data": [
-        {
-            "active": 1,
-            "agent": {
-                "active": 1,
-                "description": "Created via postman upload",
-                "id": 4,
-                "identification": "multilogin",
-                "location": "US-CA-SAN_DIEGO",
-                "multilogin_id": null,
-                "multilogin_profile": "{\n    \"name\": \"%%AGENTID%%\",\n    \"os\": \"win\",\n    \"browser\": \"mimic\",\n    \"network\": {\n        \"proxy\": {\n            \"type\": \"%%PROXYTYPE%%\",\n            \"host\": \"%%PROXYHOST%%\",\n            \"port\": \"%%PROXYPORT%%\",\n            \"username\": \"%%PROXYUSERNAME%%\",\n            \"password\": \"%%PROXYPASSWORD%%\"\n        },\n        \"dns\": []\n    },\n    \"navigator\": {\n        \"language\": \"en-US,en;q=0.5\",\n        \"doNotTrack\": 0\n    },\n    \"geolocation\": {\n        \"mode\": \"ALLOW\",\n        \"fillBasedOnExternalIp\": true\n    },\n    \"canvas\": {\n        \"mode\": \"NOISE\"\n    },\n    \"storage\": {\n        \"local\": true\n    }\n}",
-                "name": "Agent upload with geosurf TEST",
-                "preferences": [
-                ]
-            },
-            "agent_id": 4,
-            "configuration": {
-                "description": "Created via GUI upload",
-                "id": 4,
-                "name": "Configuration upload TEST",
-                "params": [
-                    {
-                        "alpha": "0.36951623165984",
-                        "beta": "0.0034437549399552",
-                        "configuration_id": 4,
-                        "created_at": "2023-10-13T16:44:31+02:00",
-                        "id": 4,
-                        "kappa": "1",
-                        "media_outlet_urls": "[\n    {\n        \"domain\": \"cnbc.com\",\n        \"url\": \"https:\\/\\/www.cnbc.com\\/\",\n        \"pi\": -0.0221973135909118\n    },\n    {\n        \"domain\": \"theatlantic.com\",\n        \"url\": \"https:\\/\\/www.theatlantic.com\\/\",\n        \"pi\": -0.417806599458759\n    },\n    {\n        \"domain\": \"amp.usatoday.com\",\n        \"url\": \"https:\\/\\/amp.usatoday.com\\/\",\n        \"pi\": -0.249580849238599\n    },\n    {\n        \"domain\": \"aol.com\",\n        \"url\": \"https:\\/\\/www.aol.com\\/news\\/\",\n        \"pi\": -0.146935341447828\n    },\n    {\n        \"domain\": \"washingtonpost.com\",\n        \"url\": \"https:\\/\\/www.washingtonpost.com\\/\",\n        \"pi\": -0.385642276674195\n    },\n    {\n        \"domain\": \"cnn.com\",\n        \"url\": \"https:\\/\\/www.cnn.com\\/\",\n        \"pi\": -0.229032108311674\n    },\n    {\n        \"domain\": \"nytimes.com\",\n        \"url\": \"https:\\/\\/www.nytimes.com\\/\",\n        \"pi\": -0.281331780156041\n    },\n    {\n        \"domain\": \"us.cnn.com\",\n        \"url\": \"https:\\/\\/us.cnn.com\\/\",\n        \"pi\": -0.0900301126479086\n    },\n    {\n        \"domain\": \"chicago.suntimes.com\",\n        \"url\": \"https:\\/\\/chicago.suntimes.com\\/\",\n        \"pi\": -0.266197349768227\n    },\n    {\n        \"domain\": \"philadelphia.cbslocal.com\",\n        \"url\": \"https:\\/\\/philadelphia.cbslocal.com\\/\",\n        \"pi\": -0.0736923470967024\n    }\n]",
-                        "pi": "-0.50049837032537",
-                        "psi": "0.086705270313224",
-                        "search_terms": "[\n    {\n        \"term\": \"black american\",\n        \"pi\": -0.424099419061494\n    },\n    {\n        \"term\": \"proud boys stand\",\n        \"pi\": -0.483203551983422\n    },\n    {\n        \"term\": \"environmental protection\",\n        \"pi\": -0.436434150756934\n    },\n    {\n        \"term\": \"children and family\",\n        \"pi\": -0.456461303777296\n    },\n    {\n        \"term\": \"stimulus\",\n        \"pi\": -0.474029846895898\n    },\n    {\n        \"term\": \"american community survey\",\n        \"pi\": -0.219634406120292\n    },\n    {\n        \"term\": \"african american\",\n        \"pi\": -0.424099419061494\n    },\n    {\n        \"term\": \"rental assistance program\",\n        \"pi\": -0.408829369643366\n    },\n    {\n        \"term\": \"fair labor act\",\n        \"pi\": -0.201438200996442\n    },\n    {\n        \"term\": \"reproductive health\",\n        \"pi\": -0.707016382949249\n    },\n    {\n        \"term\": \"air and water\",\n        \"pi\": -0.551342159619884\n    },\n    {\n        \"term\": \"the senate\",\n        \"pi\": -0.4320136818346\n    },\n    {\n        \"term\": \"student loan\",\n        \"pi\": -0.444593451271154\n    },\n    {\n        \"term\": \"san juan puerto rico\",\n        \"pi\": -0.106368661221148\n    },\n    {\n        \"term\": \"civil rights movement\",\n        \"pi\": -0.498353518364944\n    },\n    {\n        \"term\": \"donald trump\",\n        \"pi\": -0.588828640942466\n    },\n    {\n        \"term\": \"child care center\",\n        \"pi\": -0.336463612771445\n    },\n    {\n        \"term\": \"equal pay\",\n        \"pi\": -0.416809833040687\n    },\n    {\n        \"term\": \"patient protection\",\n        \"pi\": -0.361334024898004\n    },\n    {\n        \"term\": \"working conditions\",\n        \"pi\": -0.498285630735421\n    },\n    {\n        \"term\": \"right wing\",\n        \"pi\": -0.374641800697672\n    },\n    {\n        \"term\": \"apartments for rent\",\n        \"pi\": -0.0528036297107966\n    },\n    {\n        \"term\": \"equal pay\",\n        \"pi\": -0.416809833040687\n    },\n    {\n        \"term\": \"keep fighting\",\n        \"pi\": -0.617328055075464\n    },\n    {\n        \"term\": \"quality affordable\",\n        \"pi\": -0.606230306250363\n    },\n    {\n        \"term\": \"gun safety course\",\n        \"pi\": -0.556175705111586\n    },\n    {\n        \"term\": \"pay gap\",\n        \"pi\": -0.480942062652084\n    },\n    {\n        \"term\": \"white supremacy\",\n        \"pi\": -0.298156054730795\n    },\n    {\n        \"term\": \"people disabilities\",\n        \"pi\": -0.0994257673503879\n    },\n    {\n        \"term\": \"snap benefits\",\n        \"pi\": -0.470208166090652\n    },\n    {\n        \"term\": \"santa fe new mexican\",\n        \"pi\": 0.0220570112965672\n    },\n    {\n        \"term\": \"economic crisis\",\n        \"pi\": -0.391678617048712\n    },\n    {\n        \"term\": \"senate republican\",\n        \"pi\": -0.4320136818346\n    },\n    {\n        \"term\": \"affordable housing apartments\",\n        \"pi\": -0.364663179450437\n    },\n    {\n        \"term\": \"health insurance\",\n        \"pi\": -0.655325890263011\n    },\n    {\n        \"term\": \"senate republican\",\n        \"pi\": -0.4320136818346\n    },\n    {\n        \"term\": \"black brown\",\n        \"pi\": -0.271370643800764\n    },\n    {\n        \"term\": \"public health\",\n        \"pi\": -0.712981681057197\n    },\n    {\n        \"term\": \"urgent need\",\n        \"pi\": -0.42431582022381\n    },\n    {\n        \"term\": \"federal workers\",\n        \"pi\": -0.274052124505019\n    }\n]",
-                        "tau": "1",
-                        "updated_at": "2023-10-13T16:44:31+02:00",
-                        "user_id": 1
-                    }
-                ],
-                "preferences": [
-                    {
-                        "active": 1,
-                        "created_at": "2023-10-13T16:44:31+02:00",
-                        "description": "location",
-                        "id": 10,
-                        "name": "location",
-                        "preferencable_id": 4,
-                        "preferencable_type": "App\\Modules\\Configuration\\Model\\Configuration",
-                        "updated_at": "2023-10-13T16:44:31+02:00",
-                        "user_id": 1,
-                        "value": "US-CA-SAN_FRANCISCO"
-                    },
-                    {
-                        "active": 1,
-                        "created_at": "2023-10-13T16:44:31+02:00",
-                        "description": "cookie_pref",
-                        "id": 11,
-                        "name": "cookie_pref",
-                        "preferencable_id": 4,
-                        "preferencable_type": "App\\Modules\\Configuration\\Model\\Configuration",
-                        "updated_at": "2023-10-13T16:44:31+02:00",
-                        "user_id": 1,
-                        "value": "{\"accept_all\": true}"
-                    },
-                    {
-                        "active": 1,
-                        "created_at": "2023-10-13T16:44:31+02:00",
-                        "description": "usage_type",
-                        "id": 12,
-                        "name": "usage_type",
-                        "preferencable_id": 4,
-                        "preferencable_type": "App\\Modules\\Configuration\\Model\\Configuration",
-                        "updated_at": "2023-10-13T16:44:31+02:00",
-                        "user_id": 1,
-                        "value": "only_search"
-                    }
-                ]
-            },
-            "configuration_id": 4,
-            "created_at": "2023-10-13T16:44:31+02:00",
-            "description": "Created via GUI upload",
-            "experiment_id": 149,
-            "id": 4,
-            "latest_queues_count": 0,
-            "latest_queues_failed": 0,
-            "latest_queues_succeeded": 0,
-            "name": "Lambda call",
-            "new": 1,
-            "proxy": {
-                "description": "Created via GUI upload",
-                "hostname": "us-1m.geosurf.io",
-                "id": 4,
-                "name": "Proxy upload TEST",
-                "password": "proxy-password",
-                "port": 8000,
-                "type": "geosurf",
-                "username": "000000"
-            },
-            "proxy_id": 4,
-            "queues": [
-                {
-                    "active": 1,
-                    "crawler_id": 4,
-                    "created_at": "2023-10-13T16:44:31+02:00",
-                    "description": "Run a Lambda call.",
-                    "finished_at": null,
-                    "id": 4,
-                    "jobs": [
-                        {
-                            "behaviors": [
-                                {
-                                    "description": "This job is part of the task YouTube Video Job",
-                                    "name": "task",
-                                    "value": "YouTubeVideo"
-                                },
-                                {
-                                    "description": "",
-                                    "name": "captchaMode",
-                                    "value": "always"
-                                },
-                                {
-                                    "description": "URL",
-                                    "name": "url",
-                                    "value": "https://www.youtube.com/watch?v=aSmZdRT1wGY"
-                                }
-                            ],
-                            "description": "Visit a Fox News video on YouTube",
-                            "name": "Visit",
-                            "type": "visitjob",
-                            "id": 1
-                        },
-                        {
-                            "behaviors": [
-                                {
-                                    "description": "",
-                                    "name": "captchaMode",
-                                    "value": "always"
-                                },
-                                {
-                                    "description": "Wait for 7 seconds.",
-                                    "name": "seconds",
-                                    "value": "7"
-                                }
-                            ],
-                            "description": "Wait for 7 seconds",
-                            "name": "Wait",
-                            "type": "waitjob",
-                            "id": 2
-                        },
-                        {
-                            "behaviors": [
-                                {
-                                    "description": "This job is part of the task view YouTube video and select from recommendations",
-                                    "name": "task",
-                                    "value": "youtube_video_select"
-                                },
-                                {
-                                    "description": "How is the lambda function identified?",
-                                    "name": "linkType",
-                                    "value": "FUNCTION_NAME"
-                                },
-                                {
-                                    "description": "The value of the used linkType",
-                                    "name": "linkValue",
-                                    "value": "bot-decision-yt"
-                                }
-                            ],
-                            "description": "Call a Lamda function to Select an item and click",
-                            "name": "Lambda Select",
-                            "type": "lambdasingleselectjob",
-                            "id": 3
-                        },
-                        {
-                            "behaviors": [
-                                {
-                                    "description": "",
-                                    "name": "captchaMode",
-                                    "value": "always"
-                                },
-                                {
-                                    "description": "Wait for 7 seconds.",
-                                    "name": "seconds",
-                                    "value": "7"
-                                }
-                            ],
-                            "description": "Wait for 7 seconds",
-                            "name": "Wait",
-                            "type": "waitjob",
-                            "id": 4
-                        }
-                    ],
-                    "name": "Lambda call",
-                    "new": 1,
-                    "order": 1,
-                    "processed": 0,
-                    "processing": 0,
-                    "reviewed": 0,
-                    "start_at": "2023-10-13T16:44:30+02:00",
-                    "started_at": null,
-                    "status_code": null,
-                    "status_message": null,
-                    "timezone": "Europe/Berlin",
-                    "timezone_utc_offset": "+02:00",
-                    "updated_at": "2023-10-13T16:44:31+02:00",
-                    "user_id": 1
-                }
-            ],
-            "testing": 0,
-            "updated": 1,
-            "updated_at": "2023-10-13T16:44:31+02:00",
-            "user_id": 1
-        }
-    ]
+	"data": [
+		{
+			"active": 1,
+			"agent": {
+				"active": 1,
+				"description": "Created via postman upload",
+				"id": 4,
+				"identification": "multilogin",
+				"location": "US-CA-SAN_DIEGO",
+				"multilogin_id": null,
+				"multilogin_profile": "{\n    \"name\": \"%%AGENTID%%\",\n    \"os\": \"win\",\n    \"browser\": \"mimic\",\n    \"network\": {\n        \"proxy\": {\n            \"type\": \"%%PROXYTYPE%%\",\n            \"host\": \"%%PROXYHOST%%\",\n            \"port\": \"%%PROXYPORT%%\",\n            \"username\": \"%%PROXYUSERNAME%%\",\n            \"password\": \"%%PROXYPASSWORD%%\"\n        },\n        \"dns\": []\n    },\n    \"navigator\": {\n        \"language\": \"en-US,en;q=0.5\",\n        \"doNotTrack\": 0\n    },\n    \"geolocation\": {\n        \"mode\": \"ALLOW\",\n        \"fillBasedOnExternalIp\": true\n    },\n    \"canvas\": {\n        \"mode\": \"NOISE\"\n    },\n    \"storage\": {\n        \"local\": true\n    }\n}",
+				"name": "Agent upload with geosurf TEST",
+				"preferences": []
+			},
+			"agent_id": 4,
+			"configuration": {
+				"description": "Created via GUI upload",
+				"id": 4,
+				"name": "Configuration upload TEST",
+				"params": [
+					{
+						"alpha": "0.36951623165984",
+						"beta": "0.0034437549399552",
+						"configuration_id": 4,
+						"created_at": "2023-10-13T16:44:31+02:00",
+						"id": 4,
+						"kappa": "1",
+						"media_outlet_urls": "[\n    {\n        \"domain\": \"cnbc.com\",\n        \"url\": \"https:\\/\\/www.cnbc.com\\/\",\n        \"pi\": -0.0221973135909118\n    },\n    {\n        \"domain\": \"theatlantic.com\",\n        \"url\": \"https:\\/\\/www.theatlantic.com\\/\",\n        \"pi\": -0.417806599458759\n    },\n    {\n        \"domain\": \"amp.usatoday.com\",\n        \"url\": \"https:\\/\\/amp.usatoday.com\\/\",\n        \"pi\": -0.249580849238599\n    },\n    {\n        \"domain\": \"aol.com\",\n        \"url\": \"https:\\/\\/www.aol.com\\/news\\/\",\n        \"pi\": -0.146935341447828\n    },\n    {\n        \"domain\": \"washingtonpost.com\",\n        \"url\": \"https:\\/\\/www.washingtonpost.com\\/\",\n        \"pi\": -0.385642276674195\n    },\n    {\n        \"domain\": \"cnn.com\",\n        \"url\": \"https:\\/\\/www.cnn.com\\/\",\n        \"pi\": -0.229032108311674\n    },\n    {\n        \"domain\": \"nytimes.com\",\n        \"url\": \"https:\\/\\/www.nytimes.com\\/\",\n        \"pi\": -0.281331780156041\n    },\n    {\n        \"domain\": \"us.cnn.com\",\n        \"url\": \"https:\\/\\/us.cnn.com\\/\",\n        \"pi\": -0.0900301126479086\n    },\n    {\n        \"domain\": \"chicago.suntimes.com\",\n        \"url\": \"https:\\/\\/chicago.suntimes.com\\/\",\n        \"pi\": -0.266197349768227\n    },\n    {\n        \"domain\": \"philadelphia.cbslocal.com\",\n        \"url\": \"https:\\/\\/philadelphia.cbslocal.com\\/\",\n        \"pi\": -0.0736923470967024\n    }\n]",
+						"pi": "-0.50049837032537",
+						"psi": "0.086705270313224",
+						"search_terms": "[\n    {\n        \"term\": \"black american\",\n        \"pi\": -0.424099419061494\n    },\n    {\n        \"term\": \"proud boys stand\",\n        \"pi\": -0.483203551983422\n    },\n    {\n        \"term\": \"environmental protection\",\n        \"pi\": -0.436434150756934\n    },\n    {\n        \"term\": \"children and family\",\n        \"pi\": -0.456461303777296\n    },\n    {\n        \"term\": \"stimulus\",\n        \"pi\": -0.474029846895898\n    },\n    {\n        \"term\": \"american community survey\",\n        \"pi\": -0.219634406120292\n    },\n    {\n        \"term\": \"african american\",\n        \"pi\": -0.424099419061494\n    },\n    {\n        \"term\": \"rental assistance program\",\n        \"pi\": -0.408829369643366\n    },\n    {\n        \"term\": \"fair labor act\",\n        \"pi\": -0.201438200996442\n    },\n    {\n        \"term\": \"reproductive health\",\n        \"pi\": -0.707016382949249\n    },\n    {\n        \"term\": \"air and water\",\n        \"pi\": -0.551342159619884\n    },\n    {\n        \"term\": \"the senate\",\n        \"pi\": -0.4320136818346\n    },\n    {\n        \"term\": \"student loan\",\n        \"pi\": -0.444593451271154\n    },\n    {\n        \"term\": \"san juan puerto rico\",\n        \"pi\": -0.106368661221148\n    },\n    {\n        \"term\": \"civil rights movement\",\n        \"pi\": -0.498353518364944\n    },\n    {\n        \"term\": \"donald trump\",\n        \"pi\": -0.588828640942466\n    },\n    {\n        \"term\": \"child care center\",\n        \"pi\": -0.336463612771445\n    },\n    {\n        \"term\": \"equal pay\",\n        \"pi\": -0.416809833040687\n    },\n    {\n        \"term\": \"patient protection\",\n        \"pi\": -0.361334024898004\n    },\n    {\n        \"term\": \"working conditions\",\n        \"pi\": -0.498285630735421\n    },\n    {\n        \"term\": \"right wing\",\n        \"pi\": -0.374641800697672\n    },\n    {\n        \"term\": \"apartments for rent\",\n        \"pi\": -0.0528036297107966\n    },\n    {\n        \"term\": \"equal pay\",\n        \"pi\": -0.416809833040687\n    },\n    {\n        \"term\": \"keep fighting\",\n        \"pi\": -0.617328055075464\n    },\n    {\n        \"term\": \"quality affordable\",\n        \"pi\": -0.606230306250363\n    },\n    {\n        \"term\": \"gun safety course\",\n        \"pi\": -0.556175705111586\n    },\n    {\n        \"term\": \"pay gap\",\n        \"pi\": -0.480942062652084\n    },\n    {\n        \"term\": \"white supremacy\",\n        \"pi\": -0.298156054730795\n    },\n    {\n        \"term\": \"people disabilities\",\n        \"pi\": -0.0994257673503879\n    },\n    {\n        \"term\": \"snap benefits\",\n        \"pi\": -0.470208166090652\n    },\n    {\n        \"term\": \"santa fe new mexican\",\n        \"pi\": 0.0220570112965672\n    },\n    {\n        \"term\": \"economic crisis\",\n        \"pi\": -0.391678617048712\n    },\n    {\n        \"term\": \"senate republican\",\n        \"pi\": -0.4320136818346\n    },\n    {\n        \"term\": \"affordable housing apartments\",\n        \"pi\": -0.364663179450437\n    },\n    {\n        \"term\": \"health insurance\",\n        \"pi\": -0.655325890263011\n    },\n    {\n        \"term\": \"senate republican\",\n        \"pi\": -0.4320136818346\n    },\n    {\n        \"term\": \"black brown\",\n        \"pi\": -0.271370643800764\n    },\n    {\n        \"term\": \"public health\",\n        \"pi\": -0.712981681057197\n    },\n    {\n        \"term\": \"urgent need\",\n        \"pi\": -0.42431582022381\n    },\n    {\n        \"term\": \"federal workers\",\n        \"pi\": -0.274052124505019\n    }\n]",
+						"tau": "1",
+						"updated_at": "2023-10-13T16:44:31+02:00",
+						"user_id": 1
+					}
+				],
+				"preferences": [
+					{
+						"active": 1,
+						"created_at": "2023-10-13T16:44:31+02:00",
+						"description": "location",
+						"id": 10,
+						"name": "location",
+						"preferencable_id": 4,
+						"preferencable_type": "App\\Modules\\Configuration\\Model\\Configuration",
+						"updated_at": "2023-10-13T16:44:31+02:00",
+						"user_id": 1,
+						"value": "US-CA-SAN_FRANCISCO"
+					},
+					{
+						"active": 1,
+						"created_at": "2023-10-13T16:44:31+02:00",
+						"description": "cookie_pref",
+						"id": 11,
+						"name": "cookie_pref",
+						"preferencable_id": 4,
+						"preferencable_type": "App\\Modules\\Configuration\\Model\\Configuration",
+						"updated_at": "2023-10-13T16:44:31+02:00",
+						"user_id": 1,
+						"value": "{\"accept_all\": true}"
+					},
+					{
+						"active": 1,
+						"created_at": "2023-10-13T16:44:31+02:00",
+						"description": "usage_type",
+						"id": 12,
+						"name": "usage_type",
+						"preferencable_id": 4,
+						"preferencable_type": "App\\Modules\\Configuration\\Model\\Configuration",
+						"updated_at": "2023-10-13T16:44:31+02:00",
+						"user_id": 1,
+						"value": "only_search"
+					}
+				]
+			},
+			"configuration_id": 4,
+			"created_at": "2023-10-13T16:44:31+02:00",
+			"description": "Created via GUI upload",
+			"experiment_id": 149,
+			"id": 4,
+			"latest_queues_count": 0,
+			"latest_queues_failed": 0,
+			"latest_queues_succeeded": 0,
+			"name": "Lambda call",
+			"new": 1,
+			"proxy": {
+				"description": "Created via GUI upload",
+				"hostname": "us-1m.geosurf.io",
+				"id": 4,
+				"name": "Proxy upload TEST",
+				"password": "proxy-password",
+				"port": 8000,
+				"type": "geosurf",
+				"username": "000000"
+			},
+			"proxy_id": 4,
+			"queues": [
+				{
+					"active": 1,
+					"crawler_id": 4,
+					"created_at": "2023-10-13T16:44:31+02:00",
+					"description": "Run a Lambda call.",
+					"finished_at": null,
+					"id": 4,
+					"jobs": [
+						{
+							"behaviors": [
+								{
+									"description": "This job is part of the task YouTube Video Job",
+									"name": "task",
+									"value": "YouTubeVideo"
+								},
+								{
+									"description": "",
+									"name": "captchaMode",
+									"value": "always"
+								},
+								{
+									"description": "URL",
+									"name": "url",
+									"value": "https://www.youtube.com/watch?v=aSmZdRT1wGY"
+								}
+							],
+							"description": "Visit a Fox News video on YouTube",
+							"name": "Visit",
+							"type": "visitjob",
+							"id": 1
+						},
+						{
+							"behaviors": [
+								{
+									"description": "",
+									"name": "captchaMode",
+									"value": "always"
+								},
+								{
+									"description": "Wait for 7 seconds.",
+									"name": "seconds",
+									"value": "7"
+								}
+							],
+							"description": "Wait for 7 seconds",
+							"name": "Wait",
+							"type": "waitjob",
+							"id": 2
+						},
+						{
+							"behaviors": [
+								{
+									"description": "This job is part of the task view YouTube video and select from recommendations",
+									"name": "task",
+									"value": "youtube_video_select"
+								},
+								{
+									"description": "How is the lambda function identified?",
+									"name": "linkType",
+									"value": "FUNCTION_NAME"
+								},
+								{
+									"description": "The value of the used linkType",
+									"name": "linkValue",
+									"value": "bot-decision-yt"
+								}
+							],
+							"description": "Call a Lamda function to Select an item and click",
+							"name": "Lambda Select",
+							"type": "lambdasingleselectjob",
+							"id": 3
+						},
+						{
+							"behaviors": [
+								{
+									"description": "",
+									"name": "captchaMode",
+									"value": "always"
+								},
+								{
+									"description": "Wait for 7 seconds.",
+									"name": "seconds",
+									"value": "7"
+								}
+							],
+							"description": "Wait for 7 seconds",
+							"name": "Wait",
+							"type": "waitjob",
+							"id": 4
+						}
+					],
+					"name": "Lambda call",
+					"new": 1,
+					"order": 1,
+					"processed": 0,
+					"processing": 0,
+					"reviewed": 0,
+					"start_at": "2023-10-13T16:44:30+02:00",
+					"started_at": null,
+					"status_code": null,
+					"status_message": null,
+					"timezone": "Europe/Berlin",
+					"timezone_utc_offset": "+02:00",
+					"updated_at": "2023-10-13T16:44:31+02:00",
+					"user_id": 1
+				}
+			],
+			"testing": 0,
+			"updated": 1,
+			"updated_at": "2023-10-13T16:44:31+02:00",
+			"user_id": 1
+		}
+	]
 }

@@ -1,15 +1,5 @@
 package primemover.util;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.math3.distribution.GumbelDistribution;
 import org.openqa.selenium.By;
@@ -20,17 +10,21 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import primemover.model.Crawler;
-import primemover.model.DecisionType;
-import primemover.model.HtmlSelectorType;
-import primemover.model.ISelectorType;
-import primemover.model.MediaOutlet;
-import primemover.model.SelectionConfiguration;
+import primemover.model.*;
 import primemover.model.jobs.SelectorBaseJob;
 import primemover.model.jobs.SingleSelectJob;
 import primemover.service.IStorageService;
 import primemover.service.datawriter.SelectionWriter;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SelectingHelper {
 

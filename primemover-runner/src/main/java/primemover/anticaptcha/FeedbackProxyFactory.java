@@ -1,13 +1,11 @@
 package primemover.anticaptcha;
 
-import java.util.concurrent.ArrayBlockingQueue;
+import org.apache.commons.lang3.Range;
+import primemover.model.proxy.IProxy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.Range;
-
-import primemover.model.proxy.IProxy;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class FeedbackProxyFactory {
 	private @Nonnull Range<Integer> portRange;

@@ -1,9 +1,9 @@
 package primemover.capture;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.net.Proxy;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Helper factory to create UrlVerificators

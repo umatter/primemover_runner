@@ -1,20 +1,19 @@
 package primemover.runner.job.handler;
 
-import java.time.Duration;
-import java.util.List;
-
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.model.jobs.ClickJob;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
 import primemover.util.Waiter;
+
+import java.time.Duration;
+import java.util.List;
 
 public class ClickJobHandler implements IJobHandler {
 

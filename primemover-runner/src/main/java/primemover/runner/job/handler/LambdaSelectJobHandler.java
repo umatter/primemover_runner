@@ -1,13 +1,8 @@
 package primemover.runner.job.handler;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -17,11 +12,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import primemover.lambda.LambdaCaller;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.model.jobs.LambdaSelectJob;
@@ -33,6 +23,13 @@ import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.lambda.LambdaInvocationData;
 import primemover.service.datawriter.lambda.LambdaInvocationWriter;
 import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LambdaSelectJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(LambdaSelectJobHandler.class);

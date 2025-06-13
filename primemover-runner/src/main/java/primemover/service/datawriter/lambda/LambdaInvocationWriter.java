@@ -1,18 +1,17 @@
 package primemover.service.datawriter.lambda;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import primemover.service.datawriter.RecordedJobDataBaseWriter;
+import primemover.service.datawriter.StorageUtility;
+import software.amazon.awssdk.utils.StringUtils;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import primemover.service.datawriter.RecordedJobDataBaseWriter;
-import primemover.service.datawriter.StorageUtility;
-import software.amazon.awssdk.utils.StringUtils;
 
 public class LambdaInvocationWriter extends RecordedJobDataBaseWriter<LambdaInvocationData> {
 

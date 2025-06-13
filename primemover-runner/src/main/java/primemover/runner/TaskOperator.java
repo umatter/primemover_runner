@@ -1,12 +1,6 @@
 package primemover.runner;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -20,37 +14,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
-import primemover.model.Crawler;
-import primemover.model.IJob;
-import primemover.model.JobState;
-import primemover.model.Joblist;
-import primemover.model.LocationInfo;
-import primemover.model.MultiLoginAgent;
-import primemover.multilogin.MulitLoginBrowserProfile;
-import primemover.multilogin.MultiLoginBrowserProfileFactory;
-import primemover.runner.context.ChromeContext;
-import primemover.runner.context.ContextBase;
-import primemover.runner.context.FirefoxContext;
-import primemover.runner.context.IJobAwareRunnerContext;
-import primemover.runner.context.IJobDataRecorder;
-import primemover.runner.context.JobAwarnessContextDecorator;
-import primemover.runner.context.JobDataRecorder;
-import primemover.runner.context.MultiloginContext;
+import primemover.model.*;
+import primemover.multilogin.ml6.MulitLoginBrowserProfile;
+import primemover.multilogin.ml6.MultiLoginBrowserProfileFactory;
+import primemover.runner.context.*;
 import primemover.runner.job.JobDispatcher;
-import primemover.service.AgentService;
-import primemover.service.IJobService;
-import primemover.service.IStorageService;
-import primemover.service.IpService;
-import primemover.service.IpServiceFactory;
+import primemover.service.*;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.IDataWriterFactory;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Entry point for a task run. The operator will first setup the running context
@@ -103,6 +87,9 @@ public class TaskOperator implements ITaskOperator {
 
 	@Autowired
 	CaptchaSolverFactory captchaSolverFac;
+	
+	@Autowired
+	Map<String, IContextBuilder> contextBuilders;
 
 	private IpService ipService;
 
@@ -162,11 +149,21 @@ public class TaskOperator implements ITaskOperator {
 
 		return chContext;
 	}
+	
+	private MultiloginContext startupMultiloginX(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
+			ICaptchaSolver captchaSolver) {
+		
+		return contextBuilders.get("MlxContextBuilder").buildContext(crawler, capabilities, recorder, captchaSolver);
+	}
 
 	private ContextBase<?> startupMultilogin(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
 			ICaptchaSolver captchaSolver) {
 		MultiLoginAgent typedAgent = (MultiLoginAgent) crawler.getAgent();
-
+		
+		if (typedAgent.getVersion() == MultiLoginVersion.MLX) {
+			return startupMultiloginX(crawler, capabilities, recorder, captchaSolver);
+		}
+		
 		// ensure multilogin profile (create or return)
 		// needs to be done before setting params to the profile (Plugins, Proxy, etc)
 		MulitLoginBrowserProfile bp;
@@ -174,7 +171,7 @@ public class TaskOperator implements ITaskOperator {
 		if (StringUtils.isEmpty(typedAgent.getMultiLoginId())) {
 			try {
 				bp = browserProfileFactory.getItem(crawler, recorder);
-				// agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
+				agentService.updateMultiloginProfile(typedAgent, bp.getProfileId());
 			} catch (Exception ex) {
 				logger.warn("could not create MultiLoginProfile for agent {}", typedAgent.getId(), ex);
 
@@ -623,24 +620,29 @@ public class TaskOperator implements ITaskOperator {
 		// will run through proxy!
 		if (context instanceof MultiloginContext) {
 			MultiloginContext typedContext = (MultiloginContext) context;
-			MulitLoginBrowserProfile bp = typedContext.getProfile();
+			
+			if (typedContext.getProfile() == null) {
+				contextBuilders.get("MlxContextBuilder").destroyContext(typedContext);
+			} else {
+				MulitLoginBrowserProfile bp = typedContext.getProfile();
 
-			try {
-				int round = 0;
-				int maxRounds = 10;
-				int delayMillis = 25000;
-				Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
+				try {
+					int round = 0;
+					int maxRounds = 10;
+					int delayMillis = 25000;
+					Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
 
-				while (round < maxRounds && bp.isActive()) {
-					logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1,
-							maxRounds);
-					Thread.sleep(delayMillis);
-					bp.stopProfile();
-					round++;
+					while (round < maxRounds && bp.isActive()) {
+						logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1,
+								maxRounds);
+						Thread.sleep(delayMillis);
+						bp.stopProfile();
+						round++;
+					}
+				} catch (Exception e) {
+					logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
+							e);
 				}
-			} catch (Exception e) {
-				logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
-						e);
 			}
 		}
 

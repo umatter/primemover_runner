@@ -1,12 +1,11 @@
 package primemover.anticaptcha;
 
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.model.IJob;
 import primemover.runner.context.IJobAwareRunnerContext;
+
+import java.util.Optional;
 
 public class CaptchaJobHelper {
 	private static Logger logger = LoggerFactory.getLogger(CaptchaJobHelper.class);

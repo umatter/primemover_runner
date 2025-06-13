@@ -1,21 +1,19 @@
 package primemover.runner.joblist;
 
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-
-import javax.annotation.Nonnull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 import primemover.runner.ITaskOperator;
 import primemover.service.IJobService;
+
+import javax.annotation.Nonnull;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Runs joblists on the specified crawler

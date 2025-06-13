@@ -1,24 +1,5 @@
 package primemover.capture.browserup;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
-
-import org.littleshoot.proxy.HttpFilters;
-import org.littleshoot.proxy.HttpFiltersAdapter;
-import org.littleshoot.proxy.HttpFiltersSourceAdapter;
-import org.littleshoot.proxy.impl.ProxyUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import com.browserup.bup.BrowserUpProxyServer;
 import com.browserup.bup.mitm.CertificateAndKeySource;
 import com.browserup.bup.mitm.KeyStoreFileCertificateSource;
@@ -28,12 +9,15 @@ import com.browserup.bup.proxy.CaptureType;
 import com.browserup.bup.proxy.auth.AuthType;
 import com.browserup.bup.proxy.dns.NativeResolver;
 import com.browserup.harreader.model.Har;
-
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpObject;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.*;
+import org.littleshoot.proxy.HttpFilters;
+import org.littleshoot.proxy.HttpFiltersAdapter;
+import org.littleshoot.proxy.HttpFiltersSourceAdapter;
+import org.littleshoot.proxy.impl.ProxyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.SessionDecorator;
@@ -42,6 +26,15 @@ import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
 import software.amazon.awssdk.utils.StringUtils;
+
+import javax.annotation.Nullable;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class BrowserUpRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(BrowserUpRecorderProxy.class);

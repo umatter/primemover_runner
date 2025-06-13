@@ -1,8 +1,8 @@
 package primemover.anticaptcha;
 
-import javax.annotation.Nonnull;
-
 import primemover.model.proxy.IProxy;
+
+import javax.annotation.Nonnull;
 
 public class FeedbackProxy implements AutoCloseable {
 	private int port;

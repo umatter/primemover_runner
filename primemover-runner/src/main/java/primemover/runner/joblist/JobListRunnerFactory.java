@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.Joblist;

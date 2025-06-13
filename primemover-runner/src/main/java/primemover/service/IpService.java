@@ -1,11 +1,5 @@
 package primemover.service;
 
-import java.net.Proxy;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +11,17 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import primemover.api.converter.PrimemoverApiConverter;
 import primemover.api.model.IpResult;
 import primemover.capture.BasicAuthorization;
 import primemover.model.LocationInfo;
 import primemover.service.token.TokenRequestInterceptor;
+
+import java.net.Proxy;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Service to grab the current IP via a proxy

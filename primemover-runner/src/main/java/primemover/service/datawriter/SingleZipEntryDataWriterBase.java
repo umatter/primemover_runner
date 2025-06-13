@@ -1,11 +1,11 @@
 package primemover.service.datawriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class SingleZipEntryDataWriterBase implements IDataWriter {
 	private static final Logger logger = LoggerFactory.getLogger(SingleZipEntryDataWriterBase.class);

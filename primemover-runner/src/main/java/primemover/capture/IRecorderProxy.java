@@ -1,12 +1,11 @@
 package primemover.capture;
 
-import java.net.InetAddress;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
+
+import javax.annotation.Nullable;
+import java.net.InetAddress;
+import java.util.Optional;
 
 public interface IRecorderProxy {
 

@@ -1,9 +1,9 @@
 package primemover.service.datawriter;
 
-import java.util.Date;
-
 import primemover.model.IJob;
 import primemover.util.Selection;
+
+import java.util.Date;
 
 public class SelectionWriter extends JsonZippedDataWriterBase<Selection> {
 

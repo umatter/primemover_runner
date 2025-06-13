@@ -1,15 +1,11 @@
 package primemover.service;
 
-import java.io.ByteArrayOutputStream;
-import java.util.function.Predicate;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
-
 import primemover.model.IJob;
 import primemover.service.datawriter.IDataWriter;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -19,6 +15,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+
+import java.io.ByteArrayOutputStream;
+import java.util.function.Predicate;
 
 public class AwsS3StorageService implements IStorageService {
 

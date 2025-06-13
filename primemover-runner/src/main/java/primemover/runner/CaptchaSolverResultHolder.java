@@ -1,8 +1,8 @@
 package primemover.runner;
 
-import javax.annotation.Nullable;
-
 import primemover.anticaptcha.CaptchaSolverResult;
+
+import javax.annotation.Nullable;
 
 public class CaptchaSolverResultHolder {
 	

@@ -1,10 +1,10 @@
 package primemover.runner.specific;
 
-import java.util.List;
-import java.util.Optional;
-
 import primemover.runner.context.IRunnerContext;
 import primemover.util.SelectingHelper;
+
+import java.util.List;
+import java.util.Optional;
 
 public class SpecificJoblistProvider implements ISpecificJoblistProvider {
 

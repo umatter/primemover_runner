@@ -1,13 +1,10 @@
 package primemover.runner.job.handler;
 
-import java.util.function.Supplier;
-
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
 import primemover.model.HtmlSelectorType;
@@ -17,6 +14,8 @@ import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
 import primemover.util.Typing;
+
+import java.util.function.Supplier;
 
 public class EnterTextFieldJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(EnterTextFieldJobHandler.class);

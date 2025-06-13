@@ -1,13 +1,5 @@
 package primemover.capture;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy.Type;
-import java.net.SocketAddress;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.remote.CapabilityType;
@@ -16,10 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
 import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
 import primemover.service.IpService;
+
+import javax.annotation.Nullable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Proxy.Type;
+import java.net.SocketAddress;
+import java.util.Optional;
 
 /**
  * A proxy for recording all data that is communicated while opening a webpage.
@@ -214,7 +212,7 @@ public class RecordingProxy {
 	}
 
 	public String getType() {
-		return "HTTP";
+		return "http";
 	}
 
 	public Optional<BasicAuthorization> getAuthorization() {

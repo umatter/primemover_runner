@@ -1,10 +1,9 @@
 package primemover.runner.context;
 
-import javax.annotation.Nonnull;
-
 import org.openqa.selenium.MutableCapabilities;
-
 import primemover.model.IJob;
+
+import javax.annotation.Nonnull;
 
 public interface IJobAwareRunnerContext<OptionsType extends MutableCapabilities> extends IRunnerContext<OptionsType> {
 

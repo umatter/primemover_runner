@@ -1,14 +1,14 @@
 {
 	joblist: {
 		id: 123123, -- generierte ID
-		target-start: "2020-08-01T12:00:00+01:00", -- Gewünschtes Startdatum
-		effective-start: "", -- Von primemover-runner befüllt
-		effective-end: "", -- Von primemover-runner befüllt
+		target-start: "2020-08-01T12:00:00+01:00", -- Gewï¿½nschtes Startdatum
+		effective-start: "", -- Von primemover-runner befï¿½llt
+		effective-end: "", -- Von primemover-runner befï¿½llt
 		jobs: [ -- Examples for every job type
 			VisitJob: {
 				id: 123123,
-				title: "Freitext", -- Frei wählbarer Titel der Aufgabe
-				comment: "Freitext", -- Frei wählbare Beschreibung der Aufgabe
+				title: "Freitext", -- Frei wï¿½hlbarer Titel der Aufgabe
+				comment: "Freitext", -- Frei wï¿½hlbare Beschreibung der Aufgabe
 				url: "http://www.full.url.to.path.to.visit" -- Exakte Aufrufurl
 			},
 			WaitJob: {
@@ -16,6 +16,6 @@
 				title: "Freitext",
 				comment: "Freitext",
 				seconds: 123 -- Anzahl Wartesekunden
-			}			
+			}
 		]
-}
+	}

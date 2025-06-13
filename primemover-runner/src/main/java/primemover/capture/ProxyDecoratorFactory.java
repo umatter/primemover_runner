@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
 import primemover.model.proxy.IProxy;
 
 public class ProxyDecoratorFactory implements ApplicationContextAware {

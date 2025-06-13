@@ -1,8 +1,8 @@
 package primemover.model;
 
 public enum MultiLoginIOsType {
-	WINDOWS("win"),
-	MAC("mac"),
+	WINDOWS("windows"),
+	MAC("macos"),
 	LINUX("linux"),
 	ANDROID("android");
 

@@ -1,17 +1,15 @@
 package primemover.runner;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.openqa.selenium.Cookie;
-
 import primemover.anticaptcha.CaptchaSolverResult;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RecordedJobDataBuilder {
 

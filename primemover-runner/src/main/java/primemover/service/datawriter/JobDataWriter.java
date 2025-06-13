@@ -1,19 +1,17 @@
 package primemover.service.datawriter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.openqa.selenium.Cookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import primemover.runner.RecordedJobData;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.openqa.selenium.Cookie;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import primemover.runner.RecordedJobData;
 
 public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 

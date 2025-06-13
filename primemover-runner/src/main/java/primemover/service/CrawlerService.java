@@ -1,8 +1,5 @@
 package primemover.service;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,22 +17,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import primemover.anticaptcha.CaptchaSolvingType;
 import primemover.api.converter.PrimemoverApiConverter;
 import primemover.api.model.CrawlerResult;
 import primemover.config.StartupMode;
-import primemover.model.Crawler;
-import primemover.model.DecisionType;
-import primemover.model.HtmlSelectorType;
-import primemover.model.Joblist;
-import primemover.model.MultiLoginAgent;
-import primemover.model.TypingModeType;
-import primemover.model.jobs.Attribute;
-import primemover.model.jobs.EnterTextFieldJob;
-import primemover.model.jobs.SingleSelectJob;
-import primemover.model.jobs.VisitJob;
-import primemover.model.jobs.WaitJob;
+import primemover.model.*;
+import primemover.model.jobs.*;
+
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Service
 public class CrawlerService implements ICrawlerService {

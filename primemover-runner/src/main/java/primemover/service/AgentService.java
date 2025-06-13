@@ -6,20 +6,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
 import primemover.api.model.Agent;
 import primemover.config.StartupMode;
 import primemover.model.MultiLoginAgent;
+import primemover.service.util.ApiTranslator;
 
 @Service
 public class AgentService {
@@ -60,6 +56,7 @@ public class AgentService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		JSONObject data = new JSONObject();
 		data.put("multilogin_id", newProfile);
+		data.put("identification", ApiTranslator.translateAgentType(agent));
 
 		HttpEntity<String> request = new HttpEntity<String>(data.toString(), headers);
 

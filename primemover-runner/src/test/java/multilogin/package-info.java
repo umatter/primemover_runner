@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author dburkolter
- *
- */
-package multilogin;

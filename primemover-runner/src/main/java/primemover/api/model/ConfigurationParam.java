@@ -1,12 +1,11 @@
 package primemover.api.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import primemover.api.deserializer.MediaOutletsDeserializer;
 import primemover.api.deserializer.SearchTermDeserializer;
+
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ConfigurationParam {

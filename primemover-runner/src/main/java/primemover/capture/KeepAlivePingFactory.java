@@ -1,9 +1,9 @@
 package primemover.capture;
 
-import java.net.Proxy;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.net.Proxy;
 
 public class KeepAlivePingFactory {
 

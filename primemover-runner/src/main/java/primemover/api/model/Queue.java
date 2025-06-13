@@ -1,9 +1,9 @@
 package primemover.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.ZonedDateTime;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Queue {

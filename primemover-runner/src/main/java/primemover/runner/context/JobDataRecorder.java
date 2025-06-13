@@ -1,18 +1,16 @@
 package primemover.runner.context;
 
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.openqa.selenium.Cookie;
-
 import primemover.anticaptcha.CaptchaSolverResult;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 import primemover.runner.RecordedJobData;
 import primemover.runner.RecordedJobDataBuilder;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Set;
 
 public class JobDataRecorder implements IJobDataRecorder {
 

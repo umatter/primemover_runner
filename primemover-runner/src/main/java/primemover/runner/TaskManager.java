@@ -1,25 +1,24 @@
 package primemover.runner;
 
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-
 import primemover.config.StartupMode;
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 import primemover.service.ICrawlerService;
 import primemover.service.IJobService;
+
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Task-Manager is responsible for checking for newly available tasks and

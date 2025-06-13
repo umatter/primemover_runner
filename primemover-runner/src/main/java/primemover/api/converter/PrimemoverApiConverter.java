@@ -1,59 +1,26 @@
 package primemover.api.converter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.openqa.selenium.InvalidArgumentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.anticaptcha.CaptchaSolvingType;
-import primemover.api.model.ConfigurationParam;
-import primemover.api.model.CrawlerResult;
-import primemover.api.model.IpResult;
-import primemover.api.model.IpResultData;
-import primemover.api.model.OutletResult;
-import primemover.api.model.TermResult;
-import primemover.model.ChromeAgent;
+import primemover.api.model.*;
+import primemover.model.*;
 import primemover.model.Configuration;
 import primemover.model.Crawler;
-import primemover.model.DecisionType;
-import primemover.model.DialogHandleType;
-import primemover.model.FirefoxAgent;
-import primemover.model.HtmlSelectorType;
-import primemover.model.IAgent;
-import primemover.model.IJob;
-import primemover.model.Joblist;
-import primemover.model.LocationInfo;
 import primemover.model.MediaOutlet;
-import primemover.model.MultiLoginAgent;
 import primemover.model.Outlet;
-import primemover.model.ScrollDirection;
-import primemover.model.SelectionConfiguration;
 import primemover.model.Term;
-import primemover.model.TypingModeType;
-import primemover.model.jobs.BaseJob;
-import primemover.model.jobs.ClickJob;
-import primemover.model.jobs.EnterTextFieldJob;
-import primemover.model.jobs.HandleAlertJob;
-import primemover.model.jobs.LambdaLinkType;
-import primemover.model.jobs.LambdaSelectJob;
-import primemover.model.jobs.ScrollByDurationJob;
-import primemover.model.jobs.ScrollByLengthJob;
-import primemover.model.jobs.SingleSelectJob;
-import primemover.model.jobs.SwitchToJob;
-import primemover.model.jobs.VisitJob;
-import primemover.model.jobs.WaitJob;
-import primemover.model.proxy.BrightdataProxy;
-import primemover.model.proxy.GeoSurfProxy;
-import primemover.model.proxy.HttpProxy;
-import primemover.model.proxy.IProxy;
-import primemover.model.proxy.OxylabsProxy;
+import primemover.model.jobs.*;
+import primemover.model.proxy.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PrimemoverApiConverter {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PrimemoverApiConverter.class);
@@ -132,13 +99,18 @@ public class PrimemoverApiConverter {
 			agent = new FirefoxAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation());
 		} else if (ident.contains("chrome")) {
 			agent = new ChromeAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation());
-		} else if (ident.contains("multilogin") || ident.contains("multlogin")) {
+		} else if (ident.contains("multilogin") || ident.contains("mlx")) {
+			MultiLoginVersion version = MultiLoginVersion.ML6;
+			if (ident.contains("multilogin_x") || ident.contains("mlx")) {
+				version = MultiLoginVersion.MLX;
+			}
+
 			String validatedJson = StringEscapeUtils.unescapeJson(item.getMultilogin_profile());
 			if (validatedJson.startsWith("\"")) {
 				validatedJson = validatedJson.substring(1, validatedJson.length() - 1);
 			}
 			agent = new MultiLoginAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation(),
-					item.getMultilogin_id(), validatedJson);
+					item.getMultilogin_id(), version, validatedJson);
 		} else {
 			throw new InvalidArgumentException("No valid agent found");
 		}

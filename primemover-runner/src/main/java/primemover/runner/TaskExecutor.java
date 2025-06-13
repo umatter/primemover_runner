@@ -1,22 +1,17 @@
 package primemover.runner;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
 import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.runner.joblist.IJobListRunner;
 import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.util.threading.MdcAwareThreadPoolExecutor;
+
+import java.util.concurrent.*;
 
 public class TaskExecutor {
 	private static Logger logger = LoggerFactory.getLogger(TaskExecutor.class);

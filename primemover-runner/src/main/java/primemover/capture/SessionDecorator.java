@@ -1,14 +1,13 @@
 package primemover.capture;
 
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-
 import io.opentelemetry.api.internal.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.IProxy;
 import primemover.model.proxy.OxylabsProxy;
 import primemover.model.proxy.Utils;
+
+import java.util.UUID;
 
 /**
  * This class will decorate a Proxy-object with a specific session-id. Thus, any

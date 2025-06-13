@@ -1,9 +1,9 @@
 package primemover.runner.specific;
 
-import java.util.List;
-
-import primemover.model.Joblist;
 import primemover.model.ISelectorType;
+import primemover.model.Joblist;
+
+import java.util.List;
 
 public class Specific {
 

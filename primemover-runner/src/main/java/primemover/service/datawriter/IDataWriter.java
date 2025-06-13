@@ -1,8 +1,7 @@
 package primemover.service.datawriter;
 
-import java.io.OutputStream;
-
 import javax.annotation.Nonnull;
+import java.io.OutputStream;
 
 public interface IDataWriter {
 

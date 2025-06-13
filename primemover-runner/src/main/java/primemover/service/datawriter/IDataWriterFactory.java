@@ -1,8 +1,8 @@
 package primemover.service.datawriter;
 
-import javax.annotation.Nonnull;
-
 import primemover.runner.RecordedJobData;
+
+import javax.annotation.Nonnull;
 
 /**
  * Factory to create writers. Required for spring-configuration.

@@ -3,7 +3,6 @@ package primemover.runner.job.handler;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.model.jobs.ScrollByLengthJob;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;

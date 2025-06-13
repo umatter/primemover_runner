@@ -1,29 +1,25 @@
 package primemover.capture.wiremock;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.common.ProxySettings;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.SessionDecorator;
 import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Optional;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 public class WireMockRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(WireMockRecorderProxy.class);

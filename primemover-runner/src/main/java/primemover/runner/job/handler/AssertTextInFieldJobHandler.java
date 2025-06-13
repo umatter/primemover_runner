@@ -1,16 +1,15 @@
 package primemover.runner.job.handler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.model.jobs.AssertTextInFieldJob;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AssertTextInFieldJobHandler implements IJobHandler {
 

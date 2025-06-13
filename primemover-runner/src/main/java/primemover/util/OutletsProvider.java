@@ -1,5 +1,12 @@
 package primemover.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import primemover.model.Outlet;
+import primemover.service.OutletService;
+
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -7,14 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
-import primemover.model.Outlet;
-import primemover.service.OutletService;
 
 public class OutletsProvider {
 	

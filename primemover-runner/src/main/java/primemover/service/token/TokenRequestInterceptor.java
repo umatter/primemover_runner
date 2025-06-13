@@ -1,12 +1,12 @@
 package primemover.service.token;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+
+import java.io.IOException;
 
 public class TokenRequestInterceptor implements ClientHttpRequestInterceptor {
 

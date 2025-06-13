@@ -1,12 +1,8 @@
 package primemover.config;
 
-import java.time.Duration;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TimeZone;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,23 +17,13 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.api.deserializer.RelaxedZonedDateTimeDeserializer;
-import primemover.capture.IRecorderProxy;
-import primemover.capture.KeepAlivePingFactory;
-import primemover.capture.NoRecordingProxy;
-import primemover.capture.ProxyDecoratorFactory;
-import primemover.capture.RecordingProxyFactory;
-import primemover.capture.UrlVerificatorFactory;
+import primemover.capture.*;
 import primemover.lambda.LambdaCallerFactory;
-import primemover.multilogin.MultiLoginBrowserProfileFactory;
-import primemover.multilogin.MultiLoginDefaultTemplateLoader;
+import primemover.multilogin.ml6.MultiLoginBrowserProfileFactory;
+import primemover.multilogin.ml6.MultiLoginDefaultTemplateLoader;
 import primemover.runner.ITaskManager;
 import primemover.runner.TaskExecutor;
 import primemover.runner.TaskManager;
@@ -45,25 +31,19 @@ import primemover.runner.TaskOperatorFactory;
 import primemover.runner.job.IJobDispatcher;
 import primemover.runner.job.JobDispatcher;
 import primemover.runner.joblist.JobListRunnerFactory;
-import primemover.service.AgentService;
-import primemover.service.AwsS3StorageService;
-import primemover.service.CrawlerService;
-import primemover.service.ICrawlerService;
-import primemover.service.IJobService;
-import primemover.service.IStorageService;
-import primemover.service.IpServiceFactory;
-import primemover.service.JobService;
-import primemover.service.OutletService;
-import primemover.service.TermsService;
-import primemover.service.datawriter.CaptchaDetectionWriterFactory;
-import primemover.service.datawriter.IDataWriterFactory;
-import primemover.service.datawriter.JobDataWriterFactory;
-import primemover.service.datawriter.PageSourceWriterFactory;
-import primemover.service.datawriter.WriterUtil;
+import primemover.service.*;
+import primemover.service.datawriter.*;
 import primemover.service.token.TokenGenerator;
 import primemover.service.token.TokenRequestInterceptor;
 import primemover.util.OutletsProvider;
 import primemover.util.SelectingHelper;
+
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimeZone;
 
 @SpringBootConfiguration
 public class Config {
@@ -127,8 +107,8 @@ public class Config {
 		// false);
 		logger.debug("setting up ServiceRestTemplate - Defaults");
 		RestTemplate restTemplate = new RestTemplateBuilder()
-				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
-				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
+				.connectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+				.readTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
 
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		for (Object converter : converters) {
@@ -162,8 +142,8 @@ public class Config {
 		// false);
 		logger.debug("setting up AntiCaptchaRestTemplate - Defaults");
 		RestTemplate restTemplate = new RestTemplateBuilder()
-				.setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
-				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
+				.connectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+				.readTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
 
 		List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 		for (Object converter : converters) {

@@ -1,13 +1,12 @@
 package primemover.service.datawriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import javax.annotation.Nonnull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataWriterCachingDecorator implements IDataWriterDecorator {
 	private static Logger logger = LoggerFactory.getLogger(DataWriterCachingDecorator.class);

@@ -1,7 +1,6 @@
 package primemover.anticaptcha;
 
 import org.openqa.selenium.MutableCapabilities;
-
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;

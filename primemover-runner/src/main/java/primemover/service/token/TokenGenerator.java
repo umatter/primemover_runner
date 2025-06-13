@@ -1,17 +1,16 @@
 package primemover.service.token;
 
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestTemplate;
-
 import primemover.api.model.TokenRequest;
 import primemover.api.model.TokenResult;
+
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TokenGenerator {
 	private static Logger logger = LoggerFactory.getLogger(TokenGenerator.class);
@@ -46,8 +45,9 @@ public class TokenGenerator {
 
 		logger.debug("setting up TokenRestTemplate - Defaults");
 		// custom template to allow request-interception with this generator!
-		restTemplate = new RestTemplateBuilder().setConnectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
-				.setReadTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
+		restTemplate = new RestTemplateBuilder()
+				.connectTimeout(Duration.ofSeconds(connectionTimeoutSeconds))
+				.readTimeout(Duration.ofSeconds(requestTimeoutSeconds)).build();
 
 		isInit = true; // avoid recursion!
 

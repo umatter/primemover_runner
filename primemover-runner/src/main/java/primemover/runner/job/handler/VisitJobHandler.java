@@ -4,7 +4,6 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
 import primemover.model.jobs.VisitJob;

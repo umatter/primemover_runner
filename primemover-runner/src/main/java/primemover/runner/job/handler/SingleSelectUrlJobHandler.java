@@ -1,25 +1,20 @@
 package primemover.runner.job.handler;
 
-import java.time.Duration;
-import java.util.List;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.ElementNotInteractableException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import primemover.model.Crawler;
 import primemover.model.jobs.SingleSelectJob;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.util.SelectingHelper;
+
+import java.time.Duration;
+import java.util.List;
 
 public class SingleSelectUrlJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(SingleSelectUrlJobHandler.class);

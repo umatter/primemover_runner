@@ -1,8 +1,8 @@
 package primemover.service.datawriter;
 
-import java.nio.charset.StandardCharsets;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.nio.charset.StandardCharsets;
 
 public abstract class JsonZippedDataWriterBase<OutType> extends SingleZipEntryDataWriterBase {
 

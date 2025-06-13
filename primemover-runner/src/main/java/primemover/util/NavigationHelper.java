@@ -1,18 +1,14 @@
 package primemover.util;
 
-import java.time.Duration;
-import java.util.TreeSet;
-import java.util.function.Function;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 public class NavigationHelper {
 	private static Logger logger = LoggerFactory.getLogger(NavigationHelper.class);

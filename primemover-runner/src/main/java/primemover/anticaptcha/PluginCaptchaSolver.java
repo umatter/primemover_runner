@@ -1,17 +1,8 @@
 package primemover.anticaptcha;
 
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.NoSuchElementException;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang3.time.StopWatch;
 import org.json.JSONObject;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.MutableCapabilities;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -20,17 +11,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.HtmlSelectorType;
 import primemover.model.IJob;
 import primemover.model.MultiLoginAgent;
-import primemover.multilogin.MulitLoginBrowserProfile;
-import primemover.multilogin.MultiLoginBrowserProfileFactory;
+import primemover.multilogin.ml6.MulitLoginBrowserProfile;
+import primemover.multilogin.ml6.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.IRunnerContext;
 import primemover.util.NavigationHelper;
 import primemover.util.SelectingHelper;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 public class PluginCaptchaSolver implements ICaptchaSolver {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PluginCaptchaSolver.class);

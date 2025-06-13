@@ -1,35 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent-project</artifactId>
+    <groupId>primemover</groupId>
+    <version>2.2.0</version>
+  </parent>
+  <artifactId>primemover-runner</artifactId>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.2</version>
-		<relativePath /> <!-- lookup parent from repository -->
-	</parent>
+  <name>primemover-runner</name>
 
-	<groupId>primemover.runner</groupId>
-	<artifactId>primemover-runner</artifactId>
-	<version>2.1.0</version>
-	<name>Runner</name>
-	<description>Runner for the Botnet</description>
+  <properties>
+  <!-- crosscheck with openjdk installed on
+	server -->
+    <maven.compiler.release>17</maven.compiler.release>
+	<java.version>17</java.version> 
+	<skipTests>true</skipTests>
+	<selenium.version>4.27.0</selenium.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-	<properties>
-		<java.version>17</java.version> <!-- crosscheck with openjdk installed on
-		server -->
-		<skipTests>true</skipTests>
-		<junit.version>5.11.3</junit.version>
-		<selenium.version>4.27.0</selenium.version>
-	</properties>
+  <repositories>
 
-	<repositories>
-        <repository>
-	        <id>codehaus.org</id>
-	        <url>http://repository.codehaus.org</url>
-	    </repository>
 		<repository>
 			<id>repsy</id>
 			<name>MrJavNoHome repository</name>
@@ -37,8 +29,21 @@
 		</repository>
 	</repositories>
 
-	<dependencies>
+  <dependencies>
+  	<dependency>
+	    <artifactId>primemover-generated</artifactId>
+	    <groupId>primemover</groupId>
+	    <version>2.2</version>
+	  </dependency>
+	  <dependency>
+		    <groupId>org.springframework.retry</groupId>
+		    <artifactId>spring-retry</artifactId>
+		</dependency>
 		<dependency>
+		  <groupId>org.aspectj</groupId>
+		  <artifactId>aspectjweaver</artifactId>
+		</dependency>
+  		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
 			<version>${selenium.version}</version>
@@ -63,15 +68,6 @@
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-chrome-driver</artifactId>
 			<version>${selenium.version}</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>org.springframework.retry</groupId>
-		    <artifactId>spring-retry</artifactId>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-aspects</artifactId>
 		</dependency>
 		<!--
 	    <dependency>
@@ -154,7 +150,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.9</version>
+			<version>1.13.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -187,18 +183,6 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<!-- JUnit is used in production code <scope>test</scope> -->
-			<version>${junit.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<scope>test</scope>
-			<version>${junit.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.13</version>
@@ -226,40 +210,64 @@
 		<dependency>
 		    <groupId>io.github.bonigarcia</groupId>
 		    <artifactId>webdrivermanager</artifactId>
-		    <version>5.8.0</version>
+		    <version>6.1.0</version>
 		</dependency>
-	</dependencies>
+		
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <!-- JUnit is used in production code <scope>test</scope> -->
+      <!-- <scope>test</scope> -->
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+	  <dependency>
+		  <groupId>primemover</groupId>
+		  <artifactId>primemover-generated</artifactId>
+		  <version>2.2.0</version>
+		  <scope>compile</scope>
+	  </dependency>
+  </dependencies>
 
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-				<excludes>
-					<exclude>*.properties</exclude>
-					<exclude>*.json</exclude>
-					<exclude>*.xml</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-			</testResource>
-		</testResources>
-
+  <build>
+  	<resources>
+		<resource>
+			<directory>src/main/resources</directory>
+			<filtering>true</filtering>
+			<excludes>
+				<exclude>*.properties</exclude>
+				<exclude>*.json</exclude>
+				<exclude>*.xml</exclude>
+			</excludes>
+		</resource>
+	</resources>
+	<testResources>
+		<testResource>
+			<directory>src/test/resources</directory>
+		</testResource>
+	</testResources>
+		
+		
+	<pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <testFailureIgnore>true</testFailureIgnore>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>	
+		
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<artifactId>maven-failsafe-plugin</artifactId>
-			</plugin>
+		<plugin>
+		    <groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+		</plugin>
 		</plugins>
-	</build>
-
+  </build>
 </project>

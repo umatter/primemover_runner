@@ -1,9 +1,9 @@
 package primemover.api.model;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 public class MediaOutletUrls {
 	

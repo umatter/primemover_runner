@@ -1,2021 +1,2021 @@
 {
-  "data": {
-    "id": 187,
-    "name": "test_crawler_0",
-    "description": "Crawler created through py",
-    "active": 1,
-    "testing": 0,
-    "updated": 0,
-    "updated_at": "2020-09-25T09:25:29.000000Z",
-    "created_at": "2020-09-23T17:48:56.000000Z",
-    "user_id": 1,
-    "proxy_id": 1,
-    "agent_id": 1,
-    "configuration_id": 1,
-    "queues": [
-      {
-        "id": 787,
-        "name": "Session_0",
-        "description": "A single browser session",
-        "active": 1,
-        "processed": 1,
-        "reviewed": 0,
-        "status_code": "success",
-        "status_message": "done",
-        "order": 1,
-        "start_at": "2020-09-24T07:21:18.133385-05:00",
-        "updated_at": "2020-09-24T23:07:22.000000Z",
-        "created_at": "2020-09-23T17:48:56.000000Z",
-        "started_at": "2020-09-25T01:02:41.344+0200",
-        "finished_at": "2020-09-25T01:07:22.292+0200",
-        "user_id": 1,
-        "crawler_id": 187,
-        "jobs": [
-          {
-            "id": 4863,
-            "name": "Wait",
-            "description": "Wait for 1 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:07.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:02.524+0200",
-            "finished_at": "2020-09-25T01:03:07.232+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10595,
-                "name": "seconds",
-                "description": "Wait for 1 seconds.",
-                "value": "1",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4863
-              }
-            ],
-            "reports": [
-              {
-                "id": 1249,
-                "job_id": 4863,
-                "description": "recording results for job 4863",
-                "filename": "20200924_142140__jobdata_4863.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1249"
-              },
-              {
-                "id": 1286,
-                "job_id": 4863,
-                "description": "recording results for job 4863",
-                "filename": "20200925_005648__jobdata_4863.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1286"
-              },
-              {
-                "id": 1314,
-                "job_id": 4863,
-                "description": "recording results for job 4863",
-                "filename": "20200925_010307__jobdata_4863.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1314"
-              }
-            ]
-          },
-          {
-            "id": 4864,
-            "name": "Visit",
-            "description": "Visit https://www.google.com",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:13.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:07.353+0200",
-            "finished_at": "2020-09-25T01:03:13.124+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10596,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.google.com",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4864
-              }
-            ],
-            "reports": [
-              {
-                "id": 1250,
-                "job_id": 4864,
-                "description": "recording results for job 4864",
-                "filename": "20200924_142155__jobdata_4864.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1250"
-              },
-              {
-                "id": 1280,
-                "job_id": 4864,
-                "description": "recording results for job 4864",
-                "filename": "20200925_002746__jobdata_4864.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1280"
-              },
-              {
-                "id": 1287,
-                "job_id": 4864,
-                "description": "recording results for job 4864",
-                "filename": "20200925_005718__jobdata_4864.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1287"
-              },
-              {
-                "id": 1315,
-                "job_id": 4864,
-                "description": "recording results for job 4864",
-                "filename": "20200925_010312__jobdata_4864.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1315"
-              }
-            ]
-          },
-          {
-            "id": 4865,
-            "name": "Enter Text",
-            "description": "Enter text into the defined field",
-            "type": "entertextfieldjob",
-            "status_code": "failure",
-            "status_message": "error during execution",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:20.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:13.240+0200",
-            "finished_at": "2020-09-25T01:03:20.028+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10597,
-                "name": "text",
-                "description": "Text to enter",
-                "value": "affordable care",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4865
-              },
-              {
-                "id": 10598,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "XPATH",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4865
-              },
-              {
-                "id": 10599,
-                "name": "selector",
-                "description": " selector",
-                "value": "//input[@name='q']",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4865
-              },
-              {
-                "id": 10600,
-                "name": "appendReturn",
-                "description": "Optional field: appends a return key after the text given if true.",
-                "value": "1",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4865
-              },
-              {
-                "id": 10601,
-                "name": "typingMode",
-                "description": "Optional field: How the text is entered into the field",
-                "value": "SIMULATED_FIXINGTYPOS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4865
-              }
-            ],
-            "reports": []
-          },
-          {
-            "id": 4866,
-            "name": "Select",
-            "description": "Select an item and click",
-            "type": "singleselecturljob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:22.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:20.232+0200",
-            "finished_at": "2020-09-25T01:03:22.089+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10602,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "CLASS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4866
-              },
-              {
-                "id": 10603,
-                "name": "selector",
-                "description": " selector",
-                "value": "LC20lb.DKV0Md",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4866
-              },
-              {
-                "id": 10604,
-                "name": "decisionType",
-                "description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
-                "value": "RANDOM",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4866
-              }
-            ],
-            "reports": [
-              {
-                "id": 1251,
-                "job_id": 4866,
-                "description": "recording results for job 4866",
-                "filename": "20200924_142204__jobdata_4866.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1251"
-              },
-              {
-                "id": 1281,
-                "job_id": 4866,
-                "description": "recording results for job 4866",
-                "filename": "20200925_002800__jobdata_4866.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1281"
-              },
-              {
-                "id": 1288,
-                "job_id": 4866,
-                "description": "recording results for job 4866",
-                "filename": "20200925_005739__jobdata_4866.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1288"
-              },
-              {
-                "id": 1316,
-                "job_id": 4866,
-                "description": "recording results for job 4866",
-                "filename": "20200925_010321__jobdata_4866.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1316"
-              }
-            ]
-          },
-          {
-            "id": 4867,
-            "name": "Scroll by length",
-            "description": "Scroll down",
-            "type": "scrollbylengthjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:23.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:22.203+0200",
-            "finished_at": "2020-09-25T01:03:22.985+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10605,
-                "name": "length",
-                "description": "Scroll 80.0 of window.",
-                "value": "80",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4867
-              },
-              {
-                "id": 10606,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4867
-              }
-            ],
-            "reports": [
-              {
-                "id": 1252,
-                "job_id": 4867,
-                "description": "recording results for job 4867",
-                "filename": "20200924_142204__jobdata_4867.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1252"
-              },
-              {
-                "id": 1282,
-                "job_id": 4867,
-                "description": "recording results for job 4867",
-                "filename": "20200925_002801__jobdata_4867.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1282"
-              },
-              {
-                "id": 1289,
-                "job_id": 4867,
-                "description": "recording results for job 4867",
-                "filename": "20200925_005740__jobdata_4867.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1289"
-              },
-              {
-                "id": 1317,
-                "job_id": 4867,
-                "description": "recording results for job 4867",
-                "filename": "20200925_010322__jobdata_4867.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1317"
-              }
-            ]
-          },
-          {
-            "id": 4868,
-            "name": "Wait",
-            "description": "Wait for 3 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:27.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:23.100+0200",
-            "finished_at": "2020-09-25T01:03:27.015+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10607,
-                "name": "seconds",
-                "description": "Wait for 3 seconds.",
-                "value": "3",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4868
-              }
-            ],
-            "reports": [
-              {
-                "id": 1253,
-                "job_id": 4868,
-                "description": "recording results for job 4868",
-                "filename": "20200924_142208__jobdata_4868.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1253"
-              },
-              {
-                "id": 1290,
-                "job_id": 4868,
-                "description": "recording results for job 4868",
-                "filename": "20200925_005744__jobdata_4868.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1290"
-              },
-              {
-                "id": 1318,
-                "job_id": 4868,
-                "description": "recording results for job 4868",
-                "filename": "20200925_010326__jobdata_4868.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1318"
-              }
-            ]
-          },
-          {
-            "id": 4869,
-            "name": "Visit",
-            "description": "Visit https://www.google.com",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:28.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:27.141+0200",
-            "finished_at": "2020-09-25T01:03:28.772+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10608,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.google.com",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4869
-              }
-            ],
-            "reports": [
-              {
-                "id": 1254,
-                "job_id": 4869,
-                "description": "recording results for job 4869",
-                "filename": "20200924_142210__jobdata_4869.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1254"
-              },
-              {
-                "id": 1291,
-                "job_id": 4869,
-                "description": "recording results for job 4869",
-                "filename": "20200925_005752__jobdata_4869.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1291"
-              },
-              {
-                "id": 1319,
-                "job_id": 4869,
-                "description": "recording results for job 4869",
-                "filename": "20200925_010328__jobdata_4869.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1319"
-              }
-            ]
-          },
-          {
-            "id": 4870,
-            "name": "Enter Text",
-            "description": "Enter text into the defined field",
-            "type": "entertextfieldjob",
-            "status_code": "failure",
-            "status_message": "error during execution",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:32.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:28.895+0200",
-            "finished_at": "2020-09-25T01:03:31.918+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10609,
-                "name": "text",
-                "description": "Text to enter",
-                "value": "black african american",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4870
-              },
-              {
-                "id": 10610,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "XPATH",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4870
-              },
-              {
-                "id": 10611,
-                "name": "selector",
-                "description": " selector",
-                "value": "//input[@name='q']",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4870
-              },
-              {
-                "id": 10612,
-                "name": "appendReturn",
-                "description": "Optional field: appends a return key after the text given if true.",
-                "value": "1",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4870
-              },
-              {
-                "id": 10613,
-                "name": "typingMode",
-                "description": "Optional field: How the text is entered into the field",
-                "value": "SIMULATED_FIXINGTYPOS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4870
-              }
-            ],
-            "reports": []
-          },
-          {
-            "id": 4871,
-            "name": "Select",
-            "description": "Select an item and click",
-            "type": "singleselecturljob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:34.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:32.030+0200",
-            "finished_at": "2020-09-25T01:03:34.176+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10614,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "CLASS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4871
-              },
-              {
-                "id": 10615,
-                "name": "selector",
-                "description": " selector",
-                "value": "LC20lb.DKV0Md",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4871
-              },
-              {
-                "id": 10616,
-                "name": "decisionType",
-                "description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
-                "value": "RANDOM",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4871
-              }
-            ],
-            "reports": [
-              {
-                "id": 1255,
-                "job_id": 4871,
-                "description": "recording results for job 4871",
-                "filename": "20200924_142217__jobdata_4871.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1255"
-              },
-              {
-                "id": 1292,
-                "job_id": 4871,
-                "description": "recording results for job 4871",
-                "filename": "20200925_005757__jobdata_4871.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1292"
-              },
-              {
-                "id": 1320,
-                "job_id": 4871,
-                "description": "recording results for job 4871",
-                "filename": "20200925_010333__jobdata_4871.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1320"
-              }
-            ]
-          },
-          {
-            "id": 4872,
-            "name": "Scroll by length",
-            "description": "Scroll down",
-            "type": "scrollbylengthjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:35.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:34.305+0200",
-            "finished_at": "2020-09-25T01:03:35.054+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10617,
-                "name": "length",
-                "description": "Scroll 80.0 of window.",
-                "value": "80",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4872
-              },
-              {
-                "id": 10618,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4872
-              }
-            ],
-            "reports": [
-              {
-                "id": 1256,
-                "job_id": 4872,
-                "description": "recording results for job 4872",
-                "filename": "20200924_142218__jobdata_4872.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1256"
-              },
-              {
-                "id": 1293,
-                "job_id": 4872,
-                "description": "recording results for job 4872",
-                "filename": "20200925_005758__jobdata_4872.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1293"
-              },
-              {
-                "id": 1321,
-                "job_id": 4872,
-                "description": "recording results for job 4872",
-                "filename": "20200925_010334__jobdata_4872.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1321"
-              }
-            ]
-          },
-          {
-            "id": 4873,
-            "name": "Wait",
-            "description": "Wait for 2 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:03:37.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:35.166+0200",
-            "finished_at": "2020-09-25T01:03:37.891+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10619,
-                "name": "seconds",
-                "description": "Wait for 2 seconds.",
-                "value": "2",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4873
-              }
-            ],
-            "reports": [
-              {
-                "id": 1257,
-                "job_id": 4873,
-                "description": "recording results for job 4873",
-                "filename": "20200924_142221__jobdata_4873.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1257"
-              },
-              {
-                "id": 1294,
-                "job_id": 4873,
-                "description": "recording results for job 4873",
-                "filename": "20200925_005800__jobdata_4873.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1294"
-              },
-              {
-                "id": 1322,
-                "job_id": 4873,
-                "description": "recording results for job 4873",
-                "filename": "20200925_010337__jobdata_4873.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1322"
-              }
-            ]
-          },
-          {
-            "id": 4874,
-            "name": "Visit",
-            "description": "Visit https://www.wired.com/",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:04:36.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:03:38.003+0200",
-            "finished_at": "2020-09-25T01:04:36.079+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10620,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.wired.com/",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4874
-              }
-            ],
-            "reports": [
-              {
-                "id": 1258,
-                "job_id": 4874,
-                "description": "recording results for job 4874",
-                "filename": "20200924_142319__jobdata_4874.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1258"
-              },
-              {
-                "id": 1295,
-                "job_id": 4874,
-                "description": "recording results for job 4874",
-                "filename": "20200925_005908__jobdata_4874.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1295"
-              },
-              {
-                "id": 1323,
-                "job_id": 4874,
-                "description": "recording results for job 4874",
-                "filename": "20200925_010431__jobdata_4874.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1323"
-              }
-            ]
-          },
-          {
-            "id": 4875,
-            "name": "Scroll by duration",
-            "description": "Scroll down",
-            "type": "scrollbydurationjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:04:37.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:04:36.190+0200",
-            "finished_at": "2020-09-25T01:04:37.195+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10621,
-                "name": "scrollDuration",
-                "description": "Scroll for 85 seconds.",
-                "value": "85",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4875
-              },
-              {
-                "id": 10622,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4875
-              }
-            ],
-            "reports": [
-              {
-                "id": 1259,
-                "job_id": 4875,
-                "description": "recording results for job 4875",
-                "filename": "20200924_142321__jobdata_4875.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1259"
-              },
-              {
-                "id": 1296,
-                "job_id": 4875,
-                "description": "recording results for job 4875",
-                "filename": "20200925_005911__jobdata_4875.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1296"
-              },
-              {
-                "id": 1324,
-                "job_id": 4875,
-                "description": "recording results for job 4875",
-                "filename": "20200925_010437__jobdata_4875.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1324"
-              }
-            ]
-          },
-          {
-            "id": 4876,
-            "name": "Wait",
-            "description": "Wait for 6 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:04:44.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:04:37.306+0200",
-            "finished_at": "2020-09-25T01:04:44.351+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10623,
-                "name": "seconds",
-                "description": "Wait for 6 seconds.",
-                "value": "6",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4876
-              }
-            ],
-            "reports": [
-              {
-                "id": 1260,
-                "job_id": 4876,
-                "description": "recording results for job 4876",
-                "filename": "20200924_142328__jobdata_4876.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1260"
-              },
-              {
-                "id": 1297,
-                "job_id": 4876,
-                "description": "recording results for job 4876",
-                "filename": "20200925_005918__jobdata_4876.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1297"
-              },
-              {
-                "id": 1325,
-                "job_id": 4876,
-                "description": "recording results for job 4876",
-                "filename": "20200925_010444__jobdata_4876.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1325"
-              }
-            ]
-          },
-          {
-            "id": 4877,
-            "name": "Visit",
-            "description": "Visit https://www.cbsnews.com/",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:04:53.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:04:44.496+0200",
-            "finished_at": "2020-09-25T01:04:53.692+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10624,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.cbsnews.com/",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4877
-              }
-            ],
-            "reports": [
-              {
-                "id": 1261,
-                "job_id": 4877,
-                "description": "recording results for job 4877",
-                "filename": "20200924_142415__jobdata_4877.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1261"
-              },
-              {
-                "id": 1298,
-                "job_id": 4877,
-                "description": "recording results for job 4877",
-                "filename": "20200925_005953__jobdata_4877.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1298"
-              },
-              {
-                "id": 1326,
-                "job_id": 4877,
-                "description": "recording results for job 4877",
-                "filename": "20200925_010453__jobdata_4877.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1326"
-              }
-            ]
-          },
-          {
-            "id": 4878,
-            "name": "Scroll by duration",
-            "description": "Scroll down",
-            "type": "scrollbydurationjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:04:54.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:04:53.803+0200",
-            "finished_at": "2020-09-25T01:04:54.596+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10625,
-                "name": "scrollDuration",
-                "description": "Scroll for 176 seconds.",
-                "value": "176",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4878
-              },
-              {
-                "id": 10626,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4878
-              }
-            ],
-            "reports": [
-              {
-                "id": 1262,
-                "job_id": 4878,
-                "description": "recording results for job 4878",
-                "filename": "20200924_142416__jobdata_4878.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1262"
-              },
-              {
-                "id": 1299,
-                "job_id": 4878,
-                "description": "recording results for job 4878",
-                "filename": "20200925_005955__jobdata_4878.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1299"
-              },
-              {
-                "id": 1327,
-                "job_id": 4878,
-                "description": "recording results for job 4878",
-                "filename": "20200925_010454__jobdata_4878.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1327"
-              }
-            ]
-          },
-          {
-            "id": 4879,
-            "name": "Wait",
-            "description": "Wait for 8 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:04.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:04:54.707+0200",
-            "finished_at": "2020-09-25T01:05:03.986+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10627,
-                "name": "seconds",
-                "description": "Wait for 8 seconds.",
-                "value": "8",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4879
-              }
-            ],
-            "reports": [
-              {
-                "id": 1263,
-                "job_id": 4879,
-                "description": "recording results for job 4879",
-                "filename": "20200924_142425__jobdata_4879.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1263"
-              },
-              {
-                "id": 1300,
-                "job_id": 4879,
-                "description": "recording results for job 4879",
-                "filename": "20200925_010004__jobdata_4879.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1300"
-              },
-              {
-                "id": 1328,
-                "job_id": 4879,
-                "description": "recording results for job 4879",
-                "filename": "20200925_010503__jobdata_4879.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1328"
-              }
-            ]
-          },
-          {
-            "id": 4880,
-            "name": "Visit",
-            "description": "Visit https://www.ebay.com",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:19.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:04.097+0200",
-            "finished_at": "2020-09-25T01:05:19.249+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10628,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.ebay.com",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4880
-              }
-            ],
-            "reports": [
-              {
-                "id": 1264,
-                "job_id": 4880,
-                "description": "recording results for job 4880",
-                "filename": "20200924_142435__jobdata_4880.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1264"
-              },
-              {
-                "id": 1301,
-                "job_id": 4880,
-                "description": "recording results for job 4880",
-                "filename": "20200925_010011__jobdata_4880.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1301"
-              },
-              {
-                "id": 1329,
-                "job_id": 4880,
-                "description": "recording results for job 4880",
-                "filename": "20200925_010518__jobdata_4880.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1329"
-              }
-            ]
-          },
-          {
-            "id": 4881,
-            "name": "Scroll by duration",
-            "description": "Scroll down",
-            "type": "scrollbydurationjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:20.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:19.358+0200",
-            "finished_at": "2020-09-25T01:05:20.089+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10629,
-                "name": "scrollDuration",
-                "description": "Scroll for 167 seconds.",
-                "value": "167",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4881
-              },
-              {
-                "id": 10630,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4881
-              }
-            ],
-            "reports": [
-              {
-                "id": 1265,
-                "job_id": 4881,
-                "description": "recording results for job 4881",
-                "filename": "20200924_142436__jobdata_4881.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1265"
-              },
-              {
-                "id": 1302,
-                "job_id": 4881,
-                "description": "recording results for job 4881",
-                "filename": "20200925_010012__jobdata_4881.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1302"
-              },
-              {
-                "id": 1330,
-                "job_id": 4881,
-                "description": "recording results for job 4881",
-                "filename": "20200925_010519__jobdata_4881.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1330"
-              }
-            ]
-          },
-          {
-            "id": 4882,
-            "name": "Wait",
-            "description": "Wait for 9 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:30.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:20.200+0200",
-            "finished_at": "2020-09-25T01:05:30.310+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10631,
-                "name": "seconds",
-                "description": "Wait for 9 seconds.",
-                "value": "9",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4882
-              }
-            ],
-            "reports": [
-              {
-                "id": 1266,
-                "job_id": 4882,
-                "description": "recording results for job 4882",
-                "filename": "20200924_142448__jobdata_4882.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1266"
-              },
-              {
-                "id": 1303,
-                "job_id": 4882,
-                "description": "recording results for job 4882",
-                "filename": "20200925_010022__jobdata_4882.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1303"
-              },
-              {
-                "id": 1331,
-                "job_id": 4882,
-                "description": "recording results for job 4882",
-                "filename": "20200925_010530__jobdata_4882.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1331"
-              }
-            ]
-          },
-          {
-            "id": 4883,
-            "name": "Visit",
-            "description": "Visit https://www.ebay.com",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:33.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:30.439+0200",
-            "finished_at": "2020-09-25T01:05:33.663+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10632,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.ebay.com",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4883
-              }
-            ],
-            "reports": [
-              {
-                "id": 1267,
-                "job_id": 4883,
-                "description": "recording results for job 4883",
-                "filename": "20200924_142451__jobdata_4883.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1267"
-              },
-              {
-                "id": 1304,
-                "job_id": 4883,
-                "description": "recording results for job 4883",
-                "filename": "20200925_010052__jobdata_4883.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1304"
-              },
-              {
-                "id": 1332,
-                "job_id": 4883,
-                "description": "recording results for job 4883",
-                "filename": "20200925_010533__jobdata_4883.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1332"
-              }
-            ]
-          },
-          {
-            "id": 4884,
-            "name": "Scroll by duration",
-            "description": "Scroll down",
-            "type": "scrollbydurationjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:35.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:33.781+0200",
-            "finished_at": "2020-09-25T01:05:35.204+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10633,
-                "name": "scrollDuration",
-                "description": "Scroll for 84 seconds.",
-                "value": "84",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4884
-              },
-              {
-                "id": 10634,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4884
-              }
-            ],
-            "reports": [
-              {
-                "id": 1268,
-                "job_id": 4884,
-                "description": "recording results for job 4884",
-                "filename": "20200924_142452__jobdata_4884.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1268"
-              },
-              {
-                "id": 1305,
-                "job_id": 4884,
-                "description": "recording results for job 4884",
-                "filename": "20200925_010054__jobdata_4884.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1305"
-              },
-              {
-                "id": 1333,
-                "job_id": 4884,
-                "description": "recording results for job 4884",
-                "filename": "20200925_010534__jobdata_4884.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1333"
-              }
-            ]
-          },
-          {
-            "id": 4885,
-            "name": "Wait",
-            "description": "Wait for 1 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:05:37.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:35.325+0200",
-            "finished_at": "2020-09-25T01:05:37.291+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10635,
-                "name": "seconds",
-                "description": "Wait for 1 seconds.",
-                "value": "1",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4885
-              }
-            ],
-            "reports": [
-              {
-                "id": 1269,
-                "job_id": 4885,
-                "description": "recording results for job 4885",
-                "filename": "20200924_142455__jobdata_4885.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1269"
-              },
-              {
-                "id": 1306,
-                "job_id": 4885,
-                "description": "recording results for job 4885",
-                "filename": "20200925_010056__jobdata_4885.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1306"
-              },
-              {
-                "id": 1334,
-                "job_id": 4885,
-                "description": "recording results for job 4885",
-                "filename": "20200925_010537__jobdata_4885.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1334"
-              }
-            ]
-          },
-          {
-            "id": 4886,
-            "name": "Visit",
-            "description": "Visit https://www.google.com",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:06:51.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:05:37.405+0200",
-            "finished_at": "2020-09-25T01:06:51.624+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10636,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.google.com",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4886
-              }
-            ],
-            "reports": [
-              {
-                "id": 1270,
-                "job_id": 4886,
-                "description": "recording results for job 4886",
-                "filename": "20200924_142500__jobdata_4886.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1270"
-              },
-              {
-                "id": 1307,
-                "job_id": 4886,
-                "description": "recording results for job 4886",
-                "filename": "20200925_010058__jobdata_4886.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1307"
-              },
-              {
-                "id": 1335,
-                "job_id": 4886,
-                "description": "recording results for job 4886",
-                "filename": "20200925_010651__jobdata_4886.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1335"
-              }
-            ]
-          },
-          {
-            "id": 4887,
-            "name": "Enter Text",
-            "description": "Enter text into the defined field",
-            "type": "entertextfieldjob",
-            "status_code": "failure",
-            "status_message": "error during execution",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:06:55.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:06:51.745+0200",
-            "finished_at": "2020-09-25T01:06:55.039+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10637,
-                "name": "text",
-                "description": "Text to enter",
-                "value": "Kate Todd supreme court",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4887
-              },
-              {
-                "id": 10638,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "XPATH",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4887
-              },
-              {
-                "id": 10639,
-                "name": "selector",
-                "description": " selector",
-                "value": "//input[@name='q']",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4887
-              },
-              {
-                "id": 10640,
-                "name": "appendReturn",
-                "description": "Optional field: appends a return key after the text given if true.",
-                "value": "1",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4887
-              },
-              {
-                "id": 10641,
-                "name": "typingMode",
-                "description": "Optional field: How the text is entered into the field",
-                "value": "SIMULATED_FIXINGTYPOS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4887
-              }
-            ],
-            "reports": []
-          },
-          {
-            "id": 4888,
-            "name": "Select",
-            "description": "Select an item and click",
-            "type": "singleselecturljob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:06:57.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:06:55.158+0200",
-            "finished_at": "2020-09-25T01:06:57.308+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10642,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "CLASS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4888
-              },
-              {
-                "id": 10643,
-                "name": "selector",
-                "description": " selector",
-                "value": "LC20lb.DKV0Md",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4888
-              },
-              {
-                "id": 10644,
-                "name": "decisionType",
-                "description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
-                "value": "RANDOM",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4888
-              }
-            ],
-            "reports": [
-              {
-                "id": 1271,
-                "job_id": 4888,
-                "description": "recording results for job 4888",
-                "filename": "20200924_142509__jobdata_4888.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1271"
-              },
-              {
-                "id": 1308,
-                "job_id": 4888,
-                "description": "recording results for job 4888",
-                "filename": "20200925_010104__jobdata_4888.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1308"
-              },
-              {
-                "id": 1336,
-                "job_id": 4888,
-                "description": "recording results for job 4888",
-                "filename": "20200925_010657__jobdata_4888.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1336"
-              }
-            ]
-          },
-          {
-            "id": 4889,
-            "name": "Scroll by length",
-            "description": "Scroll down",
-            "type": "scrollbylengthjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:06:58.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:06:57.450+0200",
-            "finished_at": "2020-09-25T01:06:58.238+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10645,
-                "name": "length",
-                "description": "Scroll 80.0 of window.",
-                "value": "80",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4889
-              },
-              {
-                "id": 10646,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4889
-              }
-            ],
-            "reports": [
-              {
-                "id": 1272,
-                "job_id": 4889,
-                "description": "recording results for job 4889",
-                "filename": "20200924_142510__jobdata_4889.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1272"
-              },
-              {
-                "id": 1309,
-                "job_id": 4889,
-                "description": "recording results for job 4889",
-                "filename": "20200925_010105__jobdata_4889.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1309"
-              },
-              {
-                "id": 1337,
-                "job_id": 4889,
-                "description": "recording results for job 4889",
-                "filename": "20200925_010658__jobdata_4889.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1337"
-              }
-            ]
-          },
-          {
-            "id": 4890,
-            "name": "Wait",
-            "description": "Wait for 7 seconds",
-            "type": "waitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:07:06.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:06:58.355+0200",
-            "finished_at": "2020-09-25T01:07:06.612+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10647,
-                "name": "seconds",
-                "description": "Wait for 7 seconds.",
-                "value": "7",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4890
-              }
-            ],
-            "reports": [
-              {
-                "id": 1273,
-                "job_id": 4890,
-                "description": "recording results for job 4890",
-                "filename": "20200924_142518__jobdata_4890.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1273"
-              },
-              {
-                "id": 1310,
-                "job_id": 4890,
-                "description": "recording results for job 4890",
-                "filename": "20200925_010113__jobdata_4890.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1310"
-              },
-              {
-                "id": 1338,
-                "job_id": 4890,
-                "description": "recording results for job 4890",
-                "filename": "20200925_010706__jobdata_4890.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1338"
-              }
-            ]
-          },
-          {
-            "id": 4891,
-            "name": "Visit",
-            "description": "Visit https://www.google.com",
-            "type": "visitjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:07:08.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:07:06.724+0200",
-            "finished_at": "2020-09-25T01:07:08.083+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10648,
-                "name": "url",
-                "description": "URL",
-                "value": "https://www.google.com",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4891
-              }
-            ],
-            "reports": [
-              {
-                "id": 1274,
-                "job_id": 4891,
-                "description": "recording results for job 4891",
-                "filename": "20200924_142519__jobdata_4891.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1274"
-              },
-              {
-                "id": 1311,
-                "job_id": 4891,
-                "description": "recording results for job 4891",
-                "filename": "20200925_010114__jobdata_4891.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1311"
-              },
-              {
-                "id": 1339,
-                "job_id": 4891,
-                "description": "recording results for job 4891",
-                "filename": "20200925_010707__jobdata_4891.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1339"
-              }
-            ]
-          },
-          {
-            "id": 4892,
-            "name": "Enter Text",
-            "description": "Enter text into the defined field",
-            "type": "entertextfieldjob",
-            "status_code": "failure",
-            "status_message": "error during execution",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:07:11.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:07:08.198+0200",
-            "finished_at": "2020-09-25T01:07:11.540+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10649,
-                "name": "text",
-                "description": "Text to enter",
-                "value": "Donald Trump supreme court",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4892
-              },
-              {
-                "id": 10650,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "XPATH",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4892
-              },
-              {
-                "id": 10651,
-                "name": "selector",
-                "description": " selector",
-                "value": "//input[@name='q']",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4892
-              },
-              {
-                "id": 10652,
-                "name": "appendReturn",
-                "description": "Optional field: appends a return key after the text given if true.",
-                "value": "1",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4892
-              },
-              {
-                "id": 10653,
-                "name": "typingMode",
-                "description": "Optional field: How the text is entered into the field",
-                "value": "SIMULATED_FIXINGTYPOS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4892
-              }
-            ],
-            "reports": []
-          },
-          {
-            "id": 4893,
-            "name": "Select",
-            "description": "Select an item and click",
-            "type": "singleselecturljob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:07:13.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:07:11.651+0200",
-            "finished_at": "2020-09-25T01:07:13.551+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10654,
-                "name": "selectionType",
-                "description": "Type of selection",
-                "value": "CLASS",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4893
-              },
-              {
-                "id": 10655,
-                "name": "selector",
-                "description": " selector",
-                "value": "LC20lb.DKV0Md",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4893
-              },
-              {
-                "id": 10656,
-                "name": "decisionType",
-                "description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
-                "value": "RANDOM",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4893
-              }
-            ],
-            "reports": [
-              {
-                "id": 1275,
-                "job_id": 4893,
-                "description": "recording results for job 4893",
-                "filename": "20200924_142525__jobdata_4893.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1275"
-              },
-              {
-                "id": 1312,
-                "job_id": 4893,
-                "description": "recording results for job 4893",
-                "filename": "20200925_010122__jobdata_4893.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1312"
-              },
-              {
-                "id": 1340,
-                "job_id": 4893,
-                "description": "recording results for job 4893",
-                "filename": "20200925_010713__jobdata_4893.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1340"
-              }
-            ]
-          },
-          {
-            "id": 4894,
-            "name": "Scroll by length",
-            "description": "Scroll down",
-            "type": "scrollbylengthjob",
-            "status_code": "success",
-            "status_message": "successfully finished job",
-            "order": 1,
-            "active": 1,
-            "updated_at": "2020-09-24T23:07:20.000000Z",
-            "created_at": "2020-09-23T17:48:56.000000Z",
-            "started_at": "2020-09-25T01:07:13.663+0200",
-            "finished_at": "2020-09-25T01:07:19.956+0200",
-            "user_id": 1,
-            "queue_id": 787,
-            "behaviors": [
-              {
-                "id": 10657,
-                "name": "length",
-                "description": "Scroll 80.0 of window.",
-                "value": "80",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4894
-              },
-              {
-                "id": 10658,
-                "name": "scrollDirection",
-                "description": "Scroll down",
-                "value": "DOWN",
-                "active": 1,
-                "updated_at": "2020-09-23T17:48:56.000000Z",
-                "created_at": "2020-09-23T17:48:56.000000Z",
-                "user_id": 1,
-                "job_id": 4894
-              }
-            ],
-            "reports": [
-              {
-                "id": 1276,
-                "job_id": 4894,
-                "description": "recording results for job 4894",
-                "filename": "20200924_142526__jobdata_4894.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1276"
-              },
-              {
-                "id": 1313,
-                "job_id": 4894,
-                "description": "recording results for job 4894",
-                "filename": "20200925_010126__jobdata_4894.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1313"
-              },
-              {
-                "id": 1341,
-                "job_id": 4894,
-                "description": "recording results for job 4894",
-                "filename": "20200925_010719__jobdata_4894.zip",
-                "path": "https://siaw.primemover.example/api/v1/file/1341"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "agent": {
-      "id": 1,
-      "name": "ML01",
-      "description": "TEST_End2End_01",
-      "identification": "User-Agent: Multilogin",
-      "multilogin_id": "fec6f490-7c12-4551-afe3-163ea11a5b3b",
-      "multilogin_profile": null,
-      "location": "US-OK-OKLAHOMA_CITY",
-      "active": 1,
-      "updated_at": "2020-09-19T11:23:11.000000Z",
-      "created_at": "2020-09-19T11:23:11.000000Z",
-      "user_id": 1
-    },
-    "configuration": {
-      "id": 1,
-      "name": "Murazik",
-      "description": "Aspernatur animi sint ut qui voluptatum minima et. Suscipit ratione quia ipsam est. Ad error accusamus non nostrum voluptatem possimus dicta.",
-      "active": 1,
-      "updated_at": "2020-09-19T09:23:11.000000Z",
-      "created_at": "2020-09-19T09:23:11.000000Z",
-      "user_id": 1,
-      "params": []
-    },
-    "proxy": {
-      "name": "test_proxy_0",
-        "description": "Proxy",
-        "type": "GEOSURF",
-        "hostname": "state.geosurf.io",
-        "port": 8000,
-        "username": "000000",
-        "password": "CHANGEME-password"
-    }
-  },
-  "version": "1.0.0",
-  "author": "https://primemover.example"
+	"data": {
+		"id": 187,
+		"name": "test_crawler_0",
+		"description": "Crawler created through py",
+		"active": 1,
+		"testing": 0,
+		"updated": 0,
+		"updated_at": "2020-09-25T09:25:29.000000Z",
+		"created_at": "2020-09-23T17:48:56.000000Z",
+		"user_id": 1,
+		"proxy_id": 1,
+		"agent_id": 1,
+		"configuration_id": 1,
+		"queues": [
+			{
+				"id": 787,
+				"name": "Session_0",
+				"description": "A single browser session",
+				"active": 1,
+				"processed": 1,
+				"reviewed": 0,
+				"status_code": "success",
+				"status_message": "done",
+				"order": 1,
+				"start_at": "2020-09-24T07:21:18.133385-05:00",
+				"updated_at": "2020-09-24T23:07:22.000000Z",
+				"created_at": "2020-09-23T17:48:56.000000Z",
+				"started_at": "2020-09-25T01:02:41.344+0200",
+				"finished_at": "2020-09-25T01:07:22.292+0200",
+				"user_id": 1,
+				"crawler_id": 187,
+				"jobs": [
+					{
+						"id": 4863,
+						"name": "Wait",
+						"description": "Wait for 1 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:07.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:02.524+0200",
+						"finished_at": "2020-09-25T01:03:07.232+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10595,
+								"name": "seconds",
+								"description": "Wait for 1 seconds.",
+								"value": "1",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4863
+							}
+						],
+						"reports": [
+							{
+								"id": 1249,
+								"job_id": 4863,
+								"description": "recording results for job 4863",
+								"filename": "20200924_142140__jobdata_4863.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1249"
+							},
+							{
+								"id": 1286,
+								"job_id": 4863,
+								"description": "recording results for job 4863",
+								"filename": "20200925_005648__jobdata_4863.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1286"
+							},
+							{
+								"id": 1314,
+								"job_id": 4863,
+								"description": "recording results for job 4863",
+								"filename": "20200925_010307__jobdata_4863.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1314"
+							}
+						]
+					},
+					{
+						"id": 4864,
+						"name": "Visit",
+						"description": "Visit https://www.google.com",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:13.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:07.353+0200",
+						"finished_at": "2020-09-25T01:03:13.124+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10596,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.google.com",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4864
+							}
+						],
+						"reports": [
+							{
+								"id": 1250,
+								"job_id": 4864,
+								"description": "recording results for job 4864",
+								"filename": "20200924_142155__jobdata_4864.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1250"
+							},
+							{
+								"id": 1280,
+								"job_id": 4864,
+								"description": "recording results for job 4864",
+								"filename": "20200925_002746__jobdata_4864.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1280"
+							},
+							{
+								"id": 1287,
+								"job_id": 4864,
+								"description": "recording results for job 4864",
+								"filename": "20200925_005718__jobdata_4864.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1287"
+							},
+							{
+								"id": 1315,
+								"job_id": 4864,
+								"description": "recording results for job 4864",
+								"filename": "20200925_010312__jobdata_4864.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1315"
+							}
+						]
+					},
+					{
+						"id": 4865,
+						"name": "Enter Text",
+						"description": "Enter text into the defined field",
+						"type": "entertextfieldjob",
+						"status_code": "failure",
+						"status_message": "error during execution",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:20.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:13.240+0200",
+						"finished_at": "2020-09-25T01:03:20.028+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10597,
+								"name": "text",
+								"description": "Text to enter",
+								"value": "affordable care",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4865
+							},
+							{
+								"id": 10598,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "XPATH",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4865
+							},
+							{
+								"id": 10599,
+								"name": "selector",
+								"description": " selector",
+								"value": "//input[@name='q']",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4865
+							},
+							{
+								"id": 10600,
+								"name": "appendReturn",
+								"description": "Optional field: appends a return key after the text given if true.",
+								"value": "1",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4865
+							},
+							{
+								"id": 10601,
+								"name": "typingMode",
+								"description": "Optional field: How the text is entered into the field",
+								"value": "SIMULATED_FIXINGTYPOS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4865
+							}
+						],
+						"reports": []
+					},
+					{
+						"id": 4866,
+						"name": "Select",
+						"description": "Select an item and click",
+						"type": "singleselecturljob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:22.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:20.232+0200",
+						"finished_at": "2020-09-25T01:03:22.089+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10602,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "CLASS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4866
+							},
+							{
+								"id": 10603,
+								"name": "selector",
+								"description": " selector",
+								"value": "LC20lb.DKV0Md",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4866
+							},
+							{
+								"id": 10604,
+								"name": "decisionType",
+								"description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
+								"value": "RANDOM",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4866
+							}
+						],
+						"reports": [
+							{
+								"id": 1251,
+								"job_id": 4866,
+								"description": "recording results for job 4866",
+								"filename": "20200924_142204__jobdata_4866.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1251"
+							},
+							{
+								"id": 1281,
+								"job_id": 4866,
+								"description": "recording results for job 4866",
+								"filename": "20200925_002800__jobdata_4866.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1281"
+							},
+							{
+								"id": 1288,
+								"job_id": 4866,
+								"description": "recording results for job 4866",
+								"filename": "20200925_005739__jobdata_4866.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1288"
+							},
+							{
+								"id": 1316,
+								"job_id": 4866,
+								"description": "recording results for job 4866",
+								"filename": "20200925_010321__jobdata_4866.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1316"
+							}
+						]
+					},
+					{
+						"id": 4867,
+						"name": "Scroll by length",
+						"description": "Scroll down",
+						"type": "scrollbylengthjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:23.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:22.203+0200",
+						"finished_at": "2020-09-25T01:03:22.985+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10605,
+								"name": "length",
+								"description": "Scroll 80.0 of window.",
+								"value": "80",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4867
+							},
+							{
+								"id": 10606,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4867
+							}
+						],
+						"reports": [
+							{
+								"id": 1252,
+								"job_id": 4867,
+								"description": "recording results for job 4867",
+								"filename": "20200924_142204__jobdata_4867.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1252"
+							},
+							{
+								"id": 1282,
+								"job_id": 4867,
+								"description": "recording results for job 4867",
+								"filename": "20200925_002801__jobdata_4867.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1282"
+							},
+							{
+								"id": 1289,
+								"job_id": 4867,
+								"description": "recording results for job 4867",
+								"filename": "20200925_005740__jobdata_4867.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1289"
+							},
+							{
+								"id": 1317,
+								"job_id": 4867,
+								"description": "recording results for job 4867",
+								"filename": "20200925_010322__jobdata_4867.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1317"
+							}
+						]
+					},
+					{
+						"id": 4868,
+						"name": "Wait",
+						"description": "Wait for 3 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:27.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:23.100+0200",
+						"finished_at": "2020-09-25T01:03:27.015+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10607,
+								"name": "seconds",
+								"description": "Wait for 3 seconds.",
+								"value": "3",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4868
+							}
+						],
+						"reports": [
+							{
+								"id": 1253,
+								"job_id": 4868,
+								"description": "recording results for job 4868",
+								"filename": "20200924_142208__jobdata_4868.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1253"
+							},
+							{
+								"id": 1290,
+								"job_id": 4868,
+								"description": "recording results for job 4868",
+								"filename": "20200925_005744__jobdata_4868.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1290"
+							},
+							{
+								"id": 1318,
+								"job_id": 4868,
+								"description": "recording results for job 4868",
+								"filename": "20200925_010326__jobdata_4868.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1318"
+							}
+						]
+					},
+					{
+						"id": 4869,
+						"name": "Visit",
+						"description": "Visit https://www.google.com",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:28.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:27.141+0200",
+						"finished_at": "2020-09-25T01:03:28.772+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10608,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.google.com",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4869
+							}
+						],
+						"reports": [
+							{
+								"id": 1254,
+								"job_id": 4869,
+								"description": "recording results for job 4869",
+								"filename": "20200924_142210__jobdata_4869.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1254"
+							},
+							{
+								"id": 1291,
+								"job_id": 4869,
+								"description": "recording results for job 4869",
+								"filename": "20200925_005752__jobdata_4869.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1291"
+							},
+							{
+								"id": 1319,
+								"job_id": 4869,
+								"description": "recording results for job 4869",
+								"filename": "20200925_010328__jobdata_4869.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1319"
+							}
+						]
+					},
+					{
+						"id": 4870,
+						"name": "Enter Text",
+						"description": "Enter text into the defined field",
+						"type": "entertextfieldjob",
+						"status_code": "failure",
+						"status_message": "error during execution",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:32.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:28.895+0200",
+						"finished_at": "2020-09-25T01:03:31.918+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10609,
+								"name": "text",
+								"description": "Text to enter",
+								"value": "black african american",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4870
+							},
+							{
+								"id": 10610,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "XPATH",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4870
+							},
+							{
+								"id": 10611,
+								"name": "selector",
+								"description": " selector",
+								"value": "//input[@name='q']",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4870
+							},
+							{
+								"id": 10612,
+								"name": "appendReturn",
+								"description": "Optional field: appends a return key after the text given if true.",
+								"value": "1",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4870
+							},
+							{
+								"id": 10613,
+								"name": "typingMode",
+								"description": "Optional field: How the text is entered into the field",
+								"value": "SIMULATED_FIXINGTYPOS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4870
+							}
+						],
+						"reports": []
+					},
+					{
+						"id": 4871,
+						"name": "Select",
+						"description": "Select an item and click",
+						"type": "singleselecturljob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:34.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:32.030+0200",
+						"finished_at": "2020-09-25T01:03:34.176+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10614,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "CLASS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4871
+							},
+							{
+								"id": 10615,
+								"name": "selector",
+								"description": " selector",
+								"value": "LC20lb.DKV0Md",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4871
+							},
+							{
+								"id": 10616,
+								"name": "decisionType",
+								"description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
+								"value": "RANDOM",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4871
+							}
+						],
+						"reports": [
+							{
+								"id": 1255,
+								"job_id": 4871,
+								"description": "recording results for job 4871",
+								"filename": "20200924_142217__jobdata_4871.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1255"
+							},
+							{
+								"id": 1292,
+								"job_id": 4871,
+								"description": "recording results for job 4871",
+								"filename": "20200925_005757__jobdata_4871.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1292"
+							},
+							{
+								"id": 1320,
+								"job_id": 4871,
+								"description": "recording results for job 4871",
+								"filename": "20200925_010333__jobdata_4871.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1320"
+							}
+						]
+					},
+					{
+						"id": 4872,
+						"name": "Scroll by length",
+						"description": "Scroll down",
+						"type": "scrollbylengthjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:35.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:34.305+0200",
+						"finished_at": "2020-09-25T01:03:35.054+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10617,
+								"name": "length",
+								"description": "Scroll 80.0 of window.",
+								"value": "80",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4872
+							},
+							{
+								"id": 10618,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4872
+							}
+						],
+						"reports": [
+							{
+								"id": 1256,
+								"job_id": 4872,
+								"description": "recording results for job 4872",
+								"filename": "20200924_142218__jobdata_4872.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1256"
+							},
+							{
+								"id": 1293,
+								"job_id": 4872,
+								"description": "recording results for job 4872",
+								"filename": "20200925_005758__jobdata_4872.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1293"
+							},
+							{
+								"id": 1321,
+								"job_id": 4872,
+								"description": "recording results for job 4872",
+								"filename": "20200925_010334__jobdata_4872.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1321"
+							}
+						]
+					},
+					{
+						"id": 4873,
+						"name": "Wait",
+						"description": "Wait for 2 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:03:37.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:35.166+0200",
+						"finished_at": "2020-09-25T01:03:37.891+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10619,
+								"name": "seconds",
+								"description": "Wait for 2 seconds.",
+								"value": "2",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4873
+							}
+						],
+						"reports": [
+							{
+								"id": 1257,
+								"job_id": 4873,
+								"description": "recording results for job 4873",
+								"filename": "20200924_142221__jobdata_4873.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1257"
+							},
+							{
+								"id": 1294,
+								"job_id": 4873,
+								"description": "recording results for job 4873",
+								"filename": "20200925_005800__jobdata_4873.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1294"
+							},
+							{
+								"id": 1322,
+								"job_id": 4873,
+								"description": "recording results for job 4873",
+								"filename": "20200925_010337__jobdata_4873.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1322"
+							}
+						]
+					},
+					{
+						"id": 4874,
+						"name": "Visit",
+						"description": "Visit https://www.wired.com/",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:04:36.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:03:38.003+0200",
+						"finished_at": "2020-09-25T01:04:36.079+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10620,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.wired.com/",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4874
+							}
+						],
+						"reports": [
+							{
+								"id": 1258,
+								"job_id": 4874,
+								"description": "recording results for job 4874",
+								"filename": "20200924_142319__jobdata_4874.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1258"
+							},
+							{
+								"id": 1295,
+								"job_id": 4874,
+								"description": "recording results for job 4874",
+								"filename": "20200925_005908__jobdata_4874.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1295"
+							},
+							{
+								"id": 1323,
+								"job_id": 4874,
+								"description": "recording results for job 4874",
+								"filename": "20200925_010431__jobdata_4874.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1323"
+							}
+						]
+					},
+					{
+						"id": 4875,
+						"name": "Scroll by duration",
+						"description": "Scroll down",
+						"type": "scrollbydurationjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:04:37.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:04:36.190+0200",
+						"finished_at": "2020-09-25T01:04:37.195+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10621,
+								"name": "scrollDuration",
+								"description": "Scroll for 85 seconds.",
+								"value": "85",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4875
+							},
+							{
+								"id": 10622,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4875
+							}
+						],
+						"reports": [
+							{
+								"id": 1259,
+								"job_id": 4875,
+								"description": "recording results for job 4875",
+								"filename": "20200924_142321__jobdata_4875.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1259"
+							},
+							{
+								"id": 1296,
+								"job_id": 4875,
+								"description": "recording results for job 4875",
+								"filename": "20200925_005911__jobdata_4875.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1296"
+							},
+							{
+								"id": 1324,
+								"job_id": 4875,
+								"description": "recording results for job 4875",
+								"filename": "20200925_010437__jobdata_4875.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1324"
+							}
+						]
+					},
+					{
+						"id": 4876,
+						"name": "Wait",
+						"description": "Wait for 6 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:04:44.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:04:37.306+0200",
+						"finished_at": "2020-09-25T01:04:44.351+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10623,
+								"name": "seconds",
+								"description": "Wait for 6 seconds.",
+								"value": "6",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4876
+							}
+						],
+						"reports": [
+							{
+								"id": 1260,
+								"job_id": 4876,
+								"description": "recording results for job 4876",
+								"filename": "20200924_142328__jobdata_4876.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1260"
+							},
+							{
+								"id": 1297,
+								"job_id": 4876,
+								"description": "recording results for job 4876",
+								"filename": "20200925_005918__jobdata_4876.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1297"
+							},
+							{
+								"id": 1325,
+								"job_id": 4876,
+								"description": "recording results for job 4876",
+								"filename": "20200925_010444__jobdata_4876.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1325"
+							}
+						]
+					},
+					{
+						"id": 4877,
+						"name": "Visit",
+						"description": "Visit https://www.cbsnews.com/",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:04:53.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:04:44.496+0200",
+						"finished_at": "2020-09-25T01:04:53.692+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10624,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.cbsnews.com/",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4877
+							}
+						],
+						"reports": [
+							{
+								"id": 1261,
+								"job_id": 4877,
+								"description": "recording results for job 4877",
+								"filename": "20200924_142415__jobdata_4877.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1261"
+							},
+							{
+								"id": 1298,
+								"job_id": 4877,
+								"description": "recording results for job 4877",
+								"filename": "20200925_005953__jobdata_4877.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1298"
+							},
+							{
+								"id": 1326,
+								"job_id": 4877,
+								"description": "recording results for job 4877",
+								"filename": "20200925_010453__jobdata_4877.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1326"
+							}
+						]
+					},
+					{
+						"id": 4878,
+						"name": "Scroll by duration",
+						"description": "Scroll down",
+						"type": "scrollbydurationjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:04:54.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:04:53.803+0200",
+						"finished_at": "2020-09-25T01:04:54.596+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10625,
+								"name": "scrollDuration",
+								"description": "Scroll for 176 seconds.",
+								"value": "176",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4878
+							},
+							{
+								"id": 10626,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4878
+							}
+						],
+						"reports": [
+							{
+								"id": 1262,
+								"job_id": 4878,
+								"description": "recording results for job 4878",
+								"filename": "20200924_142416__jobdata_4878.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1262"
+							},
+							{
+								"id": 1299,
+								"job_id": 4878,
+								"description": "recording results for job 4878",
+								"filename": "20200925_005955__jobdata_4878.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1299"
+							},
+							{
+								"id": 1327,
+								"job_id": 4878,
+								"description": "recording results for job 4878",
+								"filename": "20200925_010454__jobdata_4878.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1327"
+							}
+						]
+					},
+					{
+						"id": 4879,
+						"name": "Wait",
+						"description": "Wait for 8 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:04.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:04:54.707+0200",
+						"finished_at": "2020-09-25T01:05:03.986+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10627,
+								"name": "seconds",
+								"description": "Wait for 8 seconds.",
+								"value": "8",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4879
+							}
+						],
+						"reports": [
+							{
+								"id": 1263,
+								"job_id": 4879,
+								"description": "recording results for job 4879",
+								"filename": "20200924_142425__jobdata_4879.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1263"
+							},
+							{
+								"id": 1300,
+								"job_id": 4879,
+								"description": "recording results for job 4879",
+								"filename": "20200925_010004__jobdata_4879.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1300"
+							},
+							{
+								"id": 1328,
+								"job_id": 4879,
+								"description": "recording results for job 4879",
+								"filename": "20200925_010503__jobdata_4879.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1328"
+							}
+						]
+					},
+					{
+						"id": 4880,
+						"name": "Visit",
+						"description": "Visit https://www.ebay.com",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:19.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:04.097+0200",
+						"finished_at": "2020-09-25T01:05:19.249+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10628,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.ebay.com",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4880
+							}
+						],
+						"reports": [
+							{
+								"id": 1264,
+								"job_id": 4880,
+								"description": "recording results for job 4880",
+								"filename": "20200924_142435__jobdata_4880.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1264"
+							},
+							{
+								"id": 1301,
+								"job_id": 4880,
+								"description": "recording results for job 4880",
+								"filename": "20200925_010011__jobdata_4880.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1301"
+							},
+							{
+								"id": 1329,
+								"job_id": 4880,
+								"description": "recording results for job 4880",
+								"filename": "20200925_010518__jobdata_4880.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1329"
+							}
+						]
+					},
+					{
+						"id": 4881,
+						"name": "Scroll by duration",
+						"description": "Scroll down",
+						"type": "scrollbydurationjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:20.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:19.358+0200",
+						"finished_at": "2020-09-25T01:05:20.089+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10629,
+								"name": "scrollDuration",
+								"description": "Scroll for 167 seconds.",
+								"value": "167",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4881
+							},
+							{
+								"id": 10630,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4881
+							}
+						],
+						"reports": [
+							{
+								"id": 1265,
+								"job_id": 4881,
+								"description": "recording results for job 4881",
+								"filename": "20200924_142436__jobdata_4881.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1265"
+							},
+							{
+								"id": 1302,
+								"job_id": 4881,
+								"description": "recording results for job 4881",
+								"filename": "20200925_010012__jobdata_4881.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1302"
+							},
+							{
+								"id": 1330,
+								"job_id": 4881,
+								"description": "recording results for job 4881",
+								"filename": "20200925_010519__jobdata_4881.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1330"
+							}
+						]
+					},
+					{
+						"id": 4882,
+						"name": "Wait",
+						"description": "Wait for 9 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:30.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:20.200+0200",
+						"finished_at": "2020-09-25T01:05:30.310+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10631,
+								"name": "seconds",
+								"description": "Wait for 9 seconds.",
+								"value": "9",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4882
+							}
+						],
+						"reports": [
+							{
+								"id": 1266,
+								"job_id": 4882,
+								"description": "recording results for job 4882",
+								"filename": "20200924_142448__jobdata_4882.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1266"
+							},
+							{
+								"id": 1303,
+								"job_id": 4882,
+								"description": "recording results for job 4882",
+								"filename": "20200925_010022__jobdata_4882.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1303"
+							},
+							{
+								"id": 1331,
+								"job_id": 4882,
+								"description": "recording results for job 4882",
+								"filename": "20200925_010530__jobdata_4882.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1331"
+							}
+						]
+					},
+					{
+						"id": 4883,
+						"name": "Visit",
+						"description": "Visit https://www.ebay.com",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:33.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:30.439+0200",
+						"finished_at": "2020-09-25T01:05:33.663+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10632,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.ebay.com",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4883
+							}
+						],
+						"reports": [
+							{
+								"id": 1267,
+								"job_id": 4883,
+								"description": "recording results for job 4883",
+								"filename": "20200924_142451__jobdata_4883.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1267"
+							},
+							{
+								"id": 1304,
+								"job_id": 4883,
+								"description": "recording results for job 4883",
+								"filename": "20200925_010052__jobdata_4883.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1304"
+							},
+							{
+								"id": 1332,
+								"job_id": 4883,
+								"description": "recording results for job 4883",
+								"filename": "20200925_010533__jobdata_4883.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1332"
+							}
+						]
+					},
+					{
+						"id": 4884,
+						"name": "Scroll by duration",
+						"description": "Scroll down",
+						"type": "scrollbydurationjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:35.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:33.781+0200",
+						"finished_at": "2020-09-25T01:05:35.204+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10633,
+								"name": "scrollDuration",
+								"description": "Scroll for 84 seconds.",
+								"value": "84",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4884
+							},
+							{
+								"id": 10634,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4884
+							}
+						],
+						"reports": [
+							{
+								"id": 1268,
+								"job_id": 4884,
+								"description": "recording results for job 4884",
+								"filename": "20200924_142452__jobdata_4884.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1268"
+							},
+							{
+								"id": 1305,
+								"job_id": 4884,
+								"description": "recording results for job 4884",
+								"filename": "20200925_010054__jobdata_4884.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1305"
+							},
+							{
+								"id": 1333,
+								"job_id": 4884,
+								"description": "recording results for job 4884",
+								"filename": "20200925_010534__jobdata_4884.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1333"
+							}
+						]
+					},
+					{
+						"id": 4885,
+						"name": "Wait",
+						"description": "Wait for 1 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:05:37.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:35.325+0200",
+						"finished_at": "2020-09-25T01:05:37.291+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10635,
+								"name": "seconds",
+								"description": "Wait for 1 seconds.",
+								"value": "1",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4885
+							}
+						],
+						"reports": [
+							{
+								"id": 1269,
+								"job_id": 4885,
+								"description": "recording results for job 4885",
+								"filename": "20200924_142455__jobdata_4885.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1269"
+							},
+							{
+								"id": 1306,
+								"job_id": 4885,
+								"description": "recording results for job 4885",
+								"filename": "20200925_010056__jobdata_4885.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1306"
+							},
+							{
+								"id": 1334,
+								"job_id": 4885,
+								"description": "recording results for job 4885",
+								"filename": "20200925_010537__jobdata_4885.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1334"
+							}
+						]
+					},
+					{
+						"id": 4886,
+						"name": "Visit",
+						"description": "Visit https://www.google.com",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:06:51.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:05:37.405+0200",
+						"finished_at": "2020-09-25T01:06:51.624+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10636,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.google.com",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4886
+							}
+						],
+						"reports": [
+							{
+								"id": 1270,
+								"job_id": 4886,
+								"description": "recording results for job 4886",
+								"filename": "20200924_142500__jobdata_4886.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1270"
+							},
+							{
+								"id": 1307,
+								"job_id": 4886,
+								"description": "recording results for job 4886",
+								"filename": "20200925_010058__jobdata_4886.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1307"
+							},
+							{
+								"id": 1335,
+								"job_id": 4886,
+								"description": "recording results for job 4886",
+								"filename": "20200925_010651__jobdata_4886.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1335"
+							}
+						]
+					},
+					{
+						"id": 4887,
+						"name": "Enter Text",
+						"description": "Enter text into the defined field",
+						"type": "entertextfieldjob",
+						"status_code": "failure",
+						"status_message": "error during execution",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:06:55.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:06:51.745+0200",
+						"finished_at": "2020-09-25T01:06:55.039+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10637,
+								"name": "text",
+								"description": "Text to enter",
+								"value": "Kate Todd supreme court",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4887
+							},
+							{
+								"id": 10638,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "XPATH",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4887
+							},
+							{
+								"id": 10639,
+								"name": "selector",
+								"description": " selector",
+								"value": "//input[@name='q']",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4887
+							},
+							{
+								"id": 10640,
+								"name": "appendReturn",
+								"description": "Optional field: appends a return key after the text given if true.",
+								"value": "1",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4887
+							},
+							{
+								"id": 10641,
+								"name": "typingMode",
+								"description": "Optional field: How the text is entered into the field",
+								"value": "SIMULATED_FIXINGTYPOS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4887
+							}
+						],
+						"reports": []
+					},
+					{
+						"id": 4888,
+						"name": "Select",
+						"description": "Select an item and click",
+						"type": "singleselecturljob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:06:57.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:06:55.158+0200",
+						"finished_at": "2020-09-25T01:06:57.308+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10642,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "CLASS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4888
+							},
+							{
+								"id": 10643,
+								"name": "selector",
+								"description": " selector",
+								"value": "LC20lb.DKV0Md",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4888
+							},
+							{
+								"id": 10644,
+								"name": "decisionType",
+								"description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
+								"value": "RANDOM",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4888
+							}
+						],
+						"reports": [
+							{
+								"id": 1271,
+								"job_id": 4888,
+								"description": "recording results for job 4888",
+								"filename": "20200924_142509__jobdata_4888.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1271"
+							},
+							{
+								"id": 1308,
+								"job_id": 4888,
+								"description": "recording results for job 4888",
+								"filename": "20200925_010104__jobdata_4888.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1308"
+							},
+							{
+								"id": 1336,
+								"job_id": 4888,
+								"description": "recording results for job 4888",
+								"filename": "20200925_010657__jobdata_4888.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1336"
+							}
+						]
+					},
+					{
+						"id": 4889,
+						"name": "Scroll by length",
+						"description": "Scroll down",
+						"type": "scrollbylengthjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:06:58.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:06:57.450+0200",
+						"finished_at": "2020-09-25T01:06:58.238+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10645,
+								"name": "length",
+								"description": "Scroll 80.0 of window.",
+								"value": "80",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4889
+							},
+							{
+								"id": 10646,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4889
+							}
+						],
+						"reports": [
+							{
+								"id": 1272,
+								"job_id": 4889,
+								"description": "recording results for job 4889",
+								"filename": "20200924_142510__jobdata_4889.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1272"
+							},
+							{
+								"id": 1309,
+								"job_id": 4889,
+								"description": "recording results for job 4889",
+								"filename": "20200925_010105__jobdata_4889.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1309"
+							},
+							{
+								"id": 1337,
+								"job_id": 4889,
+								"description": "recording results for job 4889",
+								"filename": "20200925_010658__jobdata_4889.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1337"
+							}
+						]
+					},
+					{
+						"id": 4890,
+						"name": "Wait",
+						"description": "Wait for 7 seconds",
+						"type": "waitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:07:06.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:06:58.355+0200",
+						"finished_at": "2020-09-25T01:07:06.612+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10647,
+								"name": "seconds",
+								"description": "Wait for 7 seconds.",
+								"value": "7",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4890
+							}
+						],
+						"reports": [
+							{
+								"id": 1273,
+								"job_id": 4890,
+								"description": "recording results for job 4890",
+								"filename": "20200924_142518__jobdata_4890.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1273"
+							},
+							{
+								"id": 1310,
+								"job_id": 4890,
+								"description": "recording results for job 4890",
+								"filename": "20200925_010113__jobdata_4890.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1310"
+							},
+							{
+								"id": 1338,
+								"job_id": 4890,
+								"description": "recording results for job 4890",
+								"filename": "20200925_010706__jobdata_4890.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1338"
+							}
+						]
+					},
+					{
+						"id": 4891,
+						"name": "Visit",
+						"description": "Visit https://www.google.com",
+						"type": "visitjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:07:08.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:07:06.724+0200",
+						"finished_at": "2020-09-25T01:07:08.083+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10648,
+								"name": "url",
+								"description": "URL",
+								"value": "https://www.google.com",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4891
+							}
+						],
+						"reports": [
+							{
+								"id": 1274,
+								"job_id": 4891,
+								"description": "recording results for job 4891",
+								"filename": "20200924_142519__jobdata_4891.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1274"
+							},
+							{
+								"id": 1311,
+								"job_id": 4891,
+								"description": "recording results for job 4891",
+								"filename": "20200925_010114__jobdata_4891.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1311"
+							},
+							{
+								"id": 1339,
+								"job_id": 4891,
+								"description": "recording results for job 4891",
+								"filename": "20200925_010707__jobdata_4891.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1339"
+							}
+						]
+					},
+					{
+						"id": 4892,
+						"name": "Enter Text",
+						"description": "Enter text into the defined field",
+						"type": "entertextfieldjob",
+						"status_code": "failure",
+						"status_message": "error during execution",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:07:11.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:07:08.198+0200",
+						"finished_at": "2020-09-25T01:07:11.540+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10649,
+								"name": "text",
+								"description": "Text to enter",
+								"value": "Donald Trump supreme court",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4892
+							},
+							{
+								"id": 10650,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "XPATH",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4892
+							},
+							{
+								"id": 10651,
+								"name": "selector",
+								"description": " selector",
+								"value": "//input[@name='q']",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4892
+							},
+							{
+								"id": 10652,
+								"name": "appendReturn",
+								"description": "Optional field: appends a return key after the text given if true.",
+								"value": "1",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4892
+							},
+							{
+								"id": 10653,
+								"name": "typingMode",
+								"description": "Optional field: How the text is entered into the field",
+								"value": "SIMULATED_FIXINGTYPOS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4892
+							}
+						],
+						"reports": []
+					},
+					{
+						"id": 4893,
+						"name": "Select",
+						"description": "Select an item and click",
+						"type": "singleselecturljob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:07:13.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:07:11.651+0200",
+						"finished_at": "2020-09-25T01:07:13.551+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10654,
+								"name": "selectionType",
+								"description": "Type of selection",
+								"value": "CLASS",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4893
+							},
+							{
+								"id": 10655,
+								"name": "selector",
+								"description": " selector",
+								"value": "LC20lb.DKV0Md",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4893
+							},
+							{
+								"id": 10656,
+								"name": "decisionType",
+								"description": "Decision type for choosing an item out of the list given by the selector is RANDOM",
+								"value": "RANDOM",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4893
+							}
+						],
+						"reports": [
+							{
+								"id": 1275,
+								"job_id": 4893,
+								"description": "recording results for job 4893",
+								"filename": "20200924_142525__jobdata_4893.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1275"
+							},
+							{
+								"id": 1312,
+								"job_id": 4893,
+								"description": "recording results for job 4893",
+								"filename": "20200925_010122__jobdata_4893.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1312"
+							},
+							{
+								"id": 1340,
+								"job_id": 4893,
+								"description": "recording results for job 4893",
+								"filename": "20200925_010713__jobdata_4893.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1340"
+							}
+						]
+					},
+					{
+						"id": 4894,
+						"name": "Scroll by length",
+						"description": "Scroll down",
+						"type": "scrollbylengthjob",
+						"status_code": "success",
+						"status_message": "successfully finished job",
+						"order": 1,
+						"active": 1,
+						"updated_at": "2020-09-24T23:07:20.000000Z",
+						"created_at": "2020-09-23T17:48:56.000000Z",
+						"started_at": "2020-09-25T01:07:13.663+0200",
+						"finished_at": "2020-09-25T01:07:19.956+0200",
+						"user_id": 1,
+						"queue_id": 787,
+						"behaviors": [
+							{
+								"id": 10657,
+								"name": "length",
+								"description": "Scroll 80.0 of window.",
+								"value": "80",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4894
+							},
+							{
+								"id": 10658,
+								"name": "scrollDirection",
+								"description": "Scroll down",
+								"value": "DOWN",
+								"active": 1,
+								"updated_at": "2020-09-23T17:48:56.000000Z",
+								"created_at": "2020-09-23T17:48:56.000000Z",
+								"user_id": 1,
+								"job_id": 4894
+							}
+						],
+						"reports": [
+							{
+								"id": 1276,
+								"job_id": 4894,
+								"description": "recording results for job 4894",
+								"filename": "20200924_142526__jobdata_4894.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1276"
+							},
+							{
+								"id": 1313,
+								"job_id": 4894,
+								"description": "recording results for job 4894",
+								"filename": "20200925_010126__jobdata_4894.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1313"
+							},
+							{
+								"id": 1341,
+								"job_id": 4894,
+								"description": "recording results for job 4894",
+								"filename": "20200925_010719__jobdata_4894.zip",
+								"path": "https://siaw.primemover.example/api/v1/file/1341"
+							}
+						]
+					}
+				]
+			}
+		],
+		"agent": {
+			"id": 1,
+			"name": "ML01",
+			"description": "TEST_End2End_01",
+			"identification": "User-Agent: Multilogin",
+			"multilogin_id": "fec6f490-7c12-4551-afe3-163ea11a5b3b",
+			"multilogin_profile": null,
+			"location": "US-OK-OKLAHOMA_CITY",
+			"active": 1,
+			"updated_at": "2020-09-19T11:23:11.000000Z",
+			"created_at": "2020-09-19T11:23:11.000000Z",
+			"user_id": 1
+		},
+		"configuration": {
+			"id": 1,
+			"name": "Murazik",
+			"description": "Aspernatur animi sint ut qui voluptatum minima et. Suscipit ratione quia ipsam est. Ad error accusamus non nostrum voluptatem possimus dicta.",
+			"active": 1,
+			"updated_at": "2020-09-19T09:23:11.000000Z",
+			"created_at": "2020-09-19T09:23:11.000000Z",
+			"user_id": 1,
+			"params": []
+		},
+		"proxy": {
+			"name": "test_proxy_0",
+			"description": "Proxy",
+			"type": "GEOSURF",
+			"hostname": "state.geosurf.io",
+			"port": 8000,
+			"username": "000000",
+			"password": "CHANGEME-password"
+		}
+	},
+	"version": "1.0.0",
+	"author": "https://primemover.example"
 }

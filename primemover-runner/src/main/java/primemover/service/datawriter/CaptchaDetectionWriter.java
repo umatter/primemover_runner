@@ -1,14 +1,12 @@
 package primemover.service.datawriter;
 
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import primemover.runner.RecordedJobData;
+
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class CaptchaDetectionWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 

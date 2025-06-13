@@ -1,9 +1,9 @@
 package primemover.service.datawriter;
 
-import java.util.Date;
-
 import primemover.model.IJob;
 import primemover.runner.RecordedJobData;
+
+import java.util.Date;
 
 public class PageSourceWriter extends HtmlZippedDataWriterBase {
 

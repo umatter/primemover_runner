@@ -1,8 +1,8 @@
 package primemover.service.datawriter;
 
-import java.nio.charset.StandardCharsets;
-
 import org.apache.commons.lang3.StringUtils;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Base class for writing a single HTML-file zipped

@@ -1,18 +1,17 @@
 package primemover.service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
-
 import primemover.model.IJob;
 import primemover.service.datawriter.IDataWriter;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
 
 public class BackendStorageService implements IStorageService {
 	private static Logger logger = LoggerFactory.getLogger(BackendStorageService.class);

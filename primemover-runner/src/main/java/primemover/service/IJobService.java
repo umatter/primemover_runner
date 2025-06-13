@@ -1,11 +1,11 @@
 package primemover.service;
 
-import java.time.ZonedDateTime;
-
 import primemover.model.IJob;
 import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
+
+import java.time.ZonedDateTime;
 
 public interface IJobService {
 
