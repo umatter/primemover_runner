@@ -152,22 +152,7 @@ For different environments (development, staging, production), you can:
 2. **Override with environment variables**: Spring Boot automatically maps environment variables to properties
 3. **External configuration**: Place configuration files outside the application JAR
 
-### Security Best Practices
 
-- **Never commit credentials** to version control
-- **Use environment variables** in production deployments
-- **Rotate API keys** regularly
-- **Use IAM roles** for AWS services when possible
-- **Restrict API key permissions** to minimum required access
-
-Key configuration areas include:
-
-- Browser settings (Chrome/Firefox paths, options)
-- Proxy configurations and authentication
-- CAPTCHA solving service credentials
-- AWS credentials for data storage
-- Job scheduling and execution parameters
-- Rate limiting and timeout settings
 
 
 ## Repository Structure
