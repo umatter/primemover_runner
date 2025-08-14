@@ -142,11 +142,6 @@ mvn -version
 git --version
 ```
 
-#### **Recommended IDE Setup**
-- **IntelliJ IDEA** or **Eclipse** with Maven integration
-- **Lombok plugin** - Required for code generation annotations
-- **Spring Boot plugin** - For easier development and debugging
-
 #### **Browser Drivers** (Handled Automatically)
 PrimeMover uses WebDriverManager to automatically download and manage browser drivers, so manual driver installation is not required.
 
