@@ -104,13 +104,43 @@ mvn spring-boot:run
 
 ## Development Setup
 
-### Prerequisites for Development
+### Install Prerequisites
 
-#### **Required Software**
-- **Java 17 or higher** - OpenJDK or Oracle JDK
-- **Maven 3.6+** - For dependency management and building
-- **Git** - For version control
-- **Chrome and/or Firefox** - For browser automation testing
+#### **Ubuntu/Debian Installation**
+```bash
+# Update package list
+sudo apt update
+
+# Install Java 17 (OpenJDK)
+sudo apt install openjdk-17-jdk
+
+# Install Maven
+sudo apt install maven
+
+# Install Git
+sudo apt install git
+
+# Install Chrome browser
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+sudo apt update
+sudo apt install google-chrome-stable
+
+# Install Firefox (usually pre-installed)
+sudo apt install firefox
+```
+
+#### **Verify Installation**
+```bash
+# Check Java version (should be 17+)
+java -version
+
+# Check Maven version (should be 3.6+)
+mvn -version
+
+# Check Git version
+git --version
+```
 
 #### **Recommended IDE Setup**
 - **IntelliJ IDEA** or **Eclipse** with Maven integration
