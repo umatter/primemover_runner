@@ -43,15 +43,7 @@ PrimeMover is built as a Spring Boot application with two main modules:
 - **primemover-generated**: Auto-generated API clients (e.g., for MultiLogin integration)
 - **primemover-runner**: Core application logic, job execution, and web automation
 
-## Use Cases
 
-PrimeMover is typically used for:
-
-- **Market Research**: Automated data collection from e-commerce sites, competitor analysis
-- **Lead Generation**: Extracting contact information from business directories
-- **Content Monitoring**: Tracking changes on websites, price monitoring
-- **Form Automation**: Bulk submission of applications or registrations
-- **Quality Assurance**: Automated testing of web applications
 
 ## Technology Stack
 
@@ -111,4 +103,3 @@ This is an enterprise automation tool designed for technical teams. Proper confi
 
 ## License
 
-[Add your license information here]
