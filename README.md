@@ -102,6 +102,223 @@ cd primemover-runner
 mvn spring-boot:run
 ```
 
+## Development Setup
+
+### Prerequisites for Development
+
+#### **Required Software**
+- **Java 17 or higher** - OpenJDK or Oracle JDK
+- **Maven 3.6+** - For dependency management and building
+- **Git** - For version control
+- **Chrome and/or Firefox** - For browser automation testing
+
+#### **Recommended IDE Setup**
+- **IntelliJ IDEA** or **Eclipse** with Maven integration
+- **Lombok plugin** - Required for code generation annotations
+- **Spring Boot plugin** - For easier development and debugging
+
+#### **Browser Drivers** (Handled Automatically)
+PrimeMover uses WebDriverManager to automatically download and manage browser drivers, so manual driver installation is not required.
+
+### Local Development Environment
+
+#### **1. Clone and Build**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd primemover
+
+# Build the entire project (generates API clients first)
+mvn clean install
+```
+
+#### **2. Configure Development Properties**
+Create a local configuration file for development:
+
+```bash
+# Copy the template configuration
+cp primemover-runner/config/application.properties primemover-runner/config/application-local.properties
+```
+
+Edit `application-local.properties` with your development credentials:
+```properties
+# Minimal configuration for local development
+spring.profiles.active=local
+
+# Disable services you don't need for development
+anticaptcha.enabled=false
+multilogin.enabled=false
+
+# Use local browser instead of MultiLogin
+browser.type=chrome
+browser.headless=false
+
+# Local development endpoints (if available)
+backend.endpoint.api=http://localhost:8080/api/v1/
+backend.username=dev-user
+backend.password=dev-password
+```
+
+#### **3. IDE Configuration**
+
+**IntelliJ IDEA:**
+1. Import as Maven project
+2. Install Lombok plugin: `File → Settings → Plugins → Search "Lombok"`
+3. Enable annotation processing: `File → Settings → Build → Compiler → Annotation Processors → Enable`
+4. Set project SDK to Java 17+
+
+**Eclipse:**
+1. Import as existing Maven project
+2. Install Lombok: Download `lombok.jar` and run `java -jar lombok.jar`
+3. Refresh and clean the project
+
+#### **4. Running in Development Mode**
+
+**From IDE:**
+- Run the main class: `primemover.runner.PrimeMoverApplication`
+- Set active profile: `-Dspring.profiles.active=local`
+- Set working directory: `primemover-runner/`
+
+**From Command Line:**
+```bash
+cd primemover-runner
+mvn spring-boot:run -Dspring.profiles.active=local
+```
+
+### Development Workflow
+
+#### **Code Generation**
+The `primemover-generated` module automatically regenerates API clients during Maven compilation:
+
+```bash
+# Regenerate API clients after updating MultiloginX.yaml
+cd primemover-generated
+mvn clean compile
+
+# Or rebuild the entire project
+cd ..
+mvn clean install
+```
+
+#### **Running Tests**
+```bash
+# Run all tests
+mvn test
+
+# Run tests for specific module
+cd primemover-runner
+mvn test
+
+# Run specific test class
+mvn test -Dtest=JobListRunnerTest
+```
+
+#### **Debugging Browser Automation**
+For debugging browser automation issues:
+
+```properties
+# In your local configuration
+browser.headless=false
+browser.devtools=true
+selenium.implicit.wait=10
+selenium.page.load.timeout=30
+```
+
+#### **Local Testing Without External Services**
+For development without external service dependencies:
+
+```properties
+# Disable external services
+anticaptcha.enabled=false
+multilogin.enabled=false
+aws.s3.enabled=false
+
+# Use mock implementations
+proxy.enabled=false
+captcha.solving=NEVER
+```
+
+### Common Development Tasks
+
+#### **Adding New Job Types**
+1. Create job class extending `BaseJob` or `SelectorBaseJob`
+2. Add conversion logic in `PrimemoverApiConverter.convertApiJob()`
+3. Add job handler in `runner/job/handler/` if needed
+4. Write unit tests for the new job type
+
+#### **Testing Browser Automation**
+```bash
+# Run with visible browser for debugging
+mvn spring-boot:run -Dspring.profiles.active=local -Dbrowser.headless=false
+```
+
+#### **Working with Generated Code**
+- Never edit files in `primemover-generated/target/` - they're auto-generated
+- Modify `MultiloginX.yaml` to change the API specification
+- Run `mvn compile` to regenerate after YAML changes
+
+#### **Database and State Management**
+PrimeMover uses in-memory state management by default. For persistent development:
+
+```properties
+# Enable file-based job state persistence
+job.state.persistence=file
+job.state.directory=./dev-data/jobs
+```
+
+### Troubleshooting Development Issues
+
+#### **Build Failures**
+```bash
+# Clean and rebuild everything
+mvn clean install -U
+
+# Skip tests if they're failing
+mvn clean install -DskipTests
+```
+
+#### **Browser Driver Issues**
+```bash
+# Clear WebDriverManager cache
+rm -rf ~/.cache/selenium/
+```
+
+#### **Port Conflicts**
+```properties
+# Change default port in application-local.properties
+server.port=8081
+```
+
+#### **Memory Issues**
+```bash
+# Increase Maven memory
+export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
+```
+
+### Development Best Practices
+
+#### **Configuration Management**
+- Use `application-local.properties` for local development
+- Never commit real credentials to version control
+- Use environment variables for sensitive configuration
+
+#### **Testing Strategy**
+- Write unit tests for business logic
+- Use integration tests for browser automation
+- Mock external services in tests
+
+#### **Code Style**
+- Follow existing code conventions
+- Use Lombok annotations for boilerplate code
+- Add JavaDoc for public APIs
+- Keep methods focused and testable
+
+#### **Git Workflow**
+- Create feature branches for new development
+- Keep commits focused and well-described
+- Test locally before pushing
+- Use meaningful commit messages
+
 ## Configuration
 
 ### Required Service Credentials
