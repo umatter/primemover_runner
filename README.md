@@ -38,10 +38,35 @@ Think of PrimeMover as a sophisticated "robot browser" that can:
 
 ## Architecture
 
-PrimeMover is built as a Spring Boot application with two main modules:
+PrimeMover is built as a Spring Boot application with two main modules that work together:
 
-- **primemover-generated**: Auto-generated API clients (e.g., for MultiLogin integration)
-- **primemover-runner**: Core application logic, job execution, and web automation
+### **primemover-generated** - External Service Integration
+This module automatically generates Java client libraries from API specifications:
+
+- **Purpose**: Provides type-safe Java clients for external services (primarily MultiLogin)
+- **How it works**: Uses OpenAPI Generator to convert the 3000+ line MultiLogin API specification into hundreds of Java classes
+- **What it provides**: Complete client library for browser profile management, fingerprinting, and anti-detection features
+- **Build process**: Runs during Maven compilation to generate fresh client code from API specs
+
+**Key benefit**: Instead of manually writing HTTP client code for complex external APIs, this module auto-generates it, ensuring type safety and automatic updates when APIs change.
+
+### **primemover-runner** - Core Application Logic
+This is the main application that orchestrates web automation:
+
+- **Purpose**: Contains all business logic, job execution, and web automation capabilities
+- **Dependencies**: Uses the generated clients from `primemover-generated` to interact with external services
+- **What it does**: Manages job scheduling, browser automation, CAPTCHA solving, data collection, and storage
+- **Runtime**: This is the actual Spring Boot application that runs and executes automation tasks
+
+**Key benefit**: Focuses purely on business logic without worrying about low-level API integration details, which are handled by the generated clients.
+
+### **How They Work Together**
+
+1. **Build time**: `primemover-generated` creates MultiLogin client libraries
+2. **Runtime**: `primemover-runner` uses these clients to manage browser profiles and execute automation jobs
+3. **Example flow**: Runner creates a MultiLogin profile → starts browser session → runs Selenium automation → collects data → stores results
+
+This separation keeps external API complexity isolated from core business logic, making the system more maintainable and testable.
 
 
 
