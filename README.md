@@ -79,13 +79,95 @@ mvn spring-boot:run
 
 ## Configuration
 
-The application can be configured through standard Spring Boot configuration files. Key configuration areas include:
+### Required Service Credentials
+
+Before running PrimeMover, you must configure credentials for the external services it integrates with. The application loads configuration from:
+
+**Primary Configuration File**: `primemover-runner/config/application.properties`
+
+This file contains all the credentials and API keys needed for the various services. You'll need to obtain accounts and API keys for:
+
+#### **Essential Services**
+- **PrimeMover API Backend**: Main API for job management and configuration
+  - API endpoint URLs
+  - Username and password for authentication
+
+#### **Browser Management Services** (choose one)
+- **MultiLogin**: Advanced browser profile management with fingerprinting
+  - API username and password
+  - Profile folder ID for organizing browser profiles
+
+#### **Proxy Services** (optional, choose based on needs)
+- **GeoSurf**: Geographic proxy service
+  - Username and password for proxy authentication
+- **Oxylabs**: Enterprise proxy provider
+- **Brightdata**: Large-scale proxy network
+
+#### **Anti-Detection Services** (optional)
+- **AntiCaptcha**: Automated CAPTCHA solving service
+  - API key for CAPTCHA solving requests
+  - Browser extension files for Chrome/Firefox
+
+#### **Cloud Storage** (optional)
+- **AWS S3**: For storing captured data and job results
+  - Access key and secret key
+  - S3 bucket names for different data types
+
+### Configuration Setup
+
+1. **Copy the template**: Use the provided `config/application.properties` as a starting point
+2. **Obtain service accounts**: Sign up for the services you need
+3. **Update credentials**: Replace placeholder values with your actual API keys and credentials
+4. **Secure the file**: Never commit the configuration file with real credentials to version control
+
+### Configuration Structure
+
+The configuration file uses Spring Boot property syntax:
+
+```properties
+# Service endpoints
+backend.endpoint.api=https://your-api-endpoint/api/v1/
+backend.username=your-username
+backend.password=your-password
+
+# External service API keys
+anticaptcha.api.key=your-anticaptcha-api-key
+multilogin.apiUser=your-multilogin-username
+multilogin.apiPassword=your-multilogin-password
+
+# AWS credentials
+awsS3.accessKey=your-aws-access-key
+awsS3.secretKey=your-aws-secret-key
+
+# Proxy configurations
+geosurf.overwrite.user=your-geosurf-username
+geosurf.overwrite.password=your-geosurf-password
+```
+
+### Environment-Specific Configuration
+
+For different environments (development, staging, production), you can:
+
+1. **Use Spring profiles**: Create `application-{profile}.properties` files
+2. **Override with environment variables**: Spring Boot automatically maps environment variables to properties
+3. **External configuration**: Place configuration files outside the application JAR
+
+### Security Best Practices
+
+- **Never commit credentials** to version control
+- **Use environment variables** in production deployments
+- **Rotate API keys** regularly
+- **Use IAM roles** for AWS services when possible
+- **Restrict API key permissions** to minimum required access
+
+Key configuration areas include:
 
 - Browser settings (Chrome/Firefox paths, options)
-- Proxy configurations
+- Proxy configurations and authentication
 - CAPTCHA solving service credentials
 - AWS credentials for data storage
-- Job scheduling parameters
+- Job scheduling and execution parameters
+- Rate limiting and timeout settings
 
 
 ## Repository Structure
