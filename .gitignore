@@ -54,6 +54,7 @@ out/
 .settings/
 .loadpath
 .metadata/
+.factorypath
 
 # --------------------------------------------
 # Visual Studio Code
