@@ -197,6 +197,21 @@ backend.password=dev-password
 2. Install Lombok: Download `lombok.jar` and run `java -jar lombok.jar`
 3. Refresh and clean the project
 
+**Visual Studio Code:**
+1. Install required extensions:
+   - `Extension Pack for Java` (includes Maven support)
+   - `Lombok Annotations Support for VS Code`
+   - `Spring Boot Extension Pack`
+2. Open the project folder in VS Code
+3. Configure Java version: `Ctrl+Shift+P` → `Java: Configure Runtime` → Set to Java 17+
+4. Enable annotation processing: Add to `.vscode/settings.json`:
+   ```json
+   {
+     "java.compile.nullAnalysis.mode": "automatic",
+     "java.configuration.updateBuildConfiguration": "automatic"
+   }
+   ```
+
 #### **4. Running in Development Mode**
 
 **From IDE:**
