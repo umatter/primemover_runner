@@ -385,19 +385,46 @@ Edit `application-local.properties` with your development credentials:
 ```properties
 # Minimal configuration for local development
 spring.profiles.active=local
+global.mode=DEVELOP
 
 # Disable services you don't need for development
 anticaptcha.enabled=false
 multilogin.enabled=false
+recorder.enabled=false
 
-# Use local browser instead of MultiLogin
-browser.type=chrome
-browser.headless=false
+# Proxy settings for development
+proxy.pingConnections=false
+proxy.verifyConnections=false
 
-# Local development endpoints (if available)
+# Anti-Captcha (disabled for local development)
+anticaptcha.enabled=false
+anticaptcha.defaultMode=NEVER
+
+# Export settings
+export.FileTargetFolder=out/har
+export.Compression=ZIP
+
+# Execution settings for development
+runner.MaxParallelExecution=1
+runner.UpdateInterval=10
+runner.MaxRedoMinutes=45
+
+# MultiLogin (disabled for local development)
+multilogin.enabled=false
+
+# Backend API (use your local/test endpoints)
+backend.connectionTimeoutSeconds=10
+backend.requestTimeoutSeconds=90
 backend.endpoint.api=http://localhost:8080/api/v1/
+backend.endpoint.runner=http://localhost:8080/api/v1/runner/
 backend.username=dev-user
 backend.password=dev-password
+
+# Logging for development
+logging.file.name=log/primemover-runner-local.log
+logging.level.primemover=DEBUG
+logging.level.primemover.runner.joblist=DEBUG
+logging.level.primemover.api.converter=DEBUG
 ```
 
 #### **3. IDE Configuration**
@@ -790,26 +817,65 @@ This file contains all the credentials and API keys needed for the various servi
 
 ### Configuration Structure
 
-The configuration file uses Spring Boot property syntax:
+The configuration file uses Spring Boot property syntax. Here are the key sections based on the actual `application.properties`:
 
 ```properties
-# Service endpoints
+# Application settings
+spring.application.name=primemover-runner
+spring.profiles.active=dev
+global.mode=PRODUCTION
+
+# Recording proxy settings
+recorder.enabled=false
+recorder.certificate.type=PKCS12
+recorder.certificate.path=cert/2024/ca-cert.p12
+recorder.certificate.alias=Primemover
+recorder.certificate.password=CHANGEME-password
+
+# Proxy configuration
+proxy.pingConnections=false
+proxy.verifyConnections=false
+geosurf.overwrite.user=your-geosurf-username
+geosurf.overwrite.password=your-geosurf-password
+
+# Anti-Captcha service
+anticaptcha.enabled=false
+anticaptcha.defaultMode=NEVER
+anticaptcha.api.key=your-anticaptcha-api-key
+anticaptcha.api.endpoint=https://api.anti-captcha.com
+anticaptcha.extension.firefox=anticaptcha/anticaptcha-plugin_v0.60.xpi
+anticaptcha.extension.chrome=anticaptcha/anticaptcha-plugin_v0.67.crx
+
+# Job execution settings
+runner.MaxParallelExecution=2
+runner.UpdateInterval=10
+runner.MaxRedoMinutes=45
+runner.StartupRetryCount=3
+runner.ProcessingTimeoutMinutes=180
+
+# MultiLogin integration
+multilogin.api.port=35000
+multilogin.apiUser=your-multilogin-username
+multilogin.apiPassword=your-multilogin-password
+multilogin.defaultFolderId=your-folder-id
+
+# Backend API endpoints
 backend.endpoint.api=https://your-api-endpoint/api/v1/
+backend.endpoint.runner=https://your-api-endpoint/api/v1/runner/
 backend.username=your-username
 backend.password=your-password
 
-# External service API keys
-anticaptcha.api.key=your-anticaptcha-api-key
-multilogin.apiUser=your-multilogin-username
-multilogin.apiPassword=your-multilogin-password
-
-# AWS credentials
+# AWS S3 storage
 awsS3.accessKey=your-aws-access-key
 awsS3.secretKey=your-aws-secret-key
+awsS3.jobdata.bucketName=your-bucket-name
+awsS3.jobdata.subFolder=reports/
+awsS3.finalsource.bucketName=your-bucket-name
+awsS3.finalsource.subFolder=finalsource/
 
-# Proxy configurations
-geosurf.overwrite.user=your-geosurf-username
-geosurf.overwrite.password=your-geosurf-password
+# Logging configuration
+logging.file.name=log/primemover-runner.log
+logging.config=config/logback-spring.xml
 ```
 
 ### Environment-Specific Configuration
