@@ -173,19 +173,24 @@ For complex jobs that require special execution logic, create a handler in `runn
 
 ```java
 @Component
-public class CustomJobHandler implements IJobHandler<CustomJob> {
+public class CustomJobHandler implements IJobHandler {
     
     @Override
-    public boolean canHandle(IJob job) {
-        return job instanceof CustomJob;
-    }
-    
-    @Override
-    public void execute(CustomJob job, IJobAwareRunnerContext context) {
+    public void handle(IJobAwareRunnerContext<?> context) {
+        // Get the job from context
+        IJob job = context.getJob();
+        
+        // Check if this handler can process this job type
+        if (!(job instanceof CustomJob)) {
+            throw new IllegalArgumentException("Handler can only process CustomJob instances");
+        }
+        
+        CustomJob customJob = (CustomJob) job;
+        
         // Custom execution logic
         WebDriver driver = context.getDriver();
-        String selector = job.getSelector();
-        String customParameter = job.getCustomParameter();
+        String selector = customJob.getSelector();
+        String customParameter = customJob.getCustomParameter();
         
         // Perform custom automation logic
         WebElement element = driver.findElement(By.cssSelector(selector));
