@@ -12,29 +12,92 @@ Think of PrimeMover as a sophisticated "robot browser" that can:
 - **Collect and Store Data**: Extract information from websites and store it securely (including AWS S3 integration)
 - **Scale Operations**: Run multiple automated tasks simultaneously with proper job scheduling and management
 
+## System Architecture
+
+### Job Execution Flow
+
+PrimeMover follows a sophisticated pipeline for executing web automation tasks:
+
+```
+API Request → PrimemoverApiConverter → Job Objects → JobListRunner → Context System → Data Recording → State Management
+```
+
+1. **API Input**: External job definitions received via REST API
+2. **Conversion**: `PrimemoverApiConverter` transforms API models to internal job objects
+3. **Execution**: `JobListRunner` orchestrates job execution with state management
+4. **Context**: Job-aware context provides execution environment (WebDriver, proxy, CAPTCHA solver)
+5. **Recording**: Comprehensive data capture (screenshots, HAR files, cookies, storage)
+6. **State Management**: Sophisticated state tracking with retry logic and failure recovery
+
+### Core Components
+
+#### **Job System Architecture**
+```
+IJob (interface)
+└── BaseJob (abstract)
+    ├── SelectorBaseJob (abstract) - for HTML element interaction
+    │   ├── ClickJob / TryClickJob (failsafe variant)
+    │   ├── EnterTextFieldJob / TryEnterTextFieldJob
+    │   ├── SingleSelectJob
+    │   └── SwitchToJob / TrySwitchJob
+    ├── ScrollBaseJob (abstract) - for scrolling actions
+    │   ├── ScrollByDurationJob
+    │   └── ScrollByLengthJob
+    ├── WaitJob
+    ├── HandleAlertJob / TryHandleAlertJob
+    ├── VisitJob (resets failure state by default)
+    └── LambdaSelectJob (AWS Lambda integration)
+```
+
+#### **Context System**
+```
+IRunnerContext (basic execution environment)
+└── IJobAwareRunnerContext (job-specific context)
+    └── JobAwarnessContextDecorator (implementation with job awareness)
+```
+
+#### **State Management**
+- **JobState**: `RUNNING`, `SUCCESS`, `FAILURE`, `WARNING`, `SKIPPED`
+- **JoblistState**: 14 different states for comprehensive execution tracking
+- **StartupMode**: `DEVELOP`, `INTEGRATION`, `PRODUCTION`
+
 ## Key Features
 
 ### 🤖 Browser Automation
 - Uses Selenium WebDriver to control Chrome and Firefox browsers
 - Supports headless operation for server environments
 - Handles dynamic content and JavaScript-heavy websites
+- Smart navigation with automatic page load detection
+- Extension failure recovery with tab switching workarounds
 
 ### 🔐 Anti-Detection Capabilities
 - Integrates with MultiLogin for browser fingerprint management
 - Automatic CAPTCHA detection and solving via AntiCaptcha service
 - Proxy support for IP rotation and geographic distribution
+- Statistical behavior simulation for realistic user patterns
+- Typing mode simulation (direct, simulated with/without typos)
 
 ### 📊 Job Management
 - Configurable job scheduling and execution
 - Support for different job types (data extraction, form submission, etc.)
-- Retry mechanisms and failure handling
-- Real-time job status monitoring
+- Retry mechanisms and failure handling with Spring Retry
+- Real-time job status monitoring with 14 different execution states
+- Failsafe job variants that don't stop execution on failure
+- Sophisticated timeout handling (45-minute default with configuration)
 
 ### 🛡️ Security & Compliance
 - Secure credential management
 - Configurable rate limiting and delays
-- Comprehensive logging and audit trails
+- Comprehensive logging and audit trails with correlation tracking
 - AWS integration for secure data storage
+- Thread-safe execution with MDC context preservation
+
+### 🔧 Advanced Features
+- **Smart Navigation**: Automatic detection of page load completion with extension failure recovery
+- **Statistical Selection**: Multinomial selection for realistic user behavior simulation
+- **Comprehensive Data Recording**: Screenshots, HAR files, cookies, local/session storage capture
+- **Caching System**: Performance optimization with decorator pattern for data writers
+- **HTTP Traffic Logging**: Complete request/response logging for debugging and analysis
 
 ## Architecture
 
@@ -68,6 +131,78 @@ This is the main application that orchestrates web automation:
 
 This separation keeps external API complexity isolated from core business logic, making the system more maintainable and testable.
 
+## Job Configuration and Execution
+
+### Job Types and Capabilities
+
+PrimeMover supports a comprehensive set of job types, each configurable via behavior parameters:
+
+#### **Navigation Jobs**
+- **VisitJob**: Navigate to URLs (automatically resets failure state)
+- **SwitchToJob**: Switch between browser windows/frames
+
+#### **Interaction Jobs**
+- **ClickJob**: Click elements with optional page reload expectation
+- **EnterTextFieldJob**: Fill form fields with configurable typing simulation
+- **SingleSelectJob**: Select elements based on criteria (first, last, random, calculated)
+- **HandleAlertJob**: Handle browser dialogs and alerts
+
+#### **Utility Jobs**
+- **WaitJob**: Pause execution for specified duration
+- **ScrollByDurationJob**: Scroll pages for a specific time period
+- **ScrollByLengthJob**: Scroll pages by pixel distance
+- **LambdaSelectJob**: AWS Lambda-based element selection
+
+#### **Failsafe Variants**
+Most interaction jobs have "Try" variants that don't fail the entire joblist:
+- `TryClickJob`, `TryEnterTextFieldJob`, `TrySwitchJob`, `TryHandleAlertJob`
+
+### Job Configuration Parameters
+
+Jobs are configured via behavior parameters that control:
+
+- **Selector Types**: CSS, XPath, ID, Class, Text selectors for element targeting
+- **Typing Modes**: 
+  - `DIRECT`: Immediate text input
+  - `SIMULATED_NOTYPOS`: Human-like typing without errors
+  - `SIMULATED_KEEPINGTYPOS`: Realistic typing with intentional errors
+  - `SIMULATED_FIXINGTYPOS`: Typing with errors that get corrected
+- **Decision Types**: 
+  - `FIRST`: Select first matching element
+  - `LAST`: Select last matching element
+  - `RANDOM`: Random selection from matches
+  - `CALCULATED`: Selection based on extracted criteria
+- **CAPTCHA Handling**: `NEVER`, `ALWAYS`, `BEFORE`, `AFTER`, `RANDOM`
+- **Failsafe Behavior**: Continue vs. stop execution on job failure
+- **Reset Behavior**: Whether to reset previous failure states
+
+### API Conversion System
+
+The `PrimemoverApiConverter` is the heart of job creation, handling:
+
+- **Multi-Version Support**: Supports both "version 1" and "version 2" job formats
+- **Complex Configuration**: Transforms behavior maps into strongly-typed job objects
+- **Proxy Detection**: Automatically detects and configures proxy types (GeoSurf, Oxylabs, Brightdata, HTTP/HTTPS)
+- **Agent Conversion**: Handles Chrome, Firefox, and MultiLogin agent configurations
+- **Validation**: Comprehensive parameter validation with meaningful error messages
+
+Example conversion flow:
+```java
+// API job definition with behaviors
+{
+  "type": "clickjob",
+  "behaviors": [
+    {"name": "selectionType", "value": "CSS"},
+    {"name": "selector", "value": ".submit-button"},
+    {"name": "expectsPageReload", "value": "true"}
+  ]
+}
+
+// Converts to internal ClickJob object
+ClickJob job = new ClickJob(id, name, description, task, 
+    HtmlSelectorType.CSS, ".submit-button", true);
+```
+
 
 
 ## Technology Stack
@@ -78,6 +213,87 @@ This separation keeps external API complexity isolated from core business logic,
 - **AWS SDK** for cloud storage integration
 - **Jackson** for JSON processing
 - **Lombok** for code generation
+- **Spring Retry** for resilient job execution
+- **SLF4J with MDC** for correlation-aware logging
+- **OpenAPI Generator** for type-safe API clients
+
+## Job Execution Engine
+
+### JobListRunner - Core Orchestration
+
+The `JobListRunner` is the sophisticated execution engine that manages job lifecycle:
+
+#### **Execution States**
+- **Setup Phase**: `SUCCESS`, `FAILURE`, `SKIPPED`, `NO_JOBS`
+- **Running Phase**: `NOTSTARTED`, `SUCCESS`, `FAILURE`
+- **Comprehensive State Tracking**: 14 different `JoblistState` values
+
+#### **Advanced Features**
+- **Timeout Management**: Configurable timeout (45 minutes default) with automatic skipping
+- **Retry Logic**: Spring `@Retryable` annotations for resilient API communication
+- **Correlation Tracking**: MDC-based correlation IDs for request tracing
+- **Resource Management**: Automatic cleanup and teardown on completion or failure
+
+#### **State Management Flow**
+```java
+// Execution lifecycle with state transitions
+RUNNING_INPROGRESS → RUNNING_INITDONE → RUNNING_JOBSDONE → DONE_SUCCESS
+                  ↘ RUNNING_INITFAILED → DONE_INITFAILED
+                  ↘ SKIPPED_TIMEDOUT (if timeout exceeded)
+                  ↘ DONE_JOBLIST_EMPTY (if no jobs)
+```
+
+### Data Recording Pipeline
+
+#### **Comprehensive Data Capture**
+The system captures complete browser state during job execution:
+
+```java
+RecordedJobData data = new RecordedJobDataBuilder(job)
+    .setScreenshot(screenshot)           // Visual state capture
+    .setHar(harData)                    // Complete HTTP traffic
+    .setPageSource(pageSource)          // DOM state
+    .setCookies(cookies)                // Session cookies
+    .setSessionStorage(sessionStorage)   // Browser session storage
+    .setLocalStorage(localStorage)       // Browser local storage
+    .setLocation(locationInfo)          // IP geolocation data
+    .setCapchaResultBefore(beforeResult) // CAPTCHA solving results
+    .setCapchaResultAfter(afterResult)
+    .build();
+```
+
+#### **Performance Optimization**
+- **Caching Decorator**: `DataWriterCachingDecorator` prevents repeated data processing
+- **Lazy Evaluation**: Data is only processed when actually needed
+- **Memory Management**: Efficient byte array handling for large screenshots/HAR files
+
+#### **Storage Flexibility**
+- **Pluggable Writers**: `IDataWriter` interface for different storage backends
+- **ZIP Compression**: `SingleZipEntryDataWriterBase` for efficient storage
+- **File Naming**: Automatic timestamp and job-based file naming via `StorageUtility`
+
+### Context System
+
+#### **Execution Environment**
+The context system provides clean dependency injection for job execution:
+
+```java
+// Basic execution context
+IRunnerContext<OptionsType> context = new ContextBase<>()
+    .setDriver(webDriver)
+    .setRecordingProxy(proxy)
+    .setCaptchaSolver(solver)
+    .setCrawler(crawler);
+
+// Job-aware context with additional capabilities
+IJobAwareRunnerContext<OptionsType> jobContext = 
+    JobAwarnessContextDecorator.decorate(context, job, dataRecorder);
+```
+
+#### **Context Validation**
+- **Validation**: `ContextBase.isValid()` ensures all required components are present
+- **Type Safety**: Generic type parameters ensure WebDriver options compatibility
+- **Resource Management**: Automatic cleanup and lifecycle management
 
 ## Getting Started
 
@@ -358,6 +574,176 @@ export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512m"
 - Keep commits focused and well-described
 - Test locally before pushing
 - Use meaningful commit messages
+
+## Advanced Features
+
+### Smart Navigation System
+
+The `NavigationHelper` class provides intelligent page navigation with automatic failure recovery:
+
+#### **Extension Failure Recovery**
+```java
+// Automatic workaround for MultiLogin extension loading issues
+if (driver.getCurrentUrl().startsWith("chrome-extension://")) {
+    logger.warn("Extension still loading. Trying workaround! Start running in new tab...");
+    // Automatically opens new tab and switches context
+    js.executeScript("window.open('" + target + "', '_blank');");
+    driver.switchTo().window(sortedHandles.last());
+}
+```
+
+#### **Page Load Detection**
+- **Smart Waiting**: Detects when new pages have actually loaded vs. still loading
+- **Timeout Handling**: Configurable timeouts with graceful degradation
+- **Element Monitoring**: Tracks HTML element changes to detect navigation completion
+
+### Statistical Behavior Simulation
+
+The `StatisticsHelper` provides realistic user behavior simulation:
+
+#### **Multinomial Selection**
+```java
+// Realistic selection based on probability distributions
+double[] probabilities = {0.6, 0.3, 0.1}; // Most likely, somewhat likely, unlikely
+int selectedIndex = StatisticsHelper.makeMultinominalSelection(probabilities);
+```
+
+This enables:
+- **Realistic Click Patterns**: Simulate human-like element selection
+- **Randomized Timing**: Vary interaction timing based on probability distributions
+- **Behavioral Modeling**: Model real user behavior patterns for anti-detection
+
+### Thread-Safe Execution
+
+#### **MDC-Aware Threading**
+The `MdcAwareThreadPoolExecutor` preserves logging context across thread boundaries:
+
+```java
+// Correlation IDs survive thread switches
+MDC.put("correlationId", "cr-" + crawler.getId() + "|jl-" + joblist.getId());
+// Execute job in thread pool - correlation ID is preserved
+// Automatic cleanup prevents memory leaks
+```
+
+#### **Correlation Tracking**
+- **Request Tracing**: Track requests across all system components
+- **Debug Support**: Easily correlate logs across complex execution flows
+- **Performance Monitoring**: Track execution times and resource usage per job/joblist
+
+### HTTP Traffic Analysis
+
+#### **Complete Traffic Capture**
+- **HAR Files**: Complete HTTP Archive format capture
+- **Request/Response Logging**: Detailed logging via `LoggingInterceptor`
+- **Debugging Support**: Full visibility into browser-server communication
+
+#### **API Communication Monitoring**
+```java
+// Automatic logging of all REST API calls
+@Retryable
+public Boolean updateJobState(IJob job, JobState state, ...) {
+    logger.info("updating job-state. Retry {}", 
+        RetrySynchronizationManager.getContext().getRetryCount());
+    // Full request/response logging for debugging
+}
+```
+
+## Developer Guide
+
+### Adding New Job Types
+
+1. **Create Job Class**: Extend `BaseJob` or `SelectorBaseJob`
+```java
+public class CustomJob extends SelectorBaseJob {
+    private String customParameter;
+    
+    public CustomJob(Long id, String name, String description, String task,
+                    HtmlSelectorType type, String selector, String customParameter) {
+        super(id, name, description, task, type, selector);
+        this.customParameter = customParameter;
+    }
+}
+```
+
+2. **Add API Conversion**: Update `PrimemoverApiConverter.convertApiJob()`
+```java
+case "customjob":
+    res = convertApiCustomJob(job.getId(), job.getName(), 
+                             job.getDescription(), captchaSolving, behaviors);
+    break;
+```
+
+3. **Implement Conversion Logic**: Handle behavior parameter mapping
+```java
+private static CustomJob convertApiCustomJob(Long id, String name, String description,
+        CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+    CustomJob job = new CustomJob();
+    setBaseFields(job, id, name, description, captchaSolving, behaviours);
+    job.setCustomParameter(behaviours.get("customParameter"));
+    return job;
+}
+```
+
+### Understanding Job Execution Flow
+
+1. **API Request**: External system sends job definition
+2. **Conversion**: `PrimemoverApiConverter` creates internal job objects
+3. **Scheduling**: `JobListRunner` manages execution lifecycle
+4. **Context Creation**: Job-aware context provides execution environment
+5. **Execution**: Job-specific logic runs within context
+6. **Data Recording**: Complete browser state captured
+7. **State Updates**: Job and joblist states updated via REST API
+8. **Cleanup**: Resources released and context cleaned up
+
+### Extending Data Recording
+
+1. **Custom Data Writer**: Implement `IDataWriter` interface
+```java
+public class CustomDataWriter implements IDataWriter {
+    @Override
+    public boolean writeData(OutputStream os) {
+        // Custom data writing logic
+    }
+}
+```
+
+2. **Use Caching**: Wrap with `DataWriterCachingDecorator` for performance
+```java
+IDataWriter cachedWriter = new DataWriterCachingDecorator(customWriter);
+```
+
+3. **Integration**: Register in data writer factory or use directly in job handlers
+
+### Debugging and Troubleshooting
+
+#### **Common Issues and Solutions**
+
+1. **Extension Loading Failures**: 
+   - Handled automatically by `NavigationHelper`
+   - Check logs for "Extension still loading" warnings
+   - Verify MultiLogin profile configuration
+
+2. **Job Timeout Scenarios**:
+   - Default 45-minute timeout configurable via `runner.MaxRedoMinutes`
+   - Check `JoblistState.SKIPPED_TIMEDOUT` in logs
+   - Adjust timeout for long-running operations
+
+3. **CAPTCHA Integration Issues**:
+   - Verify AntiCaptcha API key configuration
+   - Check `CaptchaSolvingType` settings on jobs
+   - Monitor `CaptchaSolverResult` in recorded data
+
+4. **State Management Problems**:
+   - Enable debug logging for `JobListRunner`
+   - Check correlation IDs in logs for request tracing
+   - Verify REST API connectivity for state updates
+
+#### **Logging and Monitoring**
+
+- **Correlation IDs**: Every execution has unique correlation ID for tracing
+- **State Transitions**: All job and joblist state changes are logged
+- **Performance Metrics**: Execution times and resource usage tracked
+- **Error Details**: Comprehensive error logging with stack traces and context
 
 ## Configuration
 
@@ -727,6 +1113,97 @@ Development best practices and testing support:
 
 
 
+## Monitoring and Observability
+
+### Built-in Monitoring Capabilities
+
+#### **State Tracking**
+- **Job States**: `RUNNING`, `SUCCESS`, `FAILURE`, `WARNING`, `SKIPPED`
+- **Joblist States**: 14 comprehensive states from `RUNNING_INPROGRESS` to `DONE_SUCCESS`
+- **Execution Metrics**: Start times, end times, duration tracking
+- **Retry Tracking**: Automatic retry count logging with Spring Retry
+
+#### **Correlation and Tracing**
+```java
+// Automatic correlation ID generation
+MDC.put("crawler.id", crawler.getId().toString());
+MDC.put("joblist.id", jobs.getId().toString());
+MDC.put("correlationId", "cr-" + crawler.getId() + "|jl-" + jobs.getId());
+```
+
+#### **Performance Monitoring**
+- **Execution Duration**: Complete timing for jobs and joblists
+- **Resource Usage**: Memory and thread pool monitoring
+- **API Response Times**: REST API call duration tracking
+- **Browser Performance**: Page load times and navigation metrics
+
+### Health Checks and Diagnostics
+
+#### **System Health Indicators**
+- **Context Validation**: `ContextBase.isValid()` ensures proper setup
+- **Resource Availability**: WebDriver, proxy, and CAPTCHA solver status
+- **External Service Health**: MultiLogin, AntiCaptcha, and backend API connectivity
+- **Data Writer Status**: Storage system availability and performance
+
+#### **Diagnostic Information**
+- **Browser State**: Current URL, page source, cookies, storage
+- **Proxy Status**: Connection health and geographic location
+- **Extension Status**: CAPTCHA solver and other browser extension health
+- **Job Configuration**: Complete job parameter validation and status
+
+## Production Deployment Considerations
+
+### Configuration Management
+
+#### **Environment-Specific Settings**
+```properties
+# Production configuration example
+spring.profiles.active=production
+runner.MaxRedoMinutes=45
+browser.headless=true
+anticaptcha.enabled=true
+multilogin.enabled=true
+
+# Retry configuration
+spring.retry.max-attempts=3
+spring.retry.backoff.delay=1000
+spring.retry.backoff.multiplier=2
+```
+
+#### **Security Configuration**
+- **Credential Management**: External configuration for API keys and passwords
+- **Network Security**: Proxy authentication and encrypted connections
+- **Data Protection**: Secure storage of captured data and logs
+- **Access Control**: Role-based access to job execution and monitoring
+
+### Scaling and Performance
+
+#### **Horizontal Scaling**
+- **Multiple Instances**: Run multiple PrimeMover instances with shared job queue
+- **Load Balancing**: Distribute jobs across available instances
+- **Resource Isolation**: Separate browser profiles and proxy pools per instance
+
+#### **Performance Optimization**
+- **Connection Pooling**: Efficient HTTP client configuration
+- **Caching Strategy**: Data writer caching and result memoization
+- **Thread Pool Tuning**: Optimal thread pool sizes for job execution
+- **Memory Management**: Efficient handling of screenshots and HAR data
+
+### Monitoring in Production
+
+#### **Key Metrics to Track**
+- **Job Success Rate**: Percentage of successful job completions
+- **Average Execution Time**: Performance trends over time
+- **CAPTCHA Solve Rate**: Effectiveness of anti-CAPTCHA measures
+- **Resource Utilization**: CPU, memory, and network usage
+- **Error Rates**: Frequency and types of failures
+
+#### **Alerting and Notifications**
+- **Failed Jobs**: Immediate alerts for job failures
+- **System Health**: Monitoring for service degradation
+- **Resource Exhaustion**: Alerts for high resource usage
+- **External Service Issues**: Monitoring for MultiLogin/AntiCaptcha problems
+
 ## Legal and Ethical Considerations
 
 ⚠️ **Important**: Always ensure your use of PrimeMover complies with:
@@ -737,11 +1214,36 @@ Development best practices and testing support:
 - Rate limiting to avoid overwhelming target servers
 - Data privacy regulations (GDPR, CCPA, etc.)
 
+### Best Practices for Responsible Use
 
+#### **Rate Limiting and Throttling**
+- Configure appropriate delays between requests
+- Respect server response times and implement backoff strategies
+- Monitor target website performance impact
+- Use distributed execution to reduce per-server load
+
+#### **Data Handling**
+- Implement data retention policies
+- Secure storage and transmission of collected data
+- Anonymization and pseudonymization where appropriate
+- Clear audit trails for data access and processing
 
 ## Support
 
 This is an enterprise automation tool designed for technical teams. Proper configuration and deployment require understanding of web technologies, browser automation, and the specific websites being targeted.
+
+### Getting Help
+
+#### **Documentation Resources**
+- **Code Documentation**: Comprehensive JavaDoc in source code
+- **Configuration Examples**: Sample configurations for different environments
+- **Troubleshooting Guides**: Common issues and resolution steps
+
+#### **Development Support**
+- **Architecture Overview**: Understanding the system design and components
+- **Extension Guidelines**: How to add new job types and features
+- **Testing Strategies**: Unit and integration testing approaches
+- **Performance Tuning**: Optimization techniques for production deployment
 
 ## License
 
