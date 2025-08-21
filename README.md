@@ -500,25 +500,64 @@ mvn test -Dtest=JobListRunnerTest
 For debugging browser automation issues:
 
 ```properties
-# In your local configuration
-browser.headless=false
-browser.devtools=true
-selenium.implicit.wait=10
-selenium.page.load.timeout=30
+# In your local configuration (application-local.properties)
+# Note: Browser settings are handled through MultiLogin or direct WebDriver
+# These are the relevant debugging settings:
+
+# Execution and timing
+runner.MaxRedoMinutes=5  # Shorter timeout for development
+runner.StartupRetryCount=1  # Fewer retries for faster feedback
+
+# Detailed logging
+logging.level.primemover=DEBUG
+logging.level.primemover.util.NavigationHelper=TRACE
+logging.level.primemover.runner.joblist=DEBUG
+logging.level.primemover.api.converter=DEBUG
+logging.level.org.springframework.web.client.RestTemplate=TRACE
+
+# MultiLogin debugging (if using MultiLogin)
+multilogin.StartupRetryCount=1
+multilogin.StartupDelaySeconds=5
+multilogin.ConnectTimeoutSeconds=10
+
+# Proxy debugging
+proxy.pingConnections=true
+proxy.verifyConnections=true
 ```
 
 #### **Local Testing Without External Services**
 For development without external service dependencies:
 
 ```properties
-# Disable external services
-anticaptcha.enabled=false
-multilogin.enabled=false
-aws.s3.enabled=false
+# application-local.properties for offline development
+spring.profiles.active=local
+global.mode=DEVELOP
 
-# Use mock implementations
-proxy.enabled=false
-captcha.solving=NEVER
+# Disable all external services
+anticaptcha.enabled=false
+anticaptcha.defaultMode=NEVER
+multilogin.enabled=false
+recorder.enabled=false
+
+# Proxy settings (disabled for offline development)
+proxy.pingConnections=false
+proxy.verifyConnections=false
+
+# Execution settings for local testing
+runner.MaxParallelExecution=1
+runner.MaxRedoMinutes=5  # Shorter timeout for development
+runner.StartupRetryCount=1
+
+# Mock backend API (if you have a local mock server)
+backend.endpoint.api=http://localhost:3000/mock-api/
+backend.endpoint.runner=http://localhost:3000/mock-api/runner/
+backend.username=mock-user
+backend.password=mock-password
+
+# Development logging
+logging.level.primemover=DEBUG
+logging.level.primemover.runner=TRACE
+logging.level.org.springframework.web.client.RestTemplate=DEBUG
 ```
 
 ### Common Development Tasks
