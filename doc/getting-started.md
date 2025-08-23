@@ -131,6 +131,36 @@ logging.level.primemover=DEBUG
 logging.level.primemover.runner=DEBUG
 ```
 
+### **Why Create application-local.properties?**
+
+The `application-local.properties` file is a **Spring Boot profile-specific configuration** that transforms your development experience:
+
+**What it does:**
+- **Overrides main configuration** - Spring Boot loads `application.properties` first, then overlays your local settings
+- **Disables external services** - No need for AntiCaptcha API keys, MultiLogin accounts, or proxy credentials
+- **Enables offline development** - Work without internet connectivity to external services
+- **Optimizes for development** - Faster startup, single-threaded execution, enhanced logging
+
+**Without local configuration:**
+```bash
+# Application fails to start because:
+# - Missing external service credentials
+# - Network connectivity requirements
+# - Production timeouts (slow feedback)
+# - Complex setup requirements
+```
+
+**With local configuration:**
+```bash
+# Application starts quickly with:
+# - No external service dependencies
+# - Offline development capability
+# - Fast feedback cycles
+# - Simplified debugging
+```
+
+This is a standard Spring Boot pattern where each environment gets exactly the configuration it needs.
+
 ## Step 5: Test Your Setup
 
 ### Start the application:
