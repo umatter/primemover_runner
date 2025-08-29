@@ -181,13 +181,22 @@ This is a standard Spring Boot pattern where each environment gets exactly the c
 ### Start the application:
 ```bash
 cd primemover-runner
-# From the primemover-runner directory
-mvn spring-boot:run -Dspring.profiles.active=local
+# From the primemover-runner directory, use the correct command with config location
+mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
 
 # You should see logs like:
 # "Started PrimeMoverApplication in X.XXX seconds"
 # If you see this, the application is running successfully!
+
+# The application will also show debug logs indicating it's using local configuration:
+# "loading jobs from http://localhost:8090/api/v1/crawlers-testing"
+# This confirms it's using DEVELOP mode with local testing endpoints
 ```
+
+**Important**: The `-Dspring.config.location=config/` parameter is crucial because:
+- It tells Spring Boot to look for configuration files in the `config/` directory
+- Without this, Spring Boot only looks in default locations and won't find your `application-local.properties`
+- This ensures your local development settings are actually loaded
 
 ### Test basic functionality:
 ```bash
@@ -229,7 +238,7 @@ git checkout -b feature/my-new-feature
 
 # 4. Start the application for testing
 cd primemover-runner
-mvn spring-boot:run -Dspring.profiles.active=local
+mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
 ```
 
 ### Testing Your Changes
@@ -250,7 +259,7 @@ mvn test -Dtest=NavigationHelperTest -Dspring.profiles.active=local
 ```bash
 # 1. Edit your Java files in your IDE or text editor
 # 2. Restart the application to see changes
-mvn spring-boot:run -Dspring.profiles.active=local
+mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
 
 # 3. Or run specific tests
 mvn test -Dtest=YourNewTest
@@ -259,7 +268,7 @@ mvn test -Dtest=YourNewTest
 **Debug browser automation:**
 ```bash
 # Start with visible browser and debug logging
-mvn spring-boot:run -Dspring.profiles.active=local \
+mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/ \
   -Dlogging.level.primemover=DEBUG \
   -Dlogging.level.primemover.util.NavigationHelper=TRACE
 ```
@@ -296,6 +305,21 @@ mvn -version  # Should show Java 17
 - Check that port 8080 is not already in use
 - Look at the error logs for specific error messages
 - Make sure your `application-local.properties` file is correctly formatted
+- Verify you're using the correct Maven command with `-Dspring.config.location=config/`
+
+### Configuration not being loaded
+If you see logs showing production endpoints instead of local ones:
+```bash
+# Make sure you're using the complete command:
+mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
+
+# Check that your application-local.properties file exists:
+ls -la config/application-local.properties
+
+# Verify the file contains the correct settings:
+cat config/application-local.properties | grep global.mode
+# Should show: global.mode=DEVELOP
+```
 
 ### Browser tests fail
 - Make sure Chrome is installed and accessible
