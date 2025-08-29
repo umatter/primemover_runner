@@ -91,3 +91,10 @@ coverage/
 .env
 .env.*
 .aider*
+
+
+#---------------------------------------------
+# Config Files
+#---------------------------------------------
+
+primemover-runner/config/application-local.properties

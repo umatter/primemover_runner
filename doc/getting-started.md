@@ -182,7 +182,8 @@ This is a standard Spring Boot pattern where each environment gets exactly the c
 ```bash
 cd primemover-runner
 # From the primemover-runner directory, use the correct command with config location
-mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
+mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"
+
 
 # You should see logs like:
 # "Started PrimeMoverApplication in X.XXX seconds"
@@ -193,7 +194,7 @@ mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=conf
 # This confirms it's using DEVELOP mode with local testing endpoints
 ```
 
-**Important**: The `-Dspring.config.location=config/` parameter is crucial because:
+**Important**: The `-Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"` parameters are crucial because:
 - It tells Spring Boot to look for configuration files in the `config/` directory
 - Without this, Spring Boot only looks in default locations and won't find your `application-local.properties`
 - This ensures your local development settings are actually loaded

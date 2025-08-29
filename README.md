@@ -18,6 +18,7 @@ Think of PrimeMover as a sophisticated "robot browser" that can:
 - Java 17 or higher
 - Maven 3.6+
 - Chrome or Firefox browser installed
+- Multilogin X
 
 ### Building and Running
 ```bash
