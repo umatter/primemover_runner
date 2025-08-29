@@ -97,10 +97,6 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			InvokeResponse result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
 			data.setOutputJson(mapper.writeValueAsString(result));
 
-			// Log the full Lambda response payload
-			String lambdaResponsePayload = result.payload().asUtf8String();
-			logger.info("Full Lambda response payload: {}", lambdaResponsePayload);
-
 			if (!StringUtils.isEmpty(result.functionError())) {
 				// Enhanced error logging with more details
 				logger.error("Lambda function '{}' failed with error type: {}", 
@@ -130,7 +126,11 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				throw new RuntimeException("Lambda Error (status code): " + result.statusCode());
 			}
 
-			LambdaSelectJobResult parsedResult = mapper.readValue(result.payload().asUtf8String(),
+			// Log the full Lambda response payload BEFORE attempting deserialization
+			String lambdaResponsePayload = result.payload().asUtf8String();
+			logger.info("Full Lambda response payload: {}", lambdaResponsePayload);
+
+			LambdaSelectJobResult parsedResult = mapper.readValue(lambdaResponsePayload,
 					LambdaSelectJobResult.class);
 
 			// Validate XPath
