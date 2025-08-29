@@ -8,6 +8,68 @@ PrimeMover loads configuration from Spring Boot property files. The main configu
 
 **Primary Configuration File**: `primemover-runner/config/application.properties`
 
+## Startup Modes
+
+PrimeMover supports three different startup modes that control application behavior and available features:
+
+### Mode Configuration
+
+Set the startup mode in your `application.properties` or `application-local.properties`:
+
+```properties
+global.mode=DEVELOP
+# or
+global.mode=INTEGRATION  
+# or
+global.mode=PRODUCTION
+```
+
+### Mode Differences
+
+| Feature | PRODUCTION | DEVELOP/INTEGRATION |
+|---------|------------|-------------------|
+| **API Endpoints** | Real unprocessed crawlers | Testing crawlers |
+| **Job Timing** | Original timestamps | Adjusted to today |
+| **Test Jobs** | None | Fake Google search added |
+| **Assert Job Types** | **DISABLED** | **ENABLED** |
+| **Testing/Validation Jobs** | Not available | Full assertion suite available |
+
+### PRODUCTION Mode
+- Uses real API endpoints (`endpointPathUnprocessed`)
+- Processes jobs with original timestamps
+- No modifications to job data
+- **Assert job types are completely disabled** for performance and security
+- Pure production business logic only
+
+### DEVELOP Mode
+- Uses testing API endpoints (`endpointPathTesting`)
+- **Time adjustment**: All job start times moved to today's date for immediate testing
+- **Fake job injection**: Adds a test Google search sequence:
+  1. Visit google.ch
+  2. Search for "Klimaerwärmung ist doof" 
+  3. Wait for results
+  4. Click random search result
+  5. Wait again
+- **Full assertion suite enabled**: Includes testing and validation job types
+
+### INTEGRATION Mode
+- Same behavior as DEVELOP mode
+- Intended for integration testing environments
+- All assertion job types available
+
+### Assert Job Types (DEVELOP/INTEGRATION Only)
+
+The following job types are **only available** in DEVELOP and INTEGRATION modes:
+
+- `AssertTextInFieldJob` - Validates text content in form fields
+- `AssertPageLoadedJob` - Confirms page has loaded completely
+- `AssertScrolledMaxJob` - Verifies maximum scroll position reached
+- `AssertElementExistsJob` - Checks for presence of specific elements
+- `AssertProxyByGeosurfJob` - Validates proxy functionality via Geosurf
+- `AssertProxyByPrimemoverApiJob` - Validates proxy via PrimeMover API
+
+These assertion jobs are used for automated testing, validation, and debugging during development but are intentionally excluded from production deployments.
+
 ## Required Service Credentials
 
 Before running PrimeMover, you must configure credentials for the external services it integrates with.
