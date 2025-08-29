@@ -28,6 +28,10 @@ sudo apt install google-chrome-stable -y
 sudo apt install code -y  # Visual Studio Code
 ```
 
+
+
+
+
 ### On Windows:
 1. **Install Java 17**: Download from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [OpenJDK](https://adoptium.net/)
 2. **Install Maven**: Download from [Apache Maven](https://maven.apache.org/download.cgi) and follow installation guide
@@ -52,6 +56,17 @@ brew install git
 # Chrome is usually already installed, if not:
 brew install --cask google-chrome
 ```
+
+### Multilogin X
+
+In addition (for most use cases), you will also need a Multilogin account and Multilogin X installed:
+
+1. log in to your account, go to https://app.multilogin.com/en/home/profiles, and create a first profile (if not done so yet)
+2. When clicking for the first time the "Start" button of a profile, you will be prompted to download the Multilogin X (mlx) software (either Linux, Mac or Windows). Download it and install it.
+3. When opening a terminal window, type `mlx` and hit enter to start the software (the Multilogin X "agent"). You will have to be logged in to https://app.multilogin.com/en/home/profiles and then start `mlx` to make everything work. The agent will connect through your login in the open browser. 
+4. Try starting the profile in the browser again (clicking the Start button again). 
+
+*Note*: sometimes the agent does not properly start up when running `mlx`. Usually, just retyping `mlx` into the terminal and hitting enter again then works.
 
 ## Step 2: Verify Your Installation
 
@@ -165,6 +180,7 @@ This is a standard Spring Boot pattern where each environment gets exactly the c
 
 ### Start the application:
 ```bash
+cd primemover-runner
 # From the primemover-runner directory
 mvn spring-boot:run -Dspring.profiles.active=local
 
