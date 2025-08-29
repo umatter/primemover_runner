@@ -15,7 +15,7 @@
 	server -->
     <maven.compiler.release>17</maven.compiler.release>
 	<java.version>17</java.version> 
-	<skipTests>true</skipTests>
+	<skipTests>false</skipTests>
 	<selenium.version>4.27.0</selenium.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
