@@ -64,6 +64,21 @@ public class LambdaCaller implements AutoCloseable {
 			logger.debug("invoking function");
 			res = this.client.invoke(request);
 
+			// Enhanced error logging
+			if (res.functionError() != null && !res.functionError().isEmpty()) {
+				logger.error("Lambda function error type: {}", res.functionError());
+				logger.error("Lambda status code: {}", res.statusCode());
+				
+				// Log the response payload which may contain error details
+				String responsePayload = res.payload().asUtf8String();
+				logger.error("Lambda error payload: {}", responsePayload);
+				
+				// Log execution details
+				if (res.executedVersion() != null) {
+					logger.error("Lambda executed version: {}", res.executedVersion());
+				}
+			}
+
 			return res;
 
 		} catch (Exception ex) {
