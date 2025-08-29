@@ -199,6 +199,25 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments
 - Without this, Spring Boot only looks in default locations and won't find your `application-local.properties`
 - This ensures your local development settings are actually loaded
 
+### What Happens in DEVELOP Mode
+
+When running with `global.mode=DEVELOP`, the application automatically:
+
+1. **Creates a demo job sequence** that will execute after ~30 seconds:
+   - Visit google.ch
+   - Search for "Klimaerwärmung ist doof"
+   - Wait for results
+   - Click a random search result
+   - Wait again
+
+2. **Enables testing job types** (Assert jobs for validation)
+
+3. **Uses testing API endpoints** instead of production ones
+
+4. **Adjusts job timing** to today's date for immediate execution
+
+**Important**: Starting the application does **NOT** automatically run tests. It starts the server and executes demo jobs, but the test suite is separate.
+
 ### Test basic functionality:
 ```bash
 # In another terminal, test if the application is responding
@@ -212,15 +231,43 @@ curl http://localhost:8080/actuator/health
 
 ## Step 6: Run Your First Test
 
+### Understanding Application vs Tests
+
+**Two separate processes:**
+- **Running the application** = Starts the server with demo jobs
+- **Running tests** = Executes the test suite
+
+### Terminal 1: Start the Application (keep running)
 ```bash
-# Run a simple unit test to verify everything works
+cd primemover-runner
+mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"
+```
+This starts the PrimeMover server and keeps it running. You'll see the demo Google search job execute after ~30 seconds.
+
+### Terminal 2: Run Tests (separate terminal)
+```bash
+cd primemover-runner
+
+# Run all tests
+mvn test
+
+# Run specific tests
 mvn test -Dtest=PrimemoverApiConverterTest
 
 # Run a test that uses the browser (Chrome will open briefly)
 mvn test -Dtest=NavigationHelperTest -Dspring.profiles.active=local
 
-# If both tests pass, your setup is working correctly!
+# Run tests with visible browser for debugging
+mvn test -Dbrowser.headless=false
 ```
+
+**Key Points:**
+- Keep Terminal 1 running with the application
+- Use Terminal 2 to run tests as many times as you want
+- Tests run independently of the running application
+- You can run different test commands while the app keeps running
+
+### If tests pass, your setup is working correctly!
 
 ## Quick Development Workflow
 
@@ -237,21 +284,21 @@ git pull origin main
 # 3. Create a new branch for your work
 git checkout -b feature/my-new-feature
 
-# 4. Start the application for testing
+# 4. Start the application for testing (Terminal 1)
 cd primemover-runner
-mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
+mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"
 ```
 
 ### Testing Your Changes
 ```bash
-# Run specific tests related to your changes
+# In Terminal 2, run specific tests related to your changes
 mvn test -Dtest="*YourComponent*Test"
 
 # Run all tests to make sure nothing is broken
 mvn test
 
 # Test with a visible browser to see what's happening
-mvn test -Dtest=NavigationHelperTest -Dspring.profiles.active=local
+mvn test -Dtest=NavigationHelperTest -Dspring.profiles.active=local -Dbrowser.headless=false
 ```
 
 ### Common Development Tasks
@@ -259,17 +306,17 @@ mvn test -Dtest=NavigationHelperTest -Dspring.profiles.active=local
 **Make a code change and test it:**
 ```bash
 # 1. Edit your Java files in your IDE or text editor
-# 2. Restart the application to see changes
-mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/
+# 2. Restart the application in Terminal 1 (Ctrl+C, then restart)
+mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"
 
-# 3. Or run specific tests
+# 3. Run specific tests in Terminal 2
 mvn test -Dtest=YourNewTest
 ```
 
 **Debug browser automation:**
 ```bash
 # Start with visible browser and debug logging
-mvn spring-boot:run -Dspring.profiles.active=local -Dspring.config.location=config/ \
+mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/" \
   -Dlogging.level.primemover=DEBUG \
   -Dlogging.level.primemover.util.NavigationHelper=TRACE
 ```
@@ -331,15 +378,22 @@ cat config/application-local.properties | grep global.mode
 - On Linux/macOS, you might need to make scripts executable: `chmod +x script-name`
 - Make sure you have write permissions in the project directory
 
+### Demo job not executing
+If you don't see the Google search demo job after 30 seconds:
+- Check that the application is polling for jobs (you should see logs every 60 seconds)
+- Verify `global.mode=DEVELOP` is set in your local configuration
+- Look for error messages in the application logs
+
 ## What to Do Next
 
 Once you have the basic setup working:
 
-1. **Explore the code**: Start by looking at the job classes in `src/main/java/primemover/model/jobs/`
-2. **Read the tests**: Look at test files to understand how components work
-3. **Try modifying a simple job**: Start with `WaitJob` or `VisitJob` to understand the structure
-4. **Run with visible browser**: Use `-Dbrowser.headless=false` to see what the automation is doing
-5. **Check the logs**: Enable debug logging to understand the execution flow
+1. **Watch the demo job execute**: See the automated Google search in action
+2. **Explore the code**: Start by looking at the job classes in `src/main/java/primemover/model/jobs/`
+3. **Read the tests**: Look at test files to understand how components work
+4. **Try modifying a simple job**: Start with `WaitJob` or `VisitJob` to understand the structure
+5. **Run with visible browser**: Use `-Dbrowser.headless=false` to see what the automation is doing
+6. **Check the logs**: Enable debug logging to understand the execution flow
 
 ## Getting Help
 
@@ -348,6 +402,7 @@ If you get stuck:
 2. **Look at existing tests**: They show how components are supposed to work
 3. **Start simple**: Begin with basic jobs before trying complex automation
 4. **Use visible browser**: See what's actually happening during automation
+5. **Use two terminals**: Keep the application running in one, run tests in another
 
 ## Next Steps
 
