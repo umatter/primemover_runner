@@ -313,9 +313,7 @@ public class PrimemoverApiConverter {
 			criteriaType = clickType;
 
 			// mandatory field for calculated-type
-			if (decisionType == Decision
-
-Type.CALCULATED) {
+			if (decisionType == DecisionType.CALCULATED) {
 				job.setCriteriaExtractor(behaviours.get("criterionExtractor")); // old job version
 			}
 
