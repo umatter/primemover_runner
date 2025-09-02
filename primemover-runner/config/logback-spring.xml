@@ -9,7 +9,7 @@
      <logger name="org.apache" level="WARN"/>
      <logger name="org.littleshoot" level="WARN"/>
     		  
-    <springProfile name="dev,staging,test">        
+    <springProfile name="dev,staging,test,local">        
         <root level="DEBUG">
 		    <appender-ref ref="CONSOLE" />
 		</root>
