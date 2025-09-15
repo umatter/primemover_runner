@@ -148,14 +148,8 @@ See the [Job System Guide](job-system.md) for detailed instructions.
 ### Testing Browser Automation
 
 ```bash
-# Run with visible browser for debugging
-mvn spring-boot:run -Dspring.profiles.active=local -Dbrowser.headless=false
-
-# Run specific browser automation tests
-mvn test -Dtest=NavigationHelperTest -Dspring.profiles.active=local
-
-# Debug with Chrome DevTools
-mvn test -Dtest=YourTest -Dwebdriver.chrome.args="--remote-debugging-port=9222"
+# Run local setup
+mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"
 ```
 
 ### Working with Generated Code

@@ -31,6 +31,9 @@ mvn clean install
 cd primemover-runner
 mvn spring-boot:run
 ```
+#### Run the local version for development
+
+`mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"`
 
 ## Documentation
 
