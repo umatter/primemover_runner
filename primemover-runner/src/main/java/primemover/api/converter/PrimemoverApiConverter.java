@@ -182,7 +182,7 @@ public class PrimemoverApiConverter {
 		}
 		job.setLinkValue(linkValue);
 		job.setUsername(behaviours.get("username"));
-		job.setUsername(behaviours.get("password"));
+		job.setPassword(behaviours.get("password"));
 
 		return job;
 	}
@@ -556,6 +556,7 @@ public class PrimemoverApiConverter {
 		crawler.setProxy(convertApiProxy(item.getProxy(), crawler)); // needs to go after agent as agent contains
 																		// required location input
 		crawler.setConfig(convertApiConfiguration(item.getConfiguration()));
+		crawler.setRawConfiguration(item.getConfiguration()); // Store raw API configuration
 
 		// grab joblists
 		List<primemover.api.model.Queue> queues = item.getQueues();

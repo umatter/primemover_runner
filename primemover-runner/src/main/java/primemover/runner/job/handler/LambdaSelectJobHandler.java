@@ -98,8 +98,27 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			data.setOutputJson(mapper.writeValueAsString(result));
 
 			if (!StringUtils.isEmpty(result.functionError())) {
-				logger.error("Lambda error of on AWS: {}", result.functionError());
-				throw new RuntimeException("Lambda Error (functionError): " + result.functionError());
+				// Enhanced error logging with more details
+				logger.error("Lambda function '{}' failed with error type: {}", 
+							typedJob.getLinkValue(), result.functionError());
+				logger.error("Lambda status code: {}", result.statusCode());
+				
+				// Try to parse error details from payload
+				String errorPayload = result.payload().asUtf8String();
+				logger.error("Lambda error response payload: {}", errorPayload);
+				
+				// Try to extract structured error information
+				try {
+					// Attempt to parse as JSON to get structured error info
+					Object errorObj = mapper.readValue(errorPayload, Object.class);
+					logger.error("Parsed Lambda error details: {}", mapper.writeValueAsString(errorObj));
+				} catch (Exception parseEx) {
+					logger.debug("Could not parse Lambda error payload as JSON: {}", parseEx.getMessage());
+				}
+				
+				throw new RuntimeException("Lambda Error (functionError): " + result.functionError() + 
+										 " - Status: " + result.statusCode() + 
+										 " - Details: " + errorPayload);
 			}
 
 			if (!(result.statusCode() >= 200 && result.statusCode() < 300)) {
@@ -107,7 +126,11 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				throw new RuntimeException("Lambda Error (status code): " + result.statusCode());
 			}
 
-			LambdaSelectJobResult parsedResult = mapper.readValue(result.payload().asUtf8String(),
+			// Log the full Lambda response payload BEFORE attempting deserialization
+			String lambdaResponsePayload = result.payload().asUtf8String();
+			logger.info("Full Lambda response payload: {}", lambdaResponsePayload);
+
+			LambdaSelectJobResult parsedResult = mapper.readValue(lambdaResponsePayload,
 					LambdaSelectJobResult.class);
 
 			// Validate XPath

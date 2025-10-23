@@ -10,6 +10,7 @@ public class Crawler {
 	private IAgent agent;
 	private Configuration config;
 	private IProxy proxy;
+	private primemover.api.model.Configuration rawConfiguration;
 	
 	
 	public Long getId() {
@@ -69,6 +70,16 @@ public class Crawler {
 
 	public IAgent getAgent() {
 		return agent;
+	}
+
+
+	public primemover.api.model.Configuration getRawConfiguration() {
+		return rawConfiguration;
+	}
+
+
+	public void setRawConfiguration(primemover.api.model.Configuration rawConfiguration) {
+		this.rawConfiguration = rawConfiguration;
 	}
 
 }

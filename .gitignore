@@ -54,6 +54,7 @@ out/
 .settings/
 .loadpath
 .metadata/
+.factorypath
 
 # --------------------------------------------
 # Visual Studio Code
@@ -89,3 +90,11 @@ coverage/
 # --------------------------------------------
 .env
 .env.*
+.aider*
+
+
+#---------------------------------------------
+# Config Files
+#---------------------------------------------
+
+primemover-runner/config/application-local.properties

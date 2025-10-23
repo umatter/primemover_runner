@@ -8,12 +8,21 @@ public class LambdaSelectJobParam {
 	private LambdaSelectJob job;
 	private Crawler crawler;
 	private String pagesource;
+	private primemover.api.model.Configuration rawConfiguration;
 
 	public LambdaSelectJobParam(LambdaSelectJob job, Crawler crawler, String pagesource) {
 		super();
 		this.job = job;
 		this.crawler = crawler;
 		this.pagesource = pagesource;
+	}
+
+	public LambdaSelectJobParam(LambdaSelectJob job, Crawler crawler, String pagesource, primemover.api.model.Configuration rawConfiguration) {
+		super();
+		this.job = job;
+		this.crawler = crawler;
+		this.pagesource = pagesource;
+		this.rawConfiguration = rawConfiguration;
 	}
 
 	public LambdaSelectJob getJob() {
@@ -38,6 +47,14 @@ public class LambdaSelectJobParam {
 
 	public void setPagesource(String pagesource) {
 		this.pagesource = pagesource;
+	}
+
+	public primemover.api.model.Configuration getRawConfiguration() {
+		return rawConfiguration;
+	}
+
+	public void setRawConfiguration(primemover.api.model.Configuration rawConfiguration) {
+		this.rawConfiguration = rawConfiguration;
 	}
 
 }
