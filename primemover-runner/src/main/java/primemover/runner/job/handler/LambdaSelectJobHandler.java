@@ -90,7 +90,7 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 			// prepare input JSON
 			LambdaSelectJobParam param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
-					driver.getPageSource());
+					driver.getPageSource(), context.getCrawler().getRawConfiguration());
 
 			data.setInputJson(mapper.writeValueAsString(param));
 
