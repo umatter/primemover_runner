@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -21,6 +22,7 @@ import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.service.AntiCaptchaService;
 import primemover.api.deserializer.RelaxedZonedDateTimeDeserializer;
 import primemover.capture.*;
+import primemover.capture.browserup.BrowserUpRecorderProxy;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.multilogin.ml6.MultiLoginBrowserProfileFactory;
 import primemover.multilogin.ml6.MultiLoginDefaultTemplateLoader;
@@ -292,9 +294,19 @@ public class Config {
 	}
 
 	@Bean(name = "RecordingProxy")
-	public IRecorderProxy getRecordingProxy() {
+	@ConditionalOnProperty(name = "recorder.enabled", havingValue = "true")
+	public IRecorderProxy getBrowserUpRecorderProxy() {
+		return new BrowserUpRecorderProxy();
+	}
+
+	@Bean(name = "RecordingProxy")
+	@ConditionalOnProperty(name = "recorder.enabled", havingValue = "false", matchIfMissing = true)
+	public IRecorderProxy getNoRecordingProxy() {
 		return new NoRecordingProxy();
-		// return new WireMockRecorderProxy();
-		// return new BrowserUpRecorderProxy();
+	}
+
+	@Bean(name = "FileStorageService")
+	IStorageService getFileStorageService() {
+		return new FileStorageService();
 	}
 }
