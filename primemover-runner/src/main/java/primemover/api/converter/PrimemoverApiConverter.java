@@ -106,7 +106,7 @@ public class PrimemoverApiConverter {
 			}
 
 			String validatedJson = StringEscapeUtils.unescapeJson(item.getMultilogin_profile());
-			if (validatedJson.startsWith("\"")) {
+			if (validatedJson != null && validatedJson.startsWith("\"")) {
 				validatedJson = validatedJson.substring(1, validatedJson.length() - 1);
 			}
 			agent = new MultiLoginAgent(item.getId(), item.getName(), item.getDescription(), item.getLocation(),
