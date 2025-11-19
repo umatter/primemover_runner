@@ -93,10 +93,10 @@ public class CrawlerService implements ICrawlerService {
 
 	private void appendFakeJob(List<Pair<Crawler, Joblist>> inItems) {
 		Crawler crawler = new Crawler();
-		MultiLoginAgent agent = new MultiLoginAgent();
-		agent.setId(1l);
-		agent.setName("End2End - 00");
-		agent.setMultiLoginId("c00b9234-3908-44b6-b8a9-40cf1cf24ee9");
+		crawler.setId(-1L);
+		crawler.setName("Fake Test Crawler");
+
+		ChromeAgent agent = new ChromeAgent(1L, "Test Chrome Agent", "Local test agent", null);
 		crawler.setAgent(agent);
 
 		Joblist jobs = new Joblist();
