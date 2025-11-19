@@ -35,6 +35,42 @@ mvn spring-boot:run
 
 `mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"`
 
+### ⚠️ Important: API Endpoint Configuration
+
+The `global.mode` setting in your configuration file determines which API endpoint the runner fetches jobs from:
+
+- **`global.mode=PRODUCTION`** → Fetches from `/crawlers-unprocessed`
+- **`global.mode=DEVELOP`** → Fetches from `/crawlers-testing`
+- **`global.mode=INTEGRATION`** → Fetches from `/crawlers-testing`
+
+**For local development:** Make sure your test data is in the correct API endpoint, or set `global.mode=PRODUCTION` in `application-local.properties` if you want to fetch from `/crawlers-unprocessed`.
+
+See `CrawlerService.calculateCrawlerUrl()` for implementation details.
+
+### ⚠️ Important: MultiLogin X Core Version Requirements
+
+MultiLogin X enforces minimum browser core version requirements that can increase over time:
+
+- **Current minimum core version**: 137 (as of 2025)
+- **Error to watch for**: `400 Bad Request: "Can't set core older than X. Please set higher core version"`
+
+**If you encounter this error:**
+
+1. Update your agent's MultiLogin profile template in the database
+2. Set `"core_version": 137` (or higher, as required)
+3. **Recommended**: Set `"auto_update_core": true` to automatically use the latest version and avoid future issues
+
+**Example profile configuration:**
+```json
+{
+  "core_version": 137,
+  "auto_update_core": true,
+  ...
+}
+```
+
+Setting `auto_update_core: false` with an outdated core version will cause profile creation to fail. MultiLogin X will reject requests with older core versions as new browser releases become available.
+
 ## Documentation
 
 For detailed information, see our comprehensive documentation:
