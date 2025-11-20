@@ -43,6 +43,9 @@ public class HarContentFilter {
 	@Value("${har.filter.staticResourceTypes:image/png,image/jpeg,image/gif,image/webp,image/svg+xml,text/css,font/woff,font/woff2,font/ttf,application/font-woff,application/font-woff2,application/x-font-woff,application/x-font-ttf}")
 	private String staticResourceTypes;
 
+	@Value("${har.filter.includeDomains:}")
+	private String includeDomains;
+
 	@Value("${har.filter.excludeDomains:}")
 	private String excludeDomains;
 
@@ -53,6 +56,7 @@ public class HarContentFilter {
 	private String removeHeaders;
 
 	private Set<String> staticResourceTypesSet;
+	private Set<String> includeDomainsSet;
 	private Set<String> excludeDomainsSet;
 	private Set<String> removeHeadersSet;
 	private Long maxBodySizeBytes;
@@ -60,6 +64,7 @@ public class HarContentFilter {
 	@PostConstruct
 	public void init() {
 		staticResourceTypesSet = parseCommaSeparated(staticResourceTypes);
+		includeDomainsSet = parseCommaSeparated(includeDomains);
 		excludeDomainsSet = parseCommaSeparated(excludeDomains);
 		removeHeadersSet = parseCommaSeparated(removeHeaders);
 
@@ -73,9 +78,9 @@ public class HarContentFilter {
 		}
 
 		LOGGER.info("HAR content filter initialized. Enabled: {}, Remove static resources: {}, " +
-						"Static types count: {}, Excluded domains count: {}, Max body size: {}",
+						"Static types count: {}, Included domains count: {}, Excluded domains count: {}, Max body size: {}",
 				filterEnabled, removeStaticResources, staticResourceTypesSet.size(),
-				excludeDomainsSet.size(), maxBodySizeBytes);
+				includeDomainsSet.size(), excludeDomainsSet.size(), maxBodySizeBytes);
 	}
 
 	/**
@@ -166,7 +171,24 @@ public class HarContentFilter {
 			return false;
 		}
 
-		// Filter by domain
+		// Filter by domain - whitelist approach (include domains)
+		// If includeDomains is specified, ONLY include URLs containing those domains
+		if (!includeDomainsSet.isEmpty()) {
+			boolean matches = false;
+			for (String domain : includeDomainsSet) {
+				if (url.contains(domain)) {
+					matches = true;
+					break;
+				}
+			}
+			if (!matches) {
+				LOGGER.trace("Filtering out entry - not in included domains: {}", url);
+				return false;
+			}
+		}
+
+		// Filter by domain - blacklist approach (exclude domains)
+		// Only applies if includeDomains is not specified or if the URL passed the include check
 		if (!excludeDomainsSet.isEmpty()) {
 			for (String domain : excludeDomainsSet) {
 				if (url.contains(domain)) {
