@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ICaptchaSolver;
+import primemover.capture.HarRecordingFilter;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.*;
@@ -87,9 +88,12 @@ public class TaskOperator implements ITaskOperator {
 
 	@Autowired
 	CaptchaSolverFactory captchaSolverFac;
-	
+
 	@Autowired
 	Map<String, IContextBuilder> contextBuilders;
+
+	@Autowired
+	private HarRecordingFilter harRecordingFilter;
 
 	private IpService ipService;
 
@@ -278,7 +282,15 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			// start MITM
-			this.context.getRecordingProxy().startCapturing(job.getId() + '_' + job.getName());
+			// Determine if HAR recording should be enabled for this job type
+			boolean shouldRecordHar = harRecordingFilter.shouldRecordHar(job);
+
+			// start MITM (conditionally based on job type)
+			if (shouldRecordHar) {
+				this.context.getRecordingProxy().startCapturing(job.getId() + '_' + job.getName());
+			} else {
+				logger.debug("Skipping HAR recording for job {} (type: {})", job.getId(), job.getClass().getSimpleName());
+			}
 
 			// running job
 			try {
@@ -336,9 +348,14 @@ public class TaskOperator implements ITaskOperator {
 				// noting to do
 			}
 
-			// capture trafic data
-			String har = context.getRecordingProxy().stopCapturing();
-			dataRecorder.setHar(har);
+			// capture trafic data (conditionally based on job type)
+			if (shouldRecordHar) {
+				String har = context.getRecordingProxy().stopCapturing();
+				dataRecorder.setHar(har);
+			} else {
+				// No HAR recording for this job type
+				dataRecorder.setHar(null);
+			}
 
 			// capture page data
 			if (StringUtils.isEmpty(pageSource)) {
