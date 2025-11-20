@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import primemover.capture.HarContentFilter;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.SessionDecorator;
@@ -80,6 +81,9 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 
 	@Autowired
 	private ProxyDecoratorFactory sessionDecoratorFactory;
+
+	@Autowired
+	private HarContentFilter harContentFilter;
 
 	private BrowserUpProxyServer proxy = null;
 
@@ -272,8 +276,14 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 		proxy.newHar(ref);
 	}
 
-	private static String harToString(Har har) {
+	private String harToString(Har har) {
 		try {
+			// Apply content filtering before serialization
+			if (harContentFilter != null && harContentFilter.isFilterEnabled()) {
+				log.debug("Applying HAR content filtering");
+				har = harContentFilter.filterHar(har);
+			}
+
 			ByteArrayOutputStream tmpOs = new ByteArrayOutputStream(4048);
 			har.writeTo(tmpOs);
 

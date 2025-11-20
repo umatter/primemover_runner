@@ -79,6 +79,7 @@ For detailed information, see our comprehensive documentation:
 - **[Architecture Overview](doc/architecture.md)** - System design and components
 - **[Job System Guide](doc/job-system.md)** - Understanding jobs and execution
 - **[Configuration Guide](doc/configuration.md)** - Service setup and credentials
+- **[HAR Recording Guide](doc/har-recording.md)** - Network traffic capture optimization (NEW!)
 - **[Development Guide](doc/development.md)** - Development workflow and best practices
 - **[Repository Structure](doc/repository-structure.md)** - Codebase organization
 - **[Advanced Features](doc/advanced-features.md)** - Smart navigation, anti-detection, monitoring
@@ -104,6 +105,16 @@ For detailed information, see our comprehensive documentation:
 - Retry mechanisms and failure handling with Spring Retry
 - Real-time job status monitoring with 14 different execution states
 - Failsafe job variants that don't stop execution on failure
+
+### 📦 HAR Recording Optimization (New!)
+- **Selective Recording**: Skip HAR capture for jobs without network activity (WaitJob, ScrollJobs, etc.)
+- **Content Filtering**: Remove static resources (images, CSS, fonts) from HAR files
+- **Domain Filtering**: Whitelist or blacklist specific domains
+  - **Whitelist**: Only capture traffic to specified domains (e.g., `har.filter.includeDomains=api.example.com`)
+  - **Blacklist**: Exclude analytics/tracking domains (e.g., `har.filter.excludeDomains=google-analytics.com`)
+- **Body Size Truncation**: Limit request/response body sizes
+- **Storage Savings**: Achieve 99%+ reduction in HAR storage costs
+- See [HAR Recording Guide](doc/har-recording.md) for details
 
 ### 🛡️ Security & Compliance
 - Secure credential management
