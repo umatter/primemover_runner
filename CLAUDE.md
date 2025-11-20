@@ -134,6 +134,7 @@ har.recording.enabled=true                 # Global HAR recording toggle
 har.recording.excludeJobTypes=WaitJob,...  # Job types to skip HAR recording
 har.filter.enabled=false                   # Enable HAR content filtering
 har.filter.removeStaticResources=false     # Filter images, CSS, fonts
+har.filter.includeDomains=                 # Include only these domains (whitelist)
 har.filter.excludeDomains=                 # Exclude tracking/analytics domains
 har.filter.maxBodySize=                    # Truncate large bodies (bytes)
 ```
@@ -150,7 +151,8 @@ PrimeMover includes intelligent HAR (HTTP Archive) recording optimization to red
 
 2. **Content Filtering** - Remove unnecessary data from HAR files
    - Filter static resources (images, CSS, fonts, JavaScript)
-   - Exclude tracking/analytics domains
+   - Include only specific domains (whitelist approach)
+   - Exclude tracking/analytics domains (blacklist approach)
    - Truncate large request/response bodies
    - Remove specific HTTP headers
    - Configurable via `har.filter.*` properties
@@ -163,17 +165,31 @@ PrimeMover includes intelligent HAR (HTTP Archive) recording optimization to red
 - Smaller storage footprint (S3, file system, backend)
 - Faster data transfer to storage backends
 
-**Configuration Example - Production Optimization:**
+**Configuration Examples:**
+
+*Production Optimization (blacklist approach):*
 ```properties
 # Enable job type filtering (recommended)
 har.recording.enabled=true
 har.recording.excludeJobTypes=WaitJob,ScrollByDurationJob,ScrollByLengthJob,HandleAlertJob,AssertTextInFieldJob,AssertElementExistsJob,AssertScrolledMaxJob,AssertPageLoadedJob,AssertProxyJob,AssertProxyByGeosurfJob,AssertProxyByPrimemoverApiJob
 
-# Enable content filtering (optional, for additional size reduction)
+# Enable content filtering - exclude unwanted domains
 har.filter.enabled=true
 har.filter.removeStaticResources=true
 har.filter.excludeDomains=google-analytics.com,facebook.com,doubleclick.net
 har.filter.maxBodySize=102400
+```
+
+*Focused Capture (whitelist approach):*
+```properties
+# Only capture traffic from specific domains
+har.recording.enabled=true
+har.recording.excludeJobTypes=WaitJob,ScrollByDurationJob,ScrollByLengthJob,HandleAlertJob
+
+# Whitelist specific domains - all others filtered out
+har.filter.enabled=true
+har.filter.includeDomains=example.com,api.example.com
+har.filter.removeStaticResources=true
 ```
 
 **Files:**
