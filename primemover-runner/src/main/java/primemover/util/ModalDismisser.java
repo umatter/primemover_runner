@@ -2,6 +2,8 @@ package primemover.util;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for detecting and dismissing common modal overlays
@@ -10,6 +12,8 @@ import org.openqa.selenium.WebDriver;
  * Uses a conservative approach - only clicks clearly visible close/accept buttons.
  */
 public class ModalDismisser {
+
+    private static Logger logger = LoggerFactory.getLogger(ModalDismisser.class);
 
     // Common close button CSS selectors (conservative list)
     // Order matters: more specific/reliable selectors first
@@ -80,7 +84,7 @@ public class ModalDismisser {
         "[class*='dismiss-button']"
     };
 
-    // Common button text patterns for cookie consent (case-insensitive matching)
+    // Common button text patterns for cookie consent and promotional popups (case-insensitive matching)
     private static final String[] BUTTON_TEXT_PATTERNS = {
         "accept", "i accept", "yes, i accept", "accept all", "accept cookies",
         "agree", "i agree", "agree all",
@@ -88,7 +92,8 @@ public class ModalDismisser {
         "allow", "allow all", "allow cookies",
         "understand", "i understand",
         "continue", "confirm",
-        "no, thank", "reject", "decline"  // Also try reject buttons as fallback
+        "no thanks", "no, thanks", "no, thank you", "not now", "maybe later",
+        "reject", "decline", "dismiss", "skip", "close"
     };
 
     /**
@@ -137,7 +142,7 @@ public class ModalDismisser {
             return Boolean.TRUE.equals(result);
 
         } catch (Exception e) {
-            System.out.println("Modal dismissal error: " + e.getMessage());
+            logger.warn("Modal dismissal error: {}", e.getMessage());
             return false;
         }
     }

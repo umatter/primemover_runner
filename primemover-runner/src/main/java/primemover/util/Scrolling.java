@@ -2,8 +2,12 @@ package primemover.util;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Scrolling {
+
+	private static Logger logger = LoggerFactory.getLogger(Scrolling.class);
 	
 	
 	public static Boolean isScrolledToBootom(WebDriver driver) {
@@ -116,16 +120,16 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 		script.append("return true;");
 		
 		Boolean res = (Boolean) jse.executeScript(script.toString());
-		System.out.println("Scrolling down with result: " + res);
+		logger.debug("Scrolling down with result: {}", res);
 	}
-	
+
 	public static void scrollDownForDurationByJavascript(WebDriver driver, Integer seconds) {
 		JavascriptExecutor jse = (JavascriptExecutor) driver;
 
 		// Proactively try to dismiss any visible modals before starting scroll
 		try {
 			if (ModalDismisser.tryDismissModal(driver)) {
-				System.out.println("Dismissed modal before scrolling");
+				logger.info("Dismissed modal before scrolling");
 				Thread.sleep(300); // Wait for modal animation to complete
 			}
 		} catch (Exception e) {
@@ -148,7 +152,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				// Check if we've reached the bottom
 				Boolean atBottom = isScrolledToBootom(driver);
 				if (atBottom != null && atBottom) {
-					System.out.println("Reached bottom of page after " + i + " steps");
+					logger.debug("Reached bottom of page after {} steps", i);
 					break;
 				}
 
@@ -167,27 +171,27 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				// Check if scroll actually worked (position should increase when scrolling down)
 				if (positionBefore >= 0 && positionAfter >= 0 && positionAfter <= positionBefore) {
 					consecutiveNoMovement++;
-					System.out.println("Scroll did not move (stuck at " + positionAfter + "), attempt " + consecutiveNoMovement);
+					logger.debug("Scroll did not move (stuck at {}), attempt {}", positionAfter, consecutiveNoMovement);
 
 					if (consecutiveNoMovement >= maxConsecutiveNoMovement) {
 						// Try to dismiss modal first
-						System.out.println("Attempting to dismiss modal overlay");
+						logger.debug("Attempting to dismiss modal overlay");
 						boolean dismissed = ModalDismisser.tryDismissModal(driver);
 						if (dismissed) {
-							System.out.println("Modal dismiss attempted, waiting for animation...");
+							logger.debug("Modal dismiss attempted, waiting for animation");
 							Thread.sleep(200); // Wait for modal animation
 							consecutiveNoMovement = 0; // Reset counter after dismiss
 							continue; // Retry scroll on next iteration
 						}
 
 						// Try fallback scroll method
-						System.out.println("Trying fallback scroll method (documentElement.scrollTop)");
+						logger.debug("Trying fallback scroll method (documentElement.scrollTop)");
 						boolean fallbackWorked = tryFallbackScroll(jse, pixelsPerStep, true);
 						if (fallbackWorked) {
-							System.out.println("Fallback scroll succeeded");
+							logger.debug("Fallback scroll succeeded");
 							consecutiveNoMovement = 0;
 						} else {
-							System.out.println("Fallback scroll also failed, continuing...");
+							logger.debug("Fallback scroll also failed, continuing");
 							// Don't break - page might just be slow to respond
 						}
 					}
@@ -198,9 +202,9 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				consecutiveErrors = 0; // Reset on success
 			} catch (Exception e) {
 				consecutiveErrors++;
-				System.out.println("Error during scroll step " + i + ": " + e.getMessage());
+				logger.warn("Error during scroll step {}: {}", i, e.getMessage());
 				if (consecutiveErrors >= maxConsecutiveErrors) {
-					System.out.println("Too many consecutive scroll errors, stopping scroll");
+					logger.warn("Too many consecutive scroll errors, stopping scroll");
 					break;
 				}
 			}
@@ -212,7 +216,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				break;
 			}
 		}
-		System.out.println("Scrolled down for " + seconds + " seconds");
+		logger.debug("Scrolled down for {} seconds", seconds);
 	}
 
 	public static void scrollUpForDurationByJavascript(WebDriver driver, Integer seconds) {
@@ -221,7 +225,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 		// Proactively try to dismiss any visible modals before starting scroll
 		try {
 			if (ModalDismisser.tryDismissModal(driver)) {
-				System.out.println("Dismissed modal before scrolling");
+				logger.info("Dismissed modal before scrolling");
 				Thread.sleep(300); // Wait for modal animation to complete
 			}
 		} catch (Exception e) {
@@ -243,7 +247,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				// Check if we've reached the top
 				Boolean atTop = isScrolledToTop(driver);
 				if (atTop != null && atTop) {
-					System.out.println("Reached top of page after " + i + " steps");
+					logger.debug("Reached top of page after {} steps", i);
 					break;
 				}
 
@@ -262,27 +266,27 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				// Check if scroll actually worked (position should decrease when scrolling up)
 				if (positionBefore >= 0 && positionAfter >= 0 && positionAfter >= positionBefore) {
 					consecutiveNoMovement++;
-					System.out.println("Scroll did not move (stuck at " + positionAfter + "), attempt " + consecutiveNoMovement);
+					logger.debug("Scroll did not move (stuck at {}), attempt {}", positionAfter, consecutiveNoMovement);
 
 					if (consecutiveNoMovement >= maxConsecutiveNoMovement) {
 						// Try to dismiss modal first
-						System.out.println("Attempting to dismiss modal overlay");
+						logger.debug("Attempting to dismiss modal overlay");
 						boolean dismissed = ModalDismisser.tryDismissModal(driver);
 						if (dismissed) {
-							System.out.println("Modal dismiss attempted, waiting for animation...");
+							logger.debug("Modal dismiss attempted, waiting for animation");
 							Thread.sleep(200); // Wait for modal animation
 							consecutiveNoMovement = 0; // Reset counter after dismiss
 							continue; // Retry scroll on next iteration
 						}
 
 						// Try fallback scroll method
-						System.out.println("Trying fallback scroll method (documentElement.scrollTop)");
+						logger.debug("Trying fallback scroll method (documentElement.scrollTop)");
 						boolean fallbackWorked = tryFallbackScroll(jse, pixelsPerStep, false); // false = scroll up
 						if (fallbackWorked) {
-							System.out.println("Fallback scroll succeeded");
+							logger.debug("Fallback scroll succeeded");
 							consecutiveNoMovement = 0;
 						} else {
-							System.out.println("Fallback scroll also failed, continuing...");
+							logger.debug("Fallback scroll also failed, continuing");
 							// Don't break - page might just be slow to respond
 						}
 					}
@@ -293,9 +297,9 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				consecutiveErrors = 0; // Reset on success
 			} catch (Exception e) {
 				consecutiveErrors++;
-				System.out.println("Error during scroll step " + i + ": " + e.getMessage());
+				logger.warn("Error during scroll step {}: {}", i, e.getMessage());
 				if (consecutiveErrors >= maxConsecutiveErrors) {
-					System.out.println("Too many consecutive scroll errors, stopping scroll");
+					logger.warn("Too many consecutive scroll errors, stopping scroll");
 					break;
 				}
 			}
@@ -307,10 +311,10 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 				break;
 			}
 		}
-		System.out.println("Scrolled up for " + seconds + " seconds");
+		logger.debug("Scrolled up for {} seconds", seconds);
 	}
-	
-	
+
+
 	public static void scrollUpByJavascript(WebDriver driver, Integer length) {
 		JavascriptExecutor jse = (JavascriptExecutor)driver;
    	 
@@ -330,7 +334,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 		script.append("return true;");
 		
 		Boolean res = (Boolean) jse.executeScript(script.toString());
-		
-		System.out.println("Scrolling up with result: " + res);
+
+		logger.debug("Scrolling up with result: {}", res);
 	}
 }
