@@ -6,10 +6,14 @@ import org.springframework.beans.factory.annotation.Value;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.InvokeRequest;
 import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+
+import java.time.Duration;
 
 public class LambdaCaller implements AutoCloseable {
 	private static Logger logger = LoggerFactory.getLogger(LambdaCaller.class);
@@ -20,6 +24,13 @@ public class LambdaCaller implements AutoCloseable {
 	private String secretKey;
 
 	private Region region = Region.EU_CENTRAL_1;
+
+	// Lambda function can take up to 300s, so we need a longer timeout than the default 30s
+	// Socket read timeout must be longer than expected Lambda execution time (avg 40s, max 60s)
+	private static final Duration API_CALL_TIMEOUT = Duration.ofSeconds(120);
+	private static final Duration API_CALL_ATTEMPT_TIMEOUT = Duration.ofSeconds(90);
+	private static final Duration SOCKET_TIMEOUT = Duration.ofSeconds(90);
+	private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(10);
 
 	private LambdaClient client = null;
 
@@ -35,10 +46,25 @@ public class LambdaCaller implements AutoCloseable {
 
 		AwsBasicCredentials awsCreds = AwsBasicCredentials.create(this.accessKey, this.secretKey);
 
-		logger.debug("initializing client");
+		// Configure timeouts for Lambda invocation
+		ClientOverrideConfiguration overrideConfig = ClientOverrideConfiguration.builder()
+				.apiCallTimeout(API_CALL_TIMEOUT)
+				.apiCallAttemptTimeout(API_CALL_ATTEMPT_TIMEOUT)
+				.build();
+
+		// Configure HTTP client with socket/read timeout
+		// Default socket timeout is 30s which is too short for Lambda calls (avg 40s)
+		UrlConnectionHttpClient.Builder httpClientBuilder = UrlConnectionHttpClient.builder()
+				.socketTimeout(SOCKET_TIMEOUT)
+				.connectionTimeout(CONNECTION_TIMEOUT);
+
+		logger.debug("initializing client with API timeout: {}s, socket timeout: {}s",
+				API_CALL_TIMEOUT.getSeconds(), SOCKET_TIMEOUT.getSeconds());
 		this.client = LambdaClient.builder() //
 				.region(this.region) //
 				.credentialsProvider(StaticCredentialsProvider.create(awsCreds))//
+				.overrideConfiguration(overrideConfig)
+				.httpClientBuilder(httpClientBuilder)
 				.build();
 	}
 

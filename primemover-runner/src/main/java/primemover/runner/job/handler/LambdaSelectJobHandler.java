@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -139,10 +140,22 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 			// select xpath
 			WebElement element = driver.findElement(By.xpath(parsedResult.getXpath())); // NoSuchElementException
-			// Wait for Element
-			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+
+			// Scroll element into view with offset to avoid sticky headers (e.g., YouTube masthead)
+			// First scroll element to center of viewport, then adjust for potential header overlap
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+			js.executeScript("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element);
+
+			// Small pause to allow scroll to complete and any overlays to settle
+			Thread.sleep(300);
+
+			// Wait for Element to be clickable
+			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 			wait.until(ExpectedConditions.elementToBeClickable(element));
-			element.click();
+
+			// Use JavaScript click as fallback-proof method to avoid ElementClickInterceptedException
+			// This bypasses any overlapping elements like sticky headers
+			js.executeScript("arguments[0].click();", element);
 
 		} catch (Exception e) {
 			logger.warn("error executing lambda", e);
