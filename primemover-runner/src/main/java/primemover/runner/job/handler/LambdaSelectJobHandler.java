@@ -23,7 +23,7 @@ import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.lambda.LambdaInvocationData;
 import primemover.service.datawriter.lambda.LambdaInvocationWriter;
-import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+import primemover.lambda.LambdaInvokeResult;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
@@ -95,19 +95,19 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 			data.setInputJson(mapper.writeValueAsString(param));
 
-			InvokeResponse result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
+			LambdaInvokeResult result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
 			data.setOutputJson(mapper.writeValueAsString(result));
 
-			if (!StringUtils.isEmpty(result.functionError())) {
+			if (!StringUtils.isEmpty(result.getFunctionError())) {
 				// Enhanced error logging with more details
-				logger.error("Lambda function '{}' failed with error type: {}", 
-							typedJob.getLinkValue(), result.functionError());
-				logger.error("Lambda status code: {}", result.statusCode());
-				
+				logger.error("Lambda function '{}' failed with error type: {}",
+							typedJob.getLinkValue(), result.getFunctionError());
+				logger.error("Lambda status code: {}", result.getStatusCode());
+
 				// Try to parse error details from payload
-				String errorPayload = result.payload().asUtf8String();
+				String errorPayload = result.getPayload();
 				logger.error("Lambda error response payload: {}", errorPayload);
-				
+
 				// Try to extract structured error information
 				try {
 					// Attempt to parse as JSON to get structured error info
@@ -116,19 +116,19 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				} catch (Exception parseEx) {
 					logger.debug("Could not parse Lambda error payload as JSON: {}", parseEx.getMessage());
 				}
-				
-				throw new RuntimeException("Lambda Error (functionError): " + result.functionError() + 
-										 " - Status: " + result.statusCode() + 
+
+				throw new RuntimeException("Lambda Error (functionError): " + result.getFunctionError() +
+										 " - Status: " + result.getStatusCode() +
 										 " - Details: " + errorPayload);
 			}
 
-			if (!(result.statusCode() >= 200 && result.statusCode() < 300)) {
-				logger.error("AWS responded with status code {}", result.statusCode());
-				throw new RuntimeException("Lambda Error (status code): " + result.statusCode());
+			if (!(result.getStatusCode() >= 200 && result.getStatusCode() < 300)) {
+				logger.error("AWS responded with status code {}", result.getStatusCode());
+				throw new RuntimeException("Lambda Error (status code): " + result.getStatusCode());
 			}
 
 			// Log the full Lambda response payload BEFORE attempting deserialization
-			String lambdaResponsePayload = result.payload().asUtf8String();
+			String lambdaResponsePayload = result.getPayload();
 			logger.info("Full Lambda response payload: {}", lambdaResponsePayload);
 
 			LambdaSelectJobResult parsedResult = mapper.readValue(lambdaResponsePayload,

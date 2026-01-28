@@ -3,6 +3,11 @@ package primemover.lambda;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
@@ -23,6 +28,14 @@ public class LambdaCaller implements AutoCloseable {
 	@Value("${awsS3.secretKey}")
 	private String secretKey;
 
+	// Lambda execution mode: "local" or "aws"
+	@Value("${lambda.mode:aws}")
+	private String lambdaMode;
+
+	// Local Lambda server URL (used when lambda.mode=local)
+	@Value("${lambda.local.url:http://localhost:5001/invoke}")
+	private String localLambdaUrl;
+
 	private Region region = Region.EU_CENTRAL_1;
 
 	// Lambda function can take up to 300s, so we need a longer timeout than the default 30s
@@ -32,15 +45,15 @@ public class LambdaCaller implements AutoCloseable {
 	private static final Duration SOCKET_TIMEOUT = Duration.ofSeconds(90);
 	private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(10);
 
-	private LambdaClient client = null;
+	private LambdaClient awsClient = null;
+	private RestTemplate localClient = null;
 
 	public LambdaCaller() {
 
 	}
 
-	private void initClient() {
-
-		if (client != null) {
+	private void initAwsClient() {
+		if (awsClient != null) {
 			return;
 		}
 
@@ -58,71 +71,136 @@ public class LambdaCaller implements AutoCloseable {
 				.socketTimeout(SOCKET_TIMEOUT)
 				.connectionTimeout(CONNECTION_TIMEOUT);
 
-		logger.debug("initializing client with API timeout: {}s, socket timeout: {}s",
+		logger.debug("initializing AWS client with API timeout: {}s, socket timeout: {}s",
 				API_CALL_TIMEOUT.getSeconds(), SOCKET_TIMEOUT.getSeconds());
-		this.client = LambdaClient.builder() //
-				.region(this.region) //
-				.credentialsProvider(StaticCredentialsProvider.create(awsCreds))//
+		this.awsClient = LambdaClient.builder()
+				.region(this.region)
+				.credentialsProvider(StaticCredentialsProvider.create(awsCreds))
 				.overrideConfiguration(overrideConfig)
 				.httpClientBuilder(httpClientBuilder)
 				.build();
 	}
 
-	public InvokeResponse invoke(String functionName, String param) throws LambdaException {
-		this.initClient();
+	private void initLocalClient() {
+		if (localClient != null) {
+			return;
+		}
 
-		if (this.client == null) {
+		logger.debug("initializing local Lambda client with URL: {}", localLambdaUrl);
+		this.localClient = new RestTemplate();
+	}
+
+	/**
+	 * Invoke the Lambda function (unified interface for both local and AWS).
+	 * Returns a LambdaInvokeResult that works with both modes.
+	 */
+	public LambdaInvokeResult invoke(String functionName, String param) throws LambdaException {
+		if ("local".equalsIgnoreCase(lambdaMode)) {
+			return invokeLocal(param);
+		} else {
+			return invokeAws(functionName, param);
+		}
+	}
+
+	/**
+	 * Invoke the Lambda function via AWS Lambda service.
+	 */
+	private LambdaInvokeResult invokeAws(String functionName, String param) throws LambdaException {
+		this.initAwsClient();
+
+		if (this.awsClient == null) {
 			throw new LambdaException("Lambda client is not initialized");
 		}
 
-		InvokeResponse res = null;
-
 		try {
-			logger.info("calling Lambda function: {}", functionName);
+			logger.info("calling AWS Lambda function: {}", functionName);
 			SdkBytes payload = SdkBytes.fromUtf8String(param);
 
 			// Setup an InvokeRequest.
-			InvokeRequest request = InvokeRequest.builder() //
-					.functionName(functionName) //
-					.payload(payload) //
+			InvokeRequest request = InvokeRequest.builder()
+					.functionName(functionName)
+					.payload(payload)
 					.build();
 
-			logger.debug("invoking function");
-			res = this.client.invoke(request);
+			logger.debug("invoking AWS function");
+			InvokeResponse res = this.awsClient.invoke(request);
 
 			// Enhanced error logging
 			if (res.functionError() != null && !res.functionError().isEmpty()) {
 				logger.error("Lambda function error type: {}", res.functionError());
 				logger.error("Lambda status code: {}", res.statusCode());
-				
+
 				// Log the response payload which may contain error details
 				String responsePayload = res.payload().asUtf8String();
 				logger.error("Lambda error payload: {}", responsePayload);
-				
+
 				// Log execution details
 				if (res.executedVersion() != null) {
 					logger.error("Lambda executed version: {}", res.executedVersion());
 				}
 			}
 
-			return res;
+			// Convert to our unified result type
+			return LambdaInvokeResult.builder()
+					.statusCode(res.statusCode())
+					.payload(res.payload().asUtf8String())
+					.functionError(res.functionError())
+					.build();
 
 		} catch (Exception ex) {
-
-			logger.error("error invoking function", ex);
+			logger.error("error invoking AWS function", ex);
 			throw new LambdaException("Failure calling Lambda function", ex);
 		}
+	}
 
+	/**
+	 * Invoke the Lambda function via local HTTP server.
+	 * The local server mirrors the AWS Lambda interface.
+	 */
+	private LambdaInvokeResult invokeLocal(String param) throws LambdaException {
+		this.initLocalClient();
+
+		try {
+			logger.info("calling local Lambda server at: {}", localLambdaUrl);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<String> request = new HttpEntity<>(param, headers);
+
+			logger.debug("invoking local function");
+			ResponseEntity<String> response = localClient.postForEntity(localLambdaUrl, request, String.class);
+
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				logger.error("Local Lambda returned error status: {}", response.getStatusCode());
+				logger.error("Local Lambda response body: {}", response.getBody());
+				throw new LambdaException("Local Lambda returned error: " + response.getStatusCode());
+			}
+
+			String responseBody = response.getBody();
+			logger.debug("local Lambda response received, length: {}", responseBody != null ? responseBody.length() : 0);
+
+			// Return as our unified result type
+			return LambdaInvokeResult.builder()
+					.statusCode(response.getStatusCode().value())
+					.payload(responseBody != null ? responseBody : "")
+					.functionError(null)
+					.build();
+
+		} catch (LambdaException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("error invoking local function", ex);
+			throw new LambdaException("Failure calling local Lambda function", ex);
+		}
 	}
 
 	@Override
 	public void close() throws Exception {
-		if (this.client == null) {
-			return;
+		if (this.awsClient != null) {
+			this.awsClient.close();
+			this.awsClient = null;
 		}
-
-		this.client.close();
-		this.client = null;
+		this.localClient = null;
 	}
-
 }
