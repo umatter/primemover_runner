@@ -201,7 +201,7 @@ public class PrimemoverApiConverter {
 			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		LOGGER.debug("converting HandleAlertJob {}", id);
 		HandleAlertJob job = new HandleAlertJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, false, behaviours);
 		if (behaviours.containsKey("seconds")) {
 			job.setAction(DialogHandleType.valueOf(behaviours.get("action")));
 		} else {
@@ -229,7 +229,7 @@ public class PrimemoverApiConverter {
 			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		LOGGER.debug("converting EnterTextFieldJob {}", id);
 		EnterTextFieldJob job = new EnterTextFieldJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, false, behaviours);
 		job.setType(HtmlSelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 		job.setValue(behaviours.get("text"));
@@ -264,7 +264,7 @@ public class PrimemoverApiConverter {
 		LOGGER.debug("converting ClickJob {}", id);
 		ClickJob job = new ClickJob();
 
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, false, behaviours);
 		job.setType(HtmlSelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 
@@ -281,7 +281,7 @@ public class PrimemoverApiConverter {
 			CaptchaSolvingType captchaSolving, Boolean runFailsave, Map<String, String> behaviours) {
 		LOGGER.debug("converting SwitchJob {}", id);
 		SwitchToJob job = new SwitchToJob();
-		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, false, behaviours);
 		job.setType(HtmlSelectorType.valueOf(behaviours.get("selectionType")));
 		job.setSelector(behaviours.get("selector"));
 
