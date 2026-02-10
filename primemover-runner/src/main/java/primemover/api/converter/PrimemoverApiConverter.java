@@ -378,8 +378,25 @@ public class PrimemoverApiConverter {
 		LOGGER.debug("converting ApiScrollByLengthJob {}", id);
 		ScrollByLengthJob job = new ScrollByLengthJob();
 		setBaseFields(job, id, name, description, captchaSolving, behaviours);
-		job.setLength(Integer.valueOf(behaviours.get("length")));
-		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
+
+		// Support multiple field names for length (length, pixels, scrollLength)
+		if (behaviours.containsKey("length")) {
+			job.setLength(Integer.valueOf(behaviours.get("length")));
+		} else if (behaviours.containsKey("pixels")) {
+			job.setLength(Integer.valueOf(behaviours.get("pixels")));
+		} else if (behaviours.containsKey("scrollLength")) {
+			job.setLength(Integer.valueOf(behaviours.get("scrollLength")));
+		} else {
+			throw new IllegalStateException("ScrollByLengthJob " + id + ": no length, pixels, or scrollLength found in behaviors");
+		}
+
+		// Support missing scrollDirection with sensible default
+		if (behaviours.containsKey("scrollDirection")) {
+			job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
+		} else {
+			LOGGER.warn("ScrollByLengthJob {}: scrollDirection not specified, defaulting to DOWN", id);
+			job.setDirection(ScrollDirection.DOWN);
+		}
 
 		return job;
 	}
@@ -524,10 +541,20 @@ public class PrimemoverApiConverter {
 		// verify
 		List<primemover.api.model.Job> list = item.getJobs();
 		List<IJob> jobs = new ArrayList<IJob>();
+		int skippedJobs = 0;
 
 		if (!list.isEmpty()) {
 			for (primemover.api.model.Job job : list) {
-				jobs.add(convertApiJob(job, defaultCaptchaSolving));
+				try {
+					jobs.add(convertApiJob(job, defaultCaptchaSolving));
+				} catch (Exception e) {
+					LOGGER.error("Failed to convert job {} (type: {}) in queue {}: {}. Skipping this job.",
+							job.getId(), job.getType(), item.getId(), e.getMessage());
+					skippedJobs++;
+				}
+			}
+			if (skippedJobs > 0) {
+				LOGGER.warn("Skipped {} job(s) in queue {} due to conversion errors", skippedJobs, item.getId());
 			}
 		} else {
 			LOGGER.warn("Joblist was empty for queue {}", item.getId());
@@ -584,11 +611,21 @@ public class PrimemoverApiConverter {
 
 		List<Pair<Crawler, Joblist>> res = new ArrayList<Pair<Crawler, Joblist>>();
 		List<primemover.api.model.Crawler> data = input.getData();
+		int skippedCrawlers = 0;
 
 		if (!data.isEmpty()) {
 
 			for (primemover.api.model.Crawler item : data) {
-				res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
+				try {
+					res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
+				} catch (Exception e) {
+					LOGGER.error("Failed to convert crawler {}: {}. Skipping this crawler.",
+							item.getId(), e.getMessage());
+					skippedCrawlers++;
+				}
+			}
+			if (skippedCrawlers > 0) {
+				LOGGER.warn("Skipped {} crawler(s) due to conversion errors", skippedCrawlers);
 			}
 		}
 
@@ -601,11 +638,21 @@ public class PrimemoverApiConverter {
 
 		List<Pair<Crawler, Joblist>> res = new ArrayList<Pair<Crawler, Joblist>>();
 		List<primemover.api.model.Crawler> data = List.of(input);
+		int skippedCrawlers = 0;
 
 		if (!data.isEmpty()) {
 
 			for (primemover.api.model.Crawler item : data) {
-				res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
+				try {
+					res.addAll(convertApiCrawler(item, defaultCaptchaSolving));
+				} catch (Exception e) {
+					LOGGER.error("Failed to convert crawler {}: {}. Skipping this crawler.",
+							item.getId(), e.getMessage());
+					skippedCrawlers++;
+				}
+			}
+			if (skippedCrawlers > 0) {
+				LOGGER.warn("Skipped {} crawler(s) due to conversion errors", skippedCrawlers);
 			}
 		}
 

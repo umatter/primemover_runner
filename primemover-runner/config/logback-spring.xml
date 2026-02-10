@@ -1,27 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
 	<property name="LOG_LEVEL_PATTERN" value="%X{} %5p" />
-    	
-	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />    
-	 
-	 <logger name="primemover.api" level="WARN" /> 
-     <logger name="org.apache" level="WARN"/>
-     <logger name="org.littleshoot" level="WARN"/>
-    		  
-    <springProfile name="dev,staging,test,local">        
-        <root level="DEBUG">
-		    <appender-ref ref="CONSOLE" />
-		</root>
-    </springProfile>
-    <springProfile name="production">
-    	<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
-        <include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+	<property name="LOG_FILE" value="${LOG_FILE:-log/primemover-runner.log}"/>
 
-        <root level="WARN">
-		    <appender-ref ref="FILE" />
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	<include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+
+	<!-- Reduce noise from verbose libraries -->
+	<logger name="primemover.api" level="WARN" />
+	<logger name="org.apache" level="WARN"/>
+	<logger name="org.littleshoot" level="WARN"/>
+	<logger name="net.lightbody" level="WARN"/>
+
+	<!-- Enable DEBUG for our utility classes -->
+	<logger name="primemover.util" level="DEBUG"/>
+	<logger name="primemover.lambda" level="DEBUG"/>
+	<logger name="primemover.runner" level="DEBUG"/>
+
+	<springProfile name="dev,staging,test,local">
+		<root level="DEBUG">
+			<appender-ref ref="CONSOLE" />
+			<appender-ref ref="FILE" />
 		</root>
-    </springProfile>
-    
-    
+	</springProfile>
+	<springProfile name="production">
+		<root level="INFO">
+			<appender-ref ref="CONSOLE" />
+			<appender-ref ref="FILE" />
+		</root>
+	</springProfile>
+	<!-- Default profile (no profile specified) -->
+	<springProfile name="default">
+		<root level="INFO">
+			<appender-ref ref="CONSOLE" />
+			<appender-ref ref="FILE" />
+		</root>
+	</springProfile>
+
  </configuration>
