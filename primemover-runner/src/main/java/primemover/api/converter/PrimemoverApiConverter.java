@@ -166,7 +166,7 @@ public class PrimemoverApiConverter {
 			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
 		LOGGER.debug("converting LambdaSelectJob {}", id);
 		LambdaSelectJob job = new LambdaSelectJob();
-		setBaseFields(job, id, name, description, captchaSolving, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, true, behaviours); // will reset failure by default!
 
 		String type = behaviours.get("linkType");
 		if (type == null) {
@@ -356,10 +356,10 @@ public class PrimemoverApiConverter {
 	}
 
 	private static ScrollByDurationJob convertApiScrollByDurationJob(Long id, String name, String description,
-			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+			CaptchaSolvingType captchaSolving, boolean runFailsave, Map<String, String> behaviours) {
 		LOGGER.debug("converting ScrollByDurationJob {}", id);
 		ScrollByDurationJob job = new ScrollByDurationJob();
-		setBaseFields(job, id, name, description, captchaSolving, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 
 		if (behaviours.containsKey("scrollDuration")) {
 			job.setDuration(Double.valueOf(behaviours.get("scrollDuration")).intValue());
@@ -374,10 +374,10 @@ public class PrimemoverApiConverter {
 	}
 
 	private static ScrollByLengthJob convertApiScrollByLengthJob(Long id, String name, String description,
-			CaptchaSolvingType captchaSolving, Map<String, String> behaviours) {
+			CaptchaSolvingType captchaSolving, boolean runFailsave, Map<String, String> behaviours) {
 		LOGGER.debug("converting ApiScrollByLengthJob {}", id);
 		ScrollByLengthJob job = new ScrollByLengthJob();
-		setBaseFields(job, id, name, description, captchaSolving, behaviours);
+		setBaseFields(job, id, name, description, captchaSolving, runFailsave, behaviours);
 		job.setLength(Integer.valueOf(behaviours.get("length")));
 		job.setDirection(ScrollDirection.valueOf(behaviours.get("scrollDirection")));
 
@@ -434,11 +434,19 @@ public class PrimemoverApiConverter {
 			break;
 		case "scrollbydurationjob":
 			res = convertApiScrollByDurationJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
-					behaviors);
+					false, behaviors);
+			break;
+		case "tryscrollbydurationjob":
+			res = convertApiScrollByDurationJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
+					true, behaviors);
 			break;
 		case "scrollbylengthjob":
 			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
-					behaviors);
+					false, behaviors);
+			break;
+		case "tryscrollbylengthjob":
+			res = convertApiScrollByLengthJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
+					true, behaviors);
 			break;
 		case "handlealertjob":
 			res = convertApiHandleAlertJob(job.getId(), job.getName(), job.getDescription(), captchaSolving, false,

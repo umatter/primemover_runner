@@ -55,7 +55,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 		script.append("let opt = {");
 		script.append("left: 0,");
 		script.append("top: scrollPos + scrollHeight / 100 * " + length + ",");
-		script.append("behaviour: 'smooth'");
+		script.append("behavior: 'smooth'");
 		script.append("};");
 		script.append("window.scrollTo(opt);"); // TODO: call to prototype?
 		script.append("return true;");
@@ -90,7 +90,7 @@ var scrolledToBottom = (scrollTop + window.innerHeight) >= scrollHeight;
 		script.append("let opt = {");
 		script.append("left: 0,");
 		script.append("top: scrollPos - scrollHeight / 100 * " + length + ",");
-		script.append("behaviour: 'smooth'");
+		script.append("behavior: 'smooth'");
 		script.append("};");
 		script.append("window.scrollTo(opt);"); // TODO: call to prototype?
 		script.append("return true;");

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -89,6 +90,18 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 		try {
 
+			// --- Layer C: DOM Stabilization ---
+			// Wait for YouTube recommendation elements to be present and stable before capturing page source
+			try {
+				new WebDriverWait(driver, Duration.ofSeconds(10))
+					.until(ExpectedConditions.presenceOfElementLocated(
+						By.cssSelector("#related yt-lockup-view-model, #secondary yt-lockup-view-model")));
+				Thread.sleep(1000); // extra settle time after elements appear
+				logger.debug("Recommendation container stabilized");
+			} catch (Exception stabilizeEx) {
+				logger.warn("Recommendation container not found during stabilization wait, proceeding anyway");
+			}
+
 			// prepare input JSON
 			LambdaSelectJobParam param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
 					driver.getPageSource(), context.getCrawler().getRawConfiguration());
@@ -138,24 +151,76 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			XPath xpath = factory.newXPath();
 			XPathExpression expr = xpath.compile(parsedResult.getXpath());
 
-			// select xpath
-			WebElement element = driver.findElement(By.xpath(parsedResult.getXpath())); // NoSuchElementException
+			// --- Layer A: Retry with re-invocation ---
+			// Try up to 3 times to find and click the element, re-invoking lambda on each retry
+			int maxAttempts = 3;
+			boolean clicked = false;
+			NoSuchElementException lastNSEE = null;
 
-			// Scroll element into view with offset to avoid sticky headers (e.g., YouTube masthead)
-			// First scroll element to center of viewport, then adjust for potential header overlap
-			JavascriptExecutor js = (JavascriptExecutor) driver;
-			js.executeScript("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element);
+			for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+				try {
+					WebElement element = driver.findElement(By.xpath(parsedResult.getXpath()));
 
-			// Small pause to allow scroll to complete and any overlays to settle
-			Thread.sleep(300);
+					// Scroll element into view with offset to avoid sticky headers
+					JavascriptExecutor js = (JavascriptExecutor) driver;
+					js.executeScript("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element);
 
-			// Wait for Element to be clickable
-			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-			wait.until(ExpectedConditions.elementToBeClickable(element));
+					// Small pause to allow scroll to complete and any overlays to settle
+					Thread.sleep(300);
 
-			// Use JavaScript click as fallback-proof method to avoid ElementClickInterceptedException
-			// This bypasses any overlapping elements like sticky headers
-			js.executeScript("arguments[0].click();", element);
+					// Wait for element to be clickable
+					WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+					wait.until(ExpectedConditions.elementToBeClickable(element));
+
+					// Use JavaScript click to bypass overlapping elements like sticky headers
+					js.executeScript("arguments[0].click();", element);
+
+					clicked = true;
+					if (attempt > 1) {
+						logger.info("Element found and clicked on attempt {}/{}", attempt, maxAttempts);
+					}
+					break;
+				} catch (NoSuchElementException nsee) {
+					lastNSEE = nsee;
+					if (attempt < maxAttempts) {
+						logger.warn("Element not found on attempt {}/{}, re-capturing page and re-invoking lambda",
+								attempt, maxAttempts);
+						Thread.sleep(2000); // wait for DOM to settle
+
+						// Re-capture page source and re-invoke lambda
+						param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
+								driver.getPageSource(), context.getCrawler().getRawConfiguration());
+						data.setInputJson(mapper.writeValueAsString(param));
+						result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
+						data.setOutputJson(mapper.writeValueAsString(result));
+
+						// Re-parse result
+						lambdaResponsePayload = result.getPayload();
+						logger.info("Retry Lambda response payload: {}", lambdaResponsePayload);
+						parsedResult = mapper.readValue(lambdaResponsePayload, LambdaSelectJobResult.class);
+
+						// Validate new XPath
+						expr = xpath.compile(parsedResult.getXpath());
+					}
+				}
+			}
+
+			// --- Layer B: Direct URL navigation fallback ---
+			if (!clicked) {
+				if (parsedResult.getSelected() != null && parsedResult.getSelected().getId() != null) {
+					String videoId = parsedResult.getSelected().getId();
+					String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+					logger.warn("Element not found after {} attempts, falling back to direct navigation: {}",
+							maxAttempts, videoUrl);
+					driver.get(videoUrl);
+					// Wait for page load
+					Thread.sleep(3000);
+				} else {
+					logger.error("All {} click attempts failed and no selected video ID available for fallback",
+							maxAttempts);
+					throw lastNSEE;
+				}
+			}
 
 		} catch (Exception e) {
 			logger.warn("error executing lambda", e);
