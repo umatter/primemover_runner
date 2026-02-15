@@ -89,18 +89,18 @@ public class ProfileService {
 	
 	public boolean updateProxy(MultiLoginAgent agent, RecordingProxy proxy) {
 		String id = agent.getMultiLoginId();
-		
+
 		if (StringUtils.isEmpty(id)) {
 			throw new IllegalArgumentException("Profile id is empty");
 		}
-		
+
 		Optional<BasicAuthorization> proxyAuth = proxy.getAuthorization();
 		StringBuilder strBuilder = new StringBuilder();
 		strBuilder.append("{");
 		strBuilder.append("\"profile_id\": ").append("\"").append(id).append("\"");
 		strBuilder.append(", \"proxy\": {");
 		strBuilder.append("\"host\": ").append("\"").append(proxy.getIp()).append("\"");
-		
+
 		// if ( proxy.getHttpsPort().isPresent()) {
 		//	strBuilder.append(",\"type\": ").append("\"https\"");
 		//	strBuilder.append(",\"port\": ").append(proxy.getHttpsPort().get());
@@ -108,18 +108,26 @@ public class ProfileService {
 			strBuilder.append(",\"type\": ").append("\"http\"");
 			strBuilder.append(",\"port\": ").append(proxy.getHttpPort());
 		//}
-		
+
 		proxyAuth.ifPresent((auth) -> {
 			strBuilder.append(",\"username\": ").append("\"").append(auth.getUsername()).append("\"");
 			strBuilder.append(",\"password\": ").append("\"").append(auth.getPassword()).append("\"");
 		});
 		strBuilder.append("}");
+
+		// Cap V8 heap to prevent runaway memory growth on headless VMs.
+		// Without this, YouTube's SPA accumulates JS heap up to 4GB+, causing
+		// GC thrashing that makes the renderer unresponsive to WebDriver commands.
+		strBuilder.append(", \"parameters\": {\"fingerprint\": {\"cmd_params\": {\"params\": [");
+		strBuilder.append("{\"flag\": \"--js-flags\", \"value\": \"--max-old-space-size=1024\"}");
+		strBuilder.append("]}}}");
+
 		strBuilder.append("}");
-		
+
 		String bodyString = strBuilder.toString();
-			
+
 		ProfileUpdate201Response response = profileManagementApi.profilePartialUpdate("application/json", bodyString);
-		
+
 		return response.getStatus().getHttpCode() == 200;
 	}
 
