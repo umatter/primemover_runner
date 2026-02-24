@@ -119,7 +119,7 @@ public class ProfileService {
 		// Without this, YouTube's SPA accumulates JS heap up to 4GB+, causing
 		// GC thrashing that makes the renderer unresponsive to WebDriver commands.
 		strBuilder.append(", \"parameters\": {\"fingerprint\": {\"cmd_params\": {\"params\": [");
-		strBuilder.append("{\"flag\": \"--js-flags\", \"value\": \"--max-old-space-size=1024\"}");
+		strBuilder.append("{\"flag\": \"js-flags\", \"value\": \"--max-old-space-size=1024\"}");
 		strBuilder.append("]}}}");
 
 		strBuilder.append("}");

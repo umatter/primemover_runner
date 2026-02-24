@@ -17,7 +17,7 @@
 			"cmd_params": {
 				"params": [
 					{
-						"flag": "--js-flags",
+						"flag": "js-flags",
 						"value": "--max-old-space-size=1024"
 					}
 				]

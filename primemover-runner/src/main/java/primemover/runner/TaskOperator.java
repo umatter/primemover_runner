@@ -8,8 +8,10 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.chromium.HasCdp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -601,6 +603,11 @@ public class TaskOperator implements ITaskOperator {
 				// setup driver in running browser
 				captchaSolver.setupDriver(context);
 
+				// Inject H.264 codec override via CDP so it runs before any page script.
+				// This forces YouTube to use H.264 instead of VP9/AV1, which require
+				// software decoding on headless VMs and saturate the CPU.
+				injectCodecOverrideViaCdp(context.getDriver());
+
 				logger.debug("finished starting up crawler {}, success: {}", crawler.getId(), true);
 
 				isSetup.set(true);
@@ -612,6 +619,44 @@ public class TaskOperator implements ITaskOperator {
 
 		// Verify result and return
 		return done && context.isValid();
+	}
+
+	/**
+	 * Injects H.264 codec override via CDP's Page.addScriptToEvaluateOnNewDocument.
+	 * This runs the override script before any page JavaScript on every navigation,
+	 * ensuring YouTube never initializes VP9/AV1 codecs.
+	 */
+	private void injectCodecOverrideViaCdp(org.openqa.selenium.WebDriver driver) {
+		String script =
+			"(function() {" +
+			"  if (window.__h264OverrideApplied) return;" +
+			"  var origIsTypeSupported = MediaSource.isTypeSupported.bind(MediaSource);" +
+			"  MediaSource.isTypeSupported = function(mimeType) {" +
+			"    if (mimeType && (mimeType.indexOf('vp9') !== -1 || mimeType.indexOf('vp09') !== -1 || mimeType.indexOf('av01') !== -1)) {" +
+			"      return false;" +
+			"    }" +
+			"    return origIsTypeSupported(mimeType);" +
+			"  };" +
+			"  MediaSource.isTypeSupported.toString = function() { return 'function isTypeSupported() { [native code] }'; };" +
+			"  Object.defineProperty(MediaSource.isTypeSupported, 'name', { value: 'isTypeSupported', configurable: true });" +
+			"  window.__h264OverrideApplied = true;" +
+			"})();";
+
+		try {
+			org.openqa.selenium.WebDriver augmented = new Augmenter().augment(driver);
+			if (augmented instanceof HasCdp) {
+				((HasCdp) augmented).executeCdpCommand(
+					"Page.addScriptToEvaluateOnNewDocument",
+					java.util.Map.of("source", script)
+				);
+				logger.info("H.264 codec override registered via CDP (runs before every page load)");
+			} else {
+				logger.warn("Driver does not support CDP, H.264 override will rely on VisitJobHandler injection");
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to register H.264 codec override via CDP: {}. " +
+				"Falling back to VisitJobHandler injection.", e.getMessage());
+		}
 	}
 
 	@Override
