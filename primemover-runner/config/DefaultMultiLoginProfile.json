@@ -2,6 +2,7 @@
 	"name": "%%AGENTID%%",
 	"os": "%%OS%%",
 	"browser": "%%BROWSER%%",
+	"core_version": 149,
 	"network": {
 		"proxy": {
 			"type": "%%PROXYTYPE%%",
