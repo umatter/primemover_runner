@@ -305,7 +305,12 @@ public class Config {
 		return new NoRecordingProxy();
 	}
 
+	// Local disk copy of job data. Enabled by default (backward compatible, and the
+	// buffer the spool-and-drain sidecar consumes). Set storage.local.enabled=false to
+	// store job data only on S3 and skip the local write entirely — this also stops the
+	// empty-captcha writer's local failure from flipping jobs to WARNING_JOBDATA.
 	@Bean(name = "FileStorageService")
+	@ConditionalOnProperty(name = "storage.local.enabled", havingValue = "true", matchIfMissing = true)
 	IStorageService getFileStorageService() {
 		return new FileStorageService();
 	}
