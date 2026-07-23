@@ -90,3 +90,7 @@ coverage/
 # --------------------------------------------
 .env
 .env.*
+
+# Runtime secrets imported by application.properties (spring.config.import).
+# Only secrets.properties.template is tracked.
+config/secrets.properties
