@@ -409,7 +409,13 @@ public class TaskOperator implements ITaskOperator {
 				IDataWriter cachedWriter = new DataWriterCachingDecorator(writer);
 				for (IStorageService storage : storages) {
 					try {
-						writeRes = writeRes && storage.writeData(job, cachedWriter);
+						// Invoke writeData first, THEN combine — do not use `writeRes && storage.writeData(...)`,
+						// whose short-circuit skips every remaining storage once one has failed. With the S3
+						// backends ordered ahead of FileStorageService, a failing S3 write (e.g. bad/rotated
+						// credentials) would otherwise suppress the local write entirely, silently dropping HAR
+						// and job data on disk. Each storage backend must be independent.
+						boolean storageOk = storage.writeData(job, cachedWriter);
+						writeRes = writeRes && storageOk;
 					} catch (Exception e) {
 						logger.warn("Error writing to job-data to storage({}) for job {}", storage, job.getId(), e);
 						writeRes = false;
