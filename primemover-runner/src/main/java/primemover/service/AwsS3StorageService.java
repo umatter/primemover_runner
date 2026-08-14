@@ -32,6 +32,12 @@ public class AwsS3StorageService implements IStorageService {
 	private String accessKey;
 	@Value("${awsS3.secretKey}")
 	private String secretKey;
+	// Blank => real AWS (eu-central-1) exactly as before; set => S3-compatible
+	// store (e.g. MinIO: http://127.0.0.1:9000) with path-style addressing.
+	@Value("${awsS3.endpoint:}")
+	private String endpoint;
+	@Value("${awsS3.region:eu-central-1}")
+	private String region;
 
 	private Predicate<IDataWriter> writeSelector = null;
 
@@ -51,8 +57,15 @@ public class AwsS3StorageService implements IStorageService {
 		try {
 			AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 
-			client = S3Client.builder().region(Region.EU_CENTRAL_1)
-					.credentialsProvider(StaticCredentialsProvider.create(awsCreds)).build();
+			software.amazon.awssdk.services.s3.S3ClientBuilder builder = S3Client.builder()
+					.region(Region.of(region))
+					.credentialsProvider(StaticCredentialsProvider.create(awsCreds));
+			if (endpoint != null && !endpoint.isBlank()) {
+				// MinIO / self-hosted: custom endpoint + path-style addressing
+				// (virtual-host style needs per-bucket DNS, which MinIO doesn't provide).
+				builder = builder.endpointOverride(java.net.URI.create(endpoint)).forcePathStyle(true);
+			}
+			client = builder.build();
 		} catch (Exception e) {
 			logger.error("error creating client for writing to AWS S3");
 			client = null;
