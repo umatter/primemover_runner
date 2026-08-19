@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "H264 Codec Override",
+  "version": "1.0",
+  "description": "Forces H.264 instead of VP9/AV1",
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*", "*://*.googlevideo.com/*"],
+      "js": ["override.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    }
+  ]
+}

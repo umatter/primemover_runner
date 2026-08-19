@@ -2,6 +2,7 @@
 	"name": "%%AGENTID%%",
 	"os": "%%OS%%",
 	"browser": "%%BROWSER%%",
+	"core_version": 149,
 	"network": {
 		"proxy": {
 			"type": "%%PROXYTYPE%%",
@@ -11,5 +12,17 @@
 			"password": "%%PROXYPASSWORD%%"
 		},
 		"dns": []
+	},
+	"parameters": {
+		"fingerprint": {
+			"cmd_params": {
+				"params": [
+					{
+						"flag": "js-flags",
+						"value": "--max-old-space-size=1024"
+					}
+				]
+			}
+		}
 	}
 }
