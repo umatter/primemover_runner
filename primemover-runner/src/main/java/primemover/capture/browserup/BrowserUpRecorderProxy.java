@@ -22,7 +22,6 @@ import primemover.capture.HarContentFilter;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.SessionDecorator;
-import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
@@ -186,37 +185,6 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 				proxy.setChainedProxyHTTPS(typedTargetProxy.useHttps());
 			}
 
-			// create session-identifier and set session-headers
-			if (targetProxy instanceof GeoSurfProxy) {
-				log.debug("applying GeoSurf-Headers");
-
-				// add custom auth headers ->
-				// https://github.com/browserup/browserup-proxy/blob/88914049391bd3ec5d3db1e4e92618fc7d197810/browserup-proxy-core/src/main/java/com/browserup/bup/BrowserUpProxyServer.java
-				// little dangerous as we don't watch missing auth credentials as in above code
-				proxy.addLastHttpFilterFactory(new HttpFiltersSourceAdapter() {
-					private final SessionDecorator proxy = decoratedProxy;
-					private final GeoSurfProxy geoProxy = (GeoSurfProxy) targetProxy;
-
-					@Override
-					public HttpFilters filterRequest(HttpRequest originalRequest) {
-						return new HttpFiltersAdapter(originalRequest) {
-
-							@Override
-							public HttpResponse proxyToServerRequest(HttpObject httpObject) {
-								if (httpObject instanceof HttpRequest) {
-									if (ProxyUtils.isCONNECT(httpObject)
-											|| !((HttpRequest) httpObject).uri().startsWith("/")) {
-										HttpHeaders headers = ((HttpRequest) httpObject).headers();
-										headers.add("loc", geoProxy.getLocation());
-										headers.add("X-session", proxy.getSessionId());
-									}
-								}
-								return null;
-							}
-						};
-					}
-				});
-			}
 		}
 
 		proxy.start();

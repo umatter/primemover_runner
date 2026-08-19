@@ -23,7 +23,7 @@ import java.util.Optional;
  * A proxy for recording all data that is communicated while opening a webpage.
  * The proxy will need to act as a man-in-the-middle. Extra functionality is
  * added in order to verify connections, pinging connections to keep the "line"
- * open, add auth for Geosurf and also to intercept packages to hide the proxy.
+ * open, add proxy auth and also to intercept packages to hide the proxy.
  * 
  * @author Dominik
  *

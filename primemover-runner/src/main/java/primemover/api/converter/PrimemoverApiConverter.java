@@ -42,11 +42,7 @@ public class PrimemoverApiConverter {
 			res = new HttpProxy();
 		} else {
 			type = type.toLowerCase();
-			if (type.contains("geosurf")) {
-				GeoSurfProxy geoProxy = new GeoSurfProxy();
-				geoProxy.setLocation(crawler.getAgent().getLocation());
-				res = geoProxy;
-			} else if (type.contains("oxylabs")) {
+			if (type.contains("oxylabs")) {
 				OxylabsProxy oxyProxy = new OxylabsProxy();
 				oxyProxy.setLocation(crawler.getAgent().getLocation());
 				res = oxyProxy;
@@ -62,7 +58,9 @@ public class PrimemoverApiConverter {
 					res.setUseHttps(true);
 				}
 			} else {
-				throw new InvalidArgumentException("Unknown proxy type");
+				throw new InvalidArgumentException("Unknown proxy type '" + item.getType()
+						+ "'. Supported types are http, https, oxylabs and brightdata."
+						+ " (geosurf was removed - the provider no longer exists.)");
 			}
 		}
 
@@ -470,11 +468,26 @@ public class PrimemoverApiConverter {
 			res = convertApiLambdaSelectJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
 					behaviors);
 			break;
+		case "assertproxyjob": // provider-neutral name from the spec DSL
+		case "assertproxybyoxylabsjob":
+			res = convertApiAssertProxyJob(job.getId(), job.getName(), job.getDescription(), behaviors);
+			break;
 		default:
 			throw new IllegalArgumentException("Invalid Job type found: " + job.getType());
 		}
 
 		return res;
+	}
+
+	/**
+	 * Assert the exit IP's geolocation via ip.oxylabs.io. Expectations come from the
+	 * behaviours {@code ip}, {@code country} and {@code city}; at least one must be
+	 * present, which {@link AssertProxyJob} enforces.
+	 */
+	private static IJob convertApiAssertProxyJob(Long id, String name, String description,
+			Map<String, String> behaviors) {
+		return new AssertProxyByOxylabsJob(id, name, description, behaviors.get("ip"), behaviors.get("country"),
+				behaviors.get("city"));
 	}
 
 	private static Configuration convertApiConfiguration(primemover.api.model.Configuration item) {

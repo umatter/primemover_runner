@@ -2,11 +2,11 @@ package primemover.capture;
 
 import io.opentelemetry.api.internal.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import primemover.model.proxy.GeoSurfProxy;
 import primemover.model.proxy.IProxy;
 import primemover.model.proxy.OxylabsProxy;
 import primemover.model.proxy.Utils;
 
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -18,11 +18,6 @@ import java.util.UUID;
  *
  */
 public class SessionDecorator implements IProxy {
-
-	@Value("${geosurf.overwrite.user:}")
-	private String geosurfUserOverwrite;
-	@Value("${geosurf.overwrite.password:}")
-	private String geosurfPasswordOverwrite;
 
 	@Value("${oxylabs.overwrite.user:}")
 	private String oxylabsUserOverwrite;
@@ -49,8 +44,10 @@ public class SessionDecorator implements IProxy {
 	SessionDecorator(IProxy decorated, String prefix) {
 		this.innerProxy = decorated;
 
-		// sessionId = prefix + String.format("%06d", new Random().nextInt(1000000));
-		sessionId = prefix + UUID.randomUUID().toString().replace("-", "");
+		// Oxylabs documents the sessid charset as "0-9, and A-Z", so the hex is
+		// upper-cased. The hyphens must go either way: the whole username is a
+		// hyphen-delimited token stream and a hyphen inside the value would corrupt it.
+		sessionId = prefix + UUID.randomUUID().toString().replace("-", "").toUpperCase(Locale.ROOT);
 	}
 
 	SessionDecorator(IProxy decorated) {
@@ -100,10 +97,6 @@ public class SessionDecorator implements IProxy {
 
 		String tmp = innerProxy.getUsername();
 
-		if (!StringUtils.isNullOrEmpty(geosurfUserOverwrite) && innerProxy instanceof GeoSurfProxy) {
-			tmp = geosurfUserOverwrite;
-		}
-
 		if (!StringUtils.isNullOrEmpty(oxylabsUserOverwrite) && innerProxy instanceof OxylabsProxy) {
 			tmp = oxylabsUserOverwrite;
 		}
@@ -113,10 +106,6 @@ public class SessionDecorator implements IProxy {
 
 	@Override
 	public String getPassword() {
-		if (!StringUtils.isNullOrEmpty(geosurfPasswordOverwrite) && innerProxy instanceof GeoSurfProxy) {
-			return geosurfPasswordOverwrite;
-		}
-
 		if (!StringUtils.isNullOrEmpty(oxylabsPasswordOverwrite) && innerProxy instanceof OxylabsProxy) {
 			return oxylabsPasswordOverwrite;
 		}

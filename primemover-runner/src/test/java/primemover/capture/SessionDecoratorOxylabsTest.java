@@ -3,7 +3,7 @@ package primemover.capture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import primemover.model.proxy.GeoSurfProxy;
+import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.OxylabsProxy;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,13 +80,20 @@ class SessionDecoratorOxylabsTest {
 	}
 
 	@Test
-	@DisplayName("GeoSurf is untouched - it targets via the loc header, not the username")
-	void geoSurfUnaffected() {
-		GeoSurfProxy geo = new GeoSurfProxy("us-30m.geosurf.io", 8000, "user", "pass", "US-MA-BOSTON");
+	@DisplayName("a plain HTTP proxy is untouched - no tokens, no placeholders")
+	void plainProxyUnaffected() {
+		HttpProxy plain = new HttpProxy("proxy.example.com", 8080, "user", "pass");
 
-		SessionDecorator decorator = decorate(geo, true);
+		assertThat(decorate(plain, true).getUsername()).isEqualTo("user");
+	}
 
-		assertThat(decorator.getUsername()).isEqualTo("user");
-		assertThat(geo.getLocation()).isEqualTo("US-MA-BOSTON");
+	@Test
+	@DisplayName("the session id uses only characters Oxylabs documents for sessid (0-9, A-Z)")
+	void sessionIdIsWithinDocumentedCharset() {
+		SessionDecorator decorator = decorate(proxy("US-IL-CHICAGO"), true);
+
+		// A hyphen would be worse than a wrong case: the whole username is a
+		// hyphen-delimited token stream, so one inside the value would corrupt it.
+		assertThat(decorator.getSessionId()).matches("[0-9A-Z]+");
 	}
 }

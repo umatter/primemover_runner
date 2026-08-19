@@ -122,15 +122,10 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(AssertElementExistsJob.class, tmp);
 
-		logger.trace("creating AssertProxyByGeosurf-Handler");
-		tmp = new AssertProxyByGeosurfJobHandler();
+		logger.trace("creating AssertProxyByOxylabs-Handler");
+		tmp = new AssertProxyByOxylabsJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
-		addHandler(AssertProxyByGeosurfJob.class, tmp);
-
-		logger.trace("creating AssertProxyByPrimemoverApi-Handler");
-		tmp = new AssertProxyByPrimemoverApiJobHandler();
-		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
-		addHandler(AssertProxyByPrimemoverApiJob.class, tmp);
+		addHandler(AssertProxyByOxylabsJob.class, tmp);
 	}
 
 	// constructor
