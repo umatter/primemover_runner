@@ -97,7 +97,7 @@ If any of these commands fail, you need to fix the installation before proceedin
 ```bash
 # Clone the repository (replace with actual repository URL)
 git clone <repository-url>
-cd primemover
+cd primemover-runner
 
 # Build the entire project (this will take 5-10 minutes the first time)
 mvn clean install

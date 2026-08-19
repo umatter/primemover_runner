@@ -74,6 +74,9 @@ Thumbs.db
 # Logs and Temporary Files
 # --------------------------------------------
 *.log
+# logback's rolling archives (primemover-runner.log.2026-08-19.0.gz) do not match
+# *.log, so they need a pattern of their own.
+*.log.*
 *.tmp
 *.bak
 

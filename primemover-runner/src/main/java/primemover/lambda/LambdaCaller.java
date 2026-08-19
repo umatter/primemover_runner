@@ -12,13 +12,17 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.exception.ApiCallAttemptTimeoutException;
+import software.amazon.awssdk.core.exception.ApiCallTimeoutException;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.InvokeRequest;
 import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+import software.amazon.awssdk.services.lambda.model.LogType;
 
 import java.time.Duration;
+import java.util.Base64;
 
 public class LambdaCaller implements AutoCloseable {
 	private static Logger logger = LoggerFactory.getLogger(LambdaCaller.class);
@@ -36,12 +40,16 @@ public class LambdaCaller implements AutoCloseable {
 	@Value("${lambda.local.url:http://localhost:5001/invoke}")
 	private String localLambdaUrl;
 
+	@Value("${awsLambda.apiCallTimeoutSeconds:120}")
+	private int apiCallTimeoutSeconds;
+	@Value("${awsLambda.apiCallAttemptTimeoutSeconds:90}")
+	private int apiCallAttemptTimeoutSeconds;
+
 	private Region region = Region.EU_CENTRAL_1;
 
-	// Lambda function can take up to 300s, so we need a longer timeout than the default 30s
-	// Socket read timeout must be longer than expected Lambda execution time (avg 40s, max 60s)
-	private static final Duration API_CALL_TIMEOUT = Duration.ofSeconds(120);
-	private static final Duration API_CALL_ATTEMPT_TIMEOUT = Duration.ofSeconds(90);
+	// API call timeouts are configurable via awsLambda.* above. The transport-level
+	// timeouts below are not: the SDK default socket timeout is 30s, far too short for
+	// a Lambda that averages 40s and can reach 60s, so it must stay above them.
 	private static final Duration SOCKET_TIMEOUT = Duration.ofSeconds(90);
 	private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(10);
 
@@ -59,24 +67,23 @@ public class LambdaCaller implements AutoCloseable {
 
 		AwsBasicCredentials awsCreds = AwsBasicCredentials.create(this.accessKey, this.secretKey);
 
-		// Configure timeouts for Lambda invocation
-		ClientOverrideConfiguration overrideConfig = ClientOverrideConfiguration.builder()
-				.apiCallTimeout(API_CALL_TIMEOUT)
-				.apiCallAttemptTimeout(API_CALL_ATTEMPT_TIMEOUT)
+		ClientOverrideConfiguration clientConfig = ClientOverrideConfiguration.builder()
+				.apiCallTimeout(Duration.ofSeconds(apiCallTimeoutSeconds))
+				.apiCallAttemptTimeout(Duration.ofSeconds(apiCallAttemptTimeoutSeconds))
 				.build();
 
-		// Configure HTTP client with socket/read timeout
-		// Default socket timeout is 30s which is too short for Lambda calls (avg 40s)
+		// Transport-level timeouts: the SDK default socket timeout (30s) is shorter than a
+		// typical Lambda call, so it must be raised independently of the API call timeouts.
 		UrlConnectionHttpClient.Builder httpClientBuilder = UrlConnectionHttpClient.builder()
 				.socketTimeout(SOCKET_TIMEOUT)
 				.connectionTimeout(CONNECTION_TIMEOUT);
 
-		logger.debug("initializing AWS client with API timeout: {}s, socket timeout: {}s",
-				API_CALL_TIMEOUT.getSeconds(), SOCKET_TIMEOUT.getSeconds());
+		logger.debug("initializing AWS client with apiCallTimeout={}s, apiCallAttemptTimeout={}s, socketTimeout={}s",
+				apiCallTimeoutSeconds, apiCallAttemptTimeoutSeconds, SOCKET_TIMEOUT.getSeconds());
 		this.awsClient = LambdaClient.builder()
 				.region(this.region)
 				.credentialsProvider(StaticCredentialsProvider.create(awsCreds))
-				.overrideConfiguration(overrideConfig)
+				.overrideConfiguration(clientConfig)
 				.httpClientBuilder(httpClientBuilder)
 				.build();
 	}
@@ -116,14 +123,25 @@ public class LambdaCaller implements AutoCloseable {
 			logger.info("calling AWS Lambda function: {}", functionName);
 			SdkBytes payload = SdkBytes.fromUtf8String(param);
 
-			// Setup an InvokeRequest.
+			// Setup an InvokeRequest with CloudWatch log capture
 			InvokeRequest request = InvokeRequest.builder()
 					.functionName(functionName)
 					.payload(payload)
+					.logType(LogType.TAIL) // Request last 4KB of CloudWatch logs
 					.build();
 
 			logger.debug("invoking AWS function");
 			InvokeResponse res = this.awsClient.invoke(request);
+
+			// Extract and log CloudWatch logs if available
+			if (res.logResult() != null && !res.logResult().isEmpty()) {
+				try {
+					String decodedLogs = new String(Base64.getDecoder().decode(res.logResult()));
+					logger.info("Lambda CloudWatch logs for '{}': \n{}", functionName, decodedLogs);
+				} catch (Exception logEx) {
+					logger.warn("Failed to decode Lambda CloudWatch logs", logEx);
+				}
+			}
 
 			// Enhanced error logging
 			if (res.functionError() != null && !res.functionError().isEmpty()) {
@@ -147,6 +165,16 @@ public class LambdaCaller implements AutoCloseable {
 					.functionError(res.functionError())
 					.build();
 
+		} catch (ApiCallTimeoutException ex) {
+			logger.error("Lambda invocation timed out after {}s (total timeout). Function: {}",
+					apiCallTimeoutSeconds, functionName, ex);
+			throw new LambdaException("Lambda invocation exceeded total timeout of " +
+					apiCallTimeoutSeconds + "s", ex);
+		} catch (ApiCallAttemptTimeoutException ex) {
+			logger.error("Lambda invocation attempt timed out after {}s (per-attempt timeout). Function: {}",
+					apiCallAttemptTimeoutSeconds, functionName, ex);
+			throw new LambdaException("Lambda invocation attempt exceeded timeout of " +
+					apiCallAttemptTimeoutSeconds + "s", ex);
 		} catch (Exception ex) {
 			logger.error("error invoking AWS function", ex);
 			throw new LambdaException("Failure calling Lambda function", ex);
