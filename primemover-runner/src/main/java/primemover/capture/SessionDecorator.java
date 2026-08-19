@@ -38,6 +38,23 @@ public class SessionDecorator implements IProxy {
 	@Value("${oxylabs.session.oneip:true}")
 	private boolean oxylabsSessionOneIp = true;
 
+	/**
+	 * Host-level Oxylabs account, used whenever a proxy record leaves the
+	 * credentials blank. Oxylabs geo-targeting comes from the crawler's agent, not
+	 * from the proxy record, so every crawler in an experiment would otherwise
+	 * carry a byte-identical copy of the same account -- in the database and in the
+	 * experiment spec. Keeping it here means one place to set it and one place to
+	 * rotate it, and no credential in git.
+	 */
+	@Value("${oxylabs.customer:}")
+	private String oxylabsCustomer;
+	@Value("${oxylabs.password:}")
+	private String oxylabsPassword;
+	@Value("${oxylabs.hostname:pr.oxylabs.io}")
+	private String oxylabsHostname;
+	@Value("${oxylabs.port:7777}")
+	private Integer oxylabsPort;
+
 	private final IProxy innerProxy;
 	private final String sessionId;
 
@@ -69,15 +86,37 @@ public class SessionDecorator implements IProxy {
 
 	@Override
 	public String getUrl() {
-		return innerProxy.getUrl();
+		String url = innerProxy.getUrl();
+		if (isOxylabs() && StringUtils.isNullOrEmpty(url)) {
+			return oxylabsHostname;
+		}
+		return url;
 	}
 
 	@Override
 	public Integer getPort() {
-		return innerProxy.getPort();
+		Integer port = innerProxy.getPort();
+		if (isOxylabs() && (port == null || port <= 0)) {
+			return oxylabsPort;
+		}
+		return port;
+	}
+
+	private boolean isOxylabs() {
+		return innerProxy instanceof OxylabsProxy;
 	}
 
 	private String runUsernameReplacement(String input) {
+		if (input != null && input.contains(Utils.CustomerPlaceholder)) {
+			if (StringUtils.isNullOrEmpty(oxylabsCustomer)) {
+				throw new IllegalStateException(
+						"This proxy has no username and no host-level Oxylabs account is configured."
+								+ " Set oxylabs.customer (and oxylabs.password) in the runner configuration,"
+								+ " or put the credentials on the proxy record.");
+			}
+			input = input.replace(Utils.CustomerPlaceholder, oxylabsCustomer);
+		}
+
 		return input //
 				.replace(Utils.SessionTokenPlaceholder, this.getSessionTokenName()) //
 				.replace(Utils.SessionPlaceholder, this.getSessionId()) //
@@ -97,7 +136,7 @@ public class SessionDecorator implements IProxy {
 
 		String tmp = innerProxy.getUsername();
 
-		if (!StringUtils.isNullOrEmpty(oxylabsUserOverwrite) && innerProxy instanceof OxylabsProxy) {
+		if (!StringUtils.isNullOrEmpty(oxylabsUserOverwrite) && isOxylabs()) {
 			tmp = oxylabsUserOverwrite;
 		}
 
@@ -106,11 +145,21 @@ public class SessionDecorator implements IProxy {
 
 	@Override
 	public String getPassword() {
-		if (!StringUtils.isNullOrEmpty(oxylabsPasswordOverwrite) && innerProxy instanceof OxylabsProxy) {
+		if (!StringUtils.isNullOrEmpty(oxylabsPasswordOverwrite) && isOxylabs()) {
 			return oxylabsPasswordOverwrite;
 		}
 
-		return innerProxy.getPassword();
+		String password = innerProxy.getPassword();
+		if (isOxylabs() && StringUtils.isNullOrEmpty(password)) {
+			if (StringUtils.isNullOrEmpty(oxylabsPassword)) {
+				throw new IllegalStateException(
+						"This proxy has no password and no host-level Oxylabs password is configured."
+								+ " Set oxylabs.password in the runner configuration, or put the credentials"
+								+ " on the proxy record.");
+			}
+			return oxylabsPassword;
+		}
+		return password;
 	}
 
 }

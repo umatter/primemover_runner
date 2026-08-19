@@ -64,11 +64,16 @@ public class PrimemoverApiConverter {
 			}
 		}
 
-		if (StringUtils.isEmpty(item.getHostname())) {
+		// An Oxylabs record may omit the endpoint and credentials entirely: the runner
+		// supplies them from its own configuration (oxylabs.hostname / .port /
+		// .customer / .password), so an experiment spec needs only `type: oxylabs`.
+		boolean selfConfiguring = res instanceof OxylabsProxy;
+
+		if (StringUtils.isEmpty(item.getHostname()) && !selfConfiguring) {
 			throw new InvalidArgumentException("Hostname must not be empty");
 		}
 
-		if (item.getPort() <= 0) {
+		if (item.getPort() <= 0 && !selfConfiguring) {
 			throw new InvalidArgumentException("No valid port: " + item.getPort());
 		}
 

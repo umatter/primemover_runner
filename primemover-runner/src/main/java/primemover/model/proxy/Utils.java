@@ -10,4 +10,10 @@ public final class Utils {
 	 * {@link primemover.capture.SessionDecorator} resolves it.
 	 */
 	public static String SessionTokenPlaceholder = "%%SESSIONTOKEN%%";
+	/**
+	 * Stands in for the Oxylabs account name when the proxy record does not carry
+	 * one, so a single host-level credential can serve every crawler instead of
+	 * being copied into every proxy row (and every experiment spec).
+	 */
+	public static String CustomerPlaceholder = "%%CUSTOMER%%";
 }

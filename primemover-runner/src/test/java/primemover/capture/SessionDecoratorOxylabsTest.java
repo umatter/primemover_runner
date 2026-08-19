@@ -7,6 +7,7 @@ import primemover.model.proxy.HttpProxy;
 import primemover.model.proxy.OxylabsProxy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * End-to-end shape of the Oxylabs username, i.e. what actually reaches
@@ -18,7 +19,24 @@ class SessionDecoratorOxylabsTest {
 		SessionDecorator decorator = new SessionDecorator(proxy);
 		// The @Value fields are populated by Spring in production; set directly here.
 		ReflectionTestUtils.setField(decorator, "oxylabsSessionOneIp", oneIp);
+		ReflectionTestUtils.setField(decorator, "oxylabsHostname", "pr.oxylabs.io");
+		ReflectionTestUtils.setField(decorator, "oxylabsPort", 7777);
 		return decorator;
+	}
+
+	/** A decorator with a host-level Oxylabs account configured. */
+	private static SessionDecorator withHostAccount(primemover.model.proxy.IProxy proxy) {
+		SessionDecorator decorator = decorate(proxy, true);
+		ReflectionTestUtils.setField(decorator, "oxylabsCustomer", "acme");
+		ReflectionTestUtils.setField(decorator, "oxylabsPassword", "s3cret");
+		return decorator;
+	}
+
+	/** A proxy record carrying nothing but its type, as a minimal spec would produce. */
+	private static OxylabsProxy bareProxy(String location) {
+		OxylabsProxy proxy = new OxylabsProxy();
+		proxy.setLocation(location);
+		return proxy;
 	}
 
 	private static OxylabsProxy proxy(String location) {
@@ -77,6 +95,57 @@ class SessionDecoratorOxylabsTest {
 		String username = decorate(proxy("US-CO-COLORADO_SPRINGS"), true).getUsername();
 
 		assertThat(username).doesNotContain("--").doesNotContain("null").doesNotStartWith("-").doesNotEndWith("-");
+	}
+
+	@Test
+	@DisplayName("a proxy record with no credentials falls back to the host-level account")
+	void fillsInHostLevelAccount() {
+		SessionDecorator decorator = withHostAccount(bareProxy("US-IL-CHICAGO"));
+
+		assertThat(decorator.getUsername())
+				.isEqualTo("customer-acme-cc-US-city-chicago-sessid_oneip-" + decorator.getSessionId()
+						+ "-sesstime-30");
+		assertThat(decorator.getPassword()).isEqualTo("s3cret");
+	}
+
+	@Test
+	@DisplayName("a bare record also inherits the host-level endpoint")
+	void fillsInHostLevelEndpoint() {
+		SessionDecorator decorator = withHostAccount(bareProxy("US-IL-CHICAGO"));
+
+		assertThat(decorator.getUrl()).isEqualTo("pr.oxylabs.io");
+		assertThat(decorator.getPort()).isEqualTo(7777);
+	}
+
+	@Test
+	@DisplayName("credentials on the record still win over the host-level account")
+	void recordCredentialsTakePrecedence() {
+		SessionDecorator decorator = withHostAccount(proxy("US-IL-CHICAGO"));
+
+		assertThat(decorator.getUsername()).startsWith("customer-acme-");
+		assertThat(decorator.getPassword()).isEqualTo("secret");
+		assertThat(decorator.getUrl()).isEqualTo("pr.oxylabs.io");
+	}
+
+	@Test
+	@DisplayName("a missing account fails loudly rather than emitting a literal placeholder")
+	void missingAccountFailsLoudly() {
+		SessionDecorator decorator = decorate(bareProxy("US-IL-CHICAGO"), true);
+
+		assertThatThrownBy(decorator::getUsername)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("oxylabs.customer");
+	}
+
+	@Test
+	@DisplayName("a missing host-level password also fails loudly")
+	void missingPasswordFailsLoudly() {
+		SessionDecorator decorator = decorate(bareProxy("US-IL-CHICAGO"), true);
+		ReflectionTestUtils.setField(decorator, "oxylabsCustomer", "acme");
+
+		assertThatThrownBy(decorator::getPassword)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("oxylabs.password");
 	}
 
 	@Test

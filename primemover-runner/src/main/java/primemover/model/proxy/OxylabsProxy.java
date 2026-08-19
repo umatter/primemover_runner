@@ -20,7 +20,10 @@ package primemover.model.proxy;
  * <p>
  * The session token name is left as a placeholder and resolved by
  * {@link primemover.capture.SessionDecorator}, which knows the runtime
- * configuration -- see {@code oxylabs.session.oneip}.
+ * configuration -- see {@code oxylabs.session.oneip}. The account name is
+ * handled the same way when the proxy record does not carry one, so the Oxylabs
+ * credentials can live once on the runner host instead of being copied into
+ * every proxy row and every experiment spec.
  */
 public class OxylabsProxy extends HttpProxy implements ISessionProxy {
 
@@ -72,8 +75,15 @@ public class OxylabsProxy extends HttpProxy implements ISessionProxy {
 
 	@Override
 	public String getUsername() {
+		String account = super.getUsername();
+		if (account == null || account.trim().isEmpty()) {
+			// Filled in from the runner's own configuration by SessionDecorator, so the
+			// account need not be repeated in every proxy row.
+			account = Utils.CustomerPlaceholder;
+		}
+
 		StringBuilder builder = new StringBuilder() //
-				.append("customer-").append(super.getUsername()); // username
+				.append("customer-").append(account); // username
 
 		if (location != null && !location.isEmpty()) {
 			builder.append("-").append(location); // location, ahead of the session token
