@@ -32,7 +32,7 @@ public class HarRecordingFilter {
 	@Value("${har.recording.enabled:true}")
 	private Boolean harRecordingEnabled;
 
-	@Value("${har.recording.excludeJobTypes:WaitJob,ScrollByDurationJob,ScrollByLengthJob,HandleAlertJob,AssertTextInFieldJob,AssertElementExistsJob,AssertScrolledMaxJob,AssertPageLoadedJob,AssertProxyJob,AssertProxyByGeosurfJob,AssertProxyByPrimemoverApiJob}")
+	@Value("${har.recording.excludeJobTypes:WaitJob,ScrollByDurationJob,ScrollByLengthJob,HandleAlertJob,AssertTextInFieldJob,AssertElementExistsJob,AssertScrolledMaxJob,AssertPageLoadedJob,AssertProxyJob,AssertProxyByOxylabsJob}")
 	private String excludedJobTypes;
 
 	private Set<String> excludedSet;
