@@ -29,7 +29,7 @@ import primemover.service.datawriter.lambda.LambdaInvocationWriter;
 import primemover.lambda.LambdaInvokeResult;
 
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -58,6 +58,31 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				.build();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY); // amazon invocation result needs higher
 																		// visibility...
+	}
+
+	/**
+	 * Rejects an unusable xpath from the decision function before it reaches JAXP.
+	 *
+	 * <p>An empty xpath is a normal, expected answer: the decision function returns one when it
+	 * could not select a recommendation at all -- most often because the page it was handed was
+	 * not a watch page (a consent wall, a bot check, or a Chromium network-error page). Compiling
+	 * "" raises "XPathExpressionException: Empty expression!", which reads like a malformed
+	 * selector rather than a page that never loaded, and sends whoever debugs it hunting in the
+	 * wrong place. The decision function's own explanation is in the payload logged just before
+	 * each call to this method.
+	 *
+	 * <p>Compiling a non-blank value still serves as a syntax check; the compiled expression is
+	 * deliberately discarded, because the element itself is located with
+	 * {@code By.xpath(parsedResult.getXpath())}.
+	 */
+	private void validateXpath(XPath xpath, String value, Long jobId) throws XPathExpressionException {
+		if (StringUtils.isBlank(value)) {
+			throw new RuntimeException("Lambda selected no recommendation (empty xpath) for job " + jobId
+					+ ". The analysed page most likely contained no recommendations;"
+					+ " see the Lambda payload warnings logged above and the captured page source.");
+		}
+
+		xpath.compile(value);
 	}
 
 	private void init() {
@@ -153,24 +178,8 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			LambdaSelectJobResult parsedResult = mapper.readValue(lambdaResponsePayload,
 					LambdaSelectJobResult.class);
 
-			// Validate XPath.
-			//
-			// An empty xpath is a normal, expected answer: the decision function returns one
-			// when it could not select a recommendation at all -- most often because the page
-			// it was handed was not a watch page (a consent wall, a bot check, or a Chromium
-			// network-error page). Compiling "" raises "XPathExpressionException: Empty
-			// expression!", which reads like a malformed selector rather than a page that
-			// never loaded, and sends whoever debugs it hunting in the wrong place. The
-			// decision function's own explanation is in the payload logged just above.
-			if (StringUtils.isBlank(parsedResult.getXpath())) {
-				throw new RuntimeException(
-						"Lambda selected no recommendation (empty xpath) for job " + typedJob.getId()
-								+ ". The analysed page most likely contained no recommendations;"
-								+ " see the Lambda payload warnings logged above and the captured page source.");
-			}
-
 			XPath xpath = factory.newXPath();
-			XPathExpression expr = xpath.compile(parsedResult.getXpath());
+			validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
 
 			// --- Layer A: Retry with re-invocation ---
 			// Try up to 3 times to find and click the element, re-invoking lambda on each retry
@@ -220,8 +229,9 @@ public class LambdaSelectJobHandler implements IJobHandler {
 						logger.info("Retry Lambda response payload: {}", lambdaResponsePayload);
 						parsedResult = mapper.readValue(lambdaResponsePayload, LambdaSelectJobResult.class);
 
-						// Validate new XPath
-						expr = xpath.compile(parsedResult.getXpath());
+						// Validate new XPath. The re-invocation can just as easily come back
+						// with no selection as the first call did, so it needs the same guard.
+						validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
 					}
 				}
 			}
