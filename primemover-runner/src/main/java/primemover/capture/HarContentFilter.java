@@ -147,10 +147,14 @@ public class HarContentFilter {
 		long savedBytes = originalSize - filteredSize;
 		double reductionPercent = originalSize > 0 ? (savedBytes * 100.0 / originalSize) : 0;
 
+		// SLF4J placeholders are positional "{}" with no format spec: the Python-style
+		// "{:.1f}" this used to carry was printed literally AND consumed no argument,
+		// so reductionPercent was silently dropped and the percentage never appeared.
 		LOGGER.info("HAR filtered: removed {} of {} entries ({} remaining), " +
-						"size reduced by {} bytes ({} -> {} bytes, {:.1f}% reduction)",
+						"size reduced by {} bytes ({} -> {} bytes, {}% reduction)",
 				removedEntries, originalEntryCount, filteredEntryCount,
-				savedBytes, originalSize, filteredSize, reductionPercent);
+				savedBytes, originalSize, filteredSize,
+				String.format("%.1f", reductionPercent));
 
 		return har;
 	}
