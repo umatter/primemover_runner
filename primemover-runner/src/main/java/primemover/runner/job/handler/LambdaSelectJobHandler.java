@@ -153,7 +153,22 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			LambdaSelectJobResult parsedResult = mapper.readValue(lambdaResponsePayload,
 					LambdaSelectJobResult.class);
 
-			// Validate XPath
+			// Validate XPath.
+			//
+			// An empty xpath is a normal, expected answer: the decision function returns one
+			// when it could not select a recommendation at all -- most often because the page
+			// it was handed was not a watch page (a consent wall, a bot check, or a Chromium
+			// network-error page). Compiling "" raises "XPathExpressionException: Empty
+			// expression!", which reads like a malformed selector rather than a page that
+			// never loaded, and sends whoever debugs it hunting in the wrong place. The
+			// decision function's own explanation is in the payload logged just above.
+			if (StringUtils.isBlank(parsedResult.getXpath())) {
+				throw new RuntimeException(
+						"Lambda selected no recommendation (empty xpath) for job " + typedJob.getId()
+								+ ". The analysed page most likely contained no recommendations;"
+								+ " see the Lambda payload warnings logged above and the captured page source.");
+			}
+
 			XPath xpath = factory.newXPath();
 			XPathExpression expr = xpath.compile(parsedResult.getXpath());
 
