@@ -32,8 +32,16 @@ public class LambdaCaller implements AutoCloseable {
 	@Value("${awsS3.secretKey}")
 	private String secretKey;
 
-	// Lambda execution mode: "local" or "aws"
-	@Value("${lambda.mode:aws}")
+	// Lambda execution mode: "local" or "aws".
+	//
+	// Defaults to "local", because that is what every current deployment runs and
+	// because the failure modes are not symmetric. Losing the lambda.mode line from
+	// application.properties used to route decisions to AWS silently: the jobs keep
+	// succeeding, so nothing looks wrong, while the answers come from whatever image
+	// was last pushed to ECR -- which today predates both the camelCase-selector and
+	// the aria-hidden click-target fixes. Defaulting the other way fails loudly
+	// instead, against a local server that is either running or obviously not.
+	@Value("${lambda.mode:local}")
 	private String lambdaMode;
 
 	// Local Lambda server URL (used when lambda.mode=local)
@@ -104,9 +112,17 @@ public class LambdaCaller implements AutoCloseable {
 	public LambdaInvokeResult invoke(String functionName, String param) throws LambdaException {
 		if ("local".equalsIgnoreCase(lambdaMode)) {
 			return invokeLocal(param);
-		} else {
+		}
+		if ("aws".equalsIgnoreCase(lambdaMode)) {
 			return invokeAws(functionName, param);
 		}
+		// Deliberately not an else-branch onto AWS. This used to be
+		// `else { invokeAws(...) }`, which meant a typo -- "locl", "Local " with a
+		// trailing space, a commented-out line -- quietly sent every decision to AWS
+		// and looked like success. An unrecognised mode is a configuration error, so
+		// say so rather than picking a remote billed service on the caller's behalf.
+		throw new LambdaException(
+				"unknown lambda.mode '" + lambdaMode + "'; expected \"local\" or \"aws\"");
 	}
 
 	/**
