@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # 17 is what the poms compile against (maven.compiler.release=17); 25 is what
+    # the JVM on the production VM actually runs. Those are eight majors apart,
+    # so building on both is the point of the matrix rather than decoration:
+    # `release=17` fixes the bytecode level whichever JDK builds it, so the 25
+    # entry is really "do the tests still pass on the JVM production uses".
+    name: JDK ${{ matrix.java }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['17', '25']
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      # This repo has had credentials committed before, and config/ is a mix of
+      # tracked files and one deliberately-ignored one. .gitignore covers
+      # secrets.properties today; this fails the build if that ever stops being
+      # true, which is much cheaper than finding it in the history later.
+      - name: secrets.properties must not be tracked
+        run: |
+          if git ls-files --error-unmatch primemover-runner/config/secrets.properties 2>/dev/null; then
+            echo "::error::primemover-runner/config/secrets.properties is tracked; it must stay ignored (commit the .template instead)"
+            exit 1
+          fi
+          test -f primemover-runner/config/secrets.properties.template \
+            || { echo "::error::secrets.properties.template is missing"; exit 1; }
+
+      # verify = test + package, so this also proves the Spring Boot fat jar
+      # still assembles. Packaging is ~5s locally, so there is no reason to
+      # settle for `test` and discover a broken jar at deploy time.
+      - name: Build and test
+        run: mvn -B --no-transfer-progress verify
+
+      - name: Publish test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports-jdk${{ matrix.java }}
+          path: '**/target/surefire-reports/*.xml'
+          if-no-files-found: warn
+          retention-days: 7
