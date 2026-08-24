@@ -10,6 +10,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -293,13 +294,24 @@ public class Config {
 		return new LambdaCallerFactory();
 	}
 
+	// PROTOTYPE, not singleton -- one recorder per session. As a singleton, every
+	// concurrent session shared ONE BrowserUpRecorderProxy and raced on its single
+	// `proxy` field: at 8 simultaneous launches (2026-08-24, exp 107) three of
+	// eight sessions failed setup in the same millisecond with "Proxy server is
+	// already started" / NPE on a mid-swap read. The same sharing leaked a proxy
+	// server on every concurrent overwrite (teardown only closes whichever
+	// instance the field last pointed at) and let one session's teardown close
+	// another session's live recorder. Latent for five years behind
+	// runner.MaxParallelExecution=2. Pinned by RecorderScopeTest.
 	@Bean(name = "RecordingProxy")
+	@Scope("prototype")
 	@ConditionalOnProperty(name = "recorder.enabled", havingValue = "true")
 	public IRecorderProxy getBrowserUpRecorderProxy() {
 		return new BrowserUpRecorderProxy();
 	}
 
 	@Bean(name = "RecordingProxy")
+	@Scope("prototype")
 	@ConditionalOnProperty(name = "recorder.enabled", havingValue = "false", matchIfMissing = true)
 	public IRecorderProxy getNoRecordingProxy() {
 		return new NoRecordingProxy();
