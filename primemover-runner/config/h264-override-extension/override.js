@@ -12,34 +12,15 @@
   MediaSource.isTypeSupported.toString = function() { return 'function isTypeSupported() { [native code] }'; };
   Object.defineProperty(MediaSource.isTypeSupported, 'name', { value: 'isTypeSupported', configurable: true });
 
-  // Pause and mute video after YouTube's player initializes on each navigation.
-  // This frees media decoder buffers that otherwise grow to 1GB+.
-  // Uses YouTube's SPA navigation event (yt-navigate-finish) to catch all page loads.
-  function pauseVideo() {
-    var video = document.querySelector('video');
-    if (video) {
-      video.pause();
-      video.muted = true;
-      // Remove buffered data by resetting src to free decoder memory
-      video.removeAttribute('src');
-      video.load();
-    }
-  }
-
-  // YouTube fires yt-navigate-finish on every SPA navigation
-  document.addEventListener('yt-navigate-finish', function() {
-    // Delay slightly to let the player initialize, then kill it
-    setTimeout(pauseVideo, 3000);
-  });
-
-  // Also handle initial page load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(pauseVideo, 3000);
-    });
-  } else {
-    setTimeout(pauseVideo, 3000);
-  }
+  // The pause/mute/src-strip/load teardown that used to run here (3s after
+  // every navigation, to free decoder buffers on the GPU-less 8-core Hetzner
+  // VM) was removed on 2026-08-24. Measured on the production stack before
+  // removal: it killed playback for ~15-20s after EVERY navigation before
+  // YouTube's player self-recovered, cutting actual watch time to roughly a
+  // third of the scripted dwell. On this host (62 GB RAM, Arrow Lake iGPU with
+  // VA-API hardware decode enabled 2026-08-22) the memory pressure it guarded
+  // against does not exist. See docs/chrome-browser-death-fix.txt in the
+  // orchestrator repo for the measurement.
 
   window.__h264OverrideApplied = true;
 })();
