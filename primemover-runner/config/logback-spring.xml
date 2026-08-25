@@ -7,6 +7,14 @@
 	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 	<include resource="org/springframework/boot/logging/logback/file-appender.xml" />
 
+	<!-- NEVER below INFO. At DEBUG, RestTemplate logs every request body via
+	     toString(), and the generated Multilogin model (UserSignInRequest) has a
+	     Lombok toString that includes the password. Under the `local` profile
+	     (root DEBUG, the profile the VM runs) that put the Multilogin credentials
+	     into log/primemover-runner.log and Loki once a minute. The models are
+	     generated at build time, so this is the only place to stop it. -->
+	<logger name="org.springframework.web.client.RestTemplate" level="INFO"/>
+
 	<!-- Reduce noise from verbose libraries -->
 	<logger name="primemover.api" level="WARN" />
 	<logger name="org.apache" level="WARN"/>
