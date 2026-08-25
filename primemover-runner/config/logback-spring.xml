@@ -7,13 +7,17 @@
 	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 	<include resource="org/springframework/boot/logging/logback/file-appender.xml" />
 
-	<!-- NEVER below INFO. At DEBUG, RestTemplate logs every request body via
+	<!-- NEVER below INFO. At DEBUG, Spring logs every request body via
 	     toString(), and the generated Multilogin model (UserSignInRequest) has a
 	     Lombok toString that includes the password. Under the `local` profile
 	     (root DEBUG, the profile the VM runs) that put the Multilogin credentials
-	     into log/primemover-runner.log and Loki once a minute. The models are
-	     generated at build time, so this is the only place to stop it. -->
-	<logger name="org.springframework.web.client.RestTemplate" level="INFO"/>
+	     into log/primemover-runner.log and Loki. The models are generated at
+	     build time, so this is the only place to stop it.
+
+	     The whole package, not just RestTemplate: Spring 6 emits the same
+	     "Writing [...]" line under org.springframework.web.HttpLogging as well,
+	     which a RestTemplate-only pin (the first attempt) did not cover. -->
+	<logger name="org.springframework.web" level="INFO"/>
 
 	<!-- Reduce noise from verbose libraries -->
 	<logger name="primemover.api" level="WARN" />
