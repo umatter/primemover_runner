@@ -11,6 +11,7 @@ public class Configuration {
 	private String name;
 	private String description;
 	private List<ConfigurationParam> params;
+	private List<Preference> preferences;
 
 	public Configuration() {
 	}
@@ -37,6 +38,14 @@ public class Configuration {
 
 	public void setParams(List<ConfigurationParam> params) {
 		this.params = params;
+	}
+
+	public List<Preference> getPreferences() {
+		return preferences;
+	}
+
+	public void setPreferences(List<Preference> preferences) {
+		this.preferences = preferences;
 	}
 
 	public long getId() {

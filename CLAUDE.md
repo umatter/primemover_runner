@@ -67,6 +67,8 @@ multilogin.StartupDelaySeconds=30
 har.recording.enabled=true
 har.recording.excludeJobTypes=WaitJob,ScrollByDurationJob,...  # Skip HAR for these
 har.filter.enabled=false               # Content filtering
+
+consent.choice=accept                  # cookie/GDPR dialogs: accept | reject | ignore (runner-wide default)
 ```
 
 ## Architecture Overview
@@ -99,6 +101,44 @@ Backend API → CrawlerService → TaskManager → TaskExecutor → JobListRunne
 | `WaitJob` | `WaitJobHandler` | Delay |
 | `HandleAlertJob` | `HandleAlertJobHandler` | Accept/dismiss dialog |
 | `LambdaSelectJob` | `LambdaSelectJobHandler` | Lambda-based selection |
+
+### Consent dialogs (cookie / GDPR)
+
+`primemover.util.consent` answers consent dialogs — the YouTube/Google consent
+bump, OneTrust, Cookiebot, Didomi, Usercentrics, TrustArc, Quantcast,
+Sourcepoint and a generic cookie/consent container, in EN/DE/FR/IT/ES — after
+every `VisitJob` page load, after the `LambdaSelectJob` click, and before the
+generic `ModalDismisser` in the scroll jobs. The detection/click logic is
+`src/main/resources/consent/consent-handler.js`; buttons are matched by
+wording and CMP-specific ids, never by position.
+
+**The answer is a treatment variable, not a nuisance.** "Reject all" switches
+off exactly the signed-out personalisation a study may be measuring, so the
+choice is never hard-coded. Precedence (`ConsentPolicy`):
+
+1. job behaviour `consent` = `accept | reject | ignore`
+2. crawler preference `cookie_pref` = `{"accept_all": true|false}` — the
+   experiment designer emits this for every bot; before 2026-08-26 nothing
+   consumed it
+3. `consent.choice` in `application.properties` (default `accept`)
+
+Every outcome is logged per job: `consent dialog (youtube) answered: accept ->
+clicked 'Accept all'`; a dialog still visible after two clicks is a WARN,
+because that is the case where an arm silently runs behind a modal.
+
+Why this exists: every run up to 2026-08-26 egressed from a **US** exit IP, so
+no bot ever saw the dialog and it went unnoticed that a `visit → wait →
+lambda-select` workflow had no consent handling at all (only the scroll jobs
+called `ModalDismisser`). From a CH/EU exit YouTube serves
+`ytd-consent-bump-v2-lightbox` on **every** session, since each session is a
+fresh Multilogin profile.
+
+Tests: `ConsentPolicyTest` (precedence, always on);
+`ConsentHandlerBrowserTest` (headless Chrome against fixture pages copied from
+live markup, opt-in: `-Dconsent.browserTest=true [-Dconsent.chrome=/usr/bin/google-chrome]`);
+`ConsentHandlerLiveTest` (real site, opt-in: `-Dconsent.liveUrl=https://www.youtube.com/watch?v=...`
+`-Dconsent.liveChoice=reject` — only meaningful from an IP that is served the
+dialog). Re-run the live test when YouTube changes its markup.
 
 ### JobList States
 - **Initial**: INACTIVE, ACTIVE

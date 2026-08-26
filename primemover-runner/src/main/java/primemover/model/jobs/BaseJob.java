@@ -13,6 +13,8 @@ public abstract class BaseJob implements IJob {
 
 	private boolean runFailsave = FAILSAVE_DEFAULT;
 	private boolean resetPreviousFailure = RESET_PREVOUS_FAILURE_DEFAULT;
+	/** Per-job consent override (behaviour {@code consent}: accept | reject | ignore), null = inherit. */
+	private String consent;
 
 	public BaseJob() {
 		super();
@@ -21,6 +23,14 @@ public abstract class BaseJob implements IJob {
 	@Override
 	public String getTask() {
 		return task;
+	}
+
+	public String getConsent() {
+		return consent;
+	}
+
+	public void setConsent(String consent) {
+		this.consent = consent;
 	}
 
 	public void setTask(String task) {

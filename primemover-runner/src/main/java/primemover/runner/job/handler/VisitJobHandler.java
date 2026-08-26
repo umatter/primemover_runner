@@ -5,6 +5,8 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import primemover.util.consent.ConsentHandler;
 import primemover.anticaptcha.CaptchaJobHelper;
 import primemover.anticaptcha.CaptchaJobHelper.JobPosition;
 import primemover.model.jobs.VisitJob;
@@ -67,6 +69,13 @@ public class VisitJobHandler implements IJobHandler {
 		} catch (Exception e) {
 			logger.warn("page ready load wait failed for job {}.", typedJob.getId(), e);
 		}
+
+		// Answer a cookie / GDPR consent dialog according to this bot's policy
+		// (job behaviour > crawler cookie_pref > consent.choice). Before this the
+		// only consent handling was inside the scroll jobs, so a workflow of
+		// visit -> wait -> lambda-select ran entirely behind the YouTube consent
+		// bump on any EU/CH exit IP.
+		ConsentHandler.handle(driver);
 
 		// Inject H.264 codec override to prevent VP9/AV1 software decoding
 		// which saturates CPU on headless VMs and makes the renderer unresponsive.

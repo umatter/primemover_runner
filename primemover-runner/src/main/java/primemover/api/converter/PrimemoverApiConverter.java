@@ -145,6 +145,7 @@ public class PrimemoverApiConverter {
 		job.setCaptchaSolving(captchaSolving);
 		job.setIsFailsave(isFailsave);
 		job.setTask(behaviours.get("task"));
+		job.setConsent(behaviours.get("consent"));
 
 		// set reset field
 		boolean isResetPreviousFailure = isResetPreviousFailureDefault;

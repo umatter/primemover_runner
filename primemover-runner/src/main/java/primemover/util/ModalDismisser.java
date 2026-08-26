@@ -5,6 +5,9 @@ import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import primemover.util.consent.ConsentHandler;
+import primemover.util.consent.ConsentResult;
+
 /**
  * Utility class for detecting and dismissing common modal overlays
  * that may block page scrolling (cookie consent, donation popups, etc.).
@@ -105,6 +108,17 @@ public class ModalDismisser {
      * @return true if a dismissal was attempted (button found and clicked)
      */
     public static boolean tryDismissModal(WebDriver driver) {
+        // Consent dialogs are answered by policy (accept / reject / ignore), never
+        // by the first matching button below: on a YouTube watch page the first
+        // visible "[aria-label*='close']" is a player control, and "[class*='consent'] button"
+        // is whichever of Reject/Accept comes first in the DOM.
+        ConsentResult consent = ConsentHandler.handle(driver);
+        if (consent.present()) {
+            // Either it was answered (clicked) or the policy says to leave it; in
+            // both cases the generic dismissal must not touch it.
+            return consent.clicked() && !consent.stillPresent();
+        }
+
         JavascriptExecutor jse = (JavascriptExecutor) driver;
 
         try {

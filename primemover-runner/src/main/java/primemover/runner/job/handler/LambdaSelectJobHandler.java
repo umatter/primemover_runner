@@ -15,6 +15,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import primemover.util.consent.ConsentHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import primemover.lambda.LambdaCaller;
 import primemover.lambda.LambdaCallerFactory;
@@ -252,6 +254,12 @@ public class LambdaSelectJobHandler implements IJobHandler {
 					throw lastNSEE;
 				}
 			}
+
+			// The click (SPA navigation) or the fallback driver.get() can bring the
+			// consent bump back, e.g. after a full reload; answer it per policy so
+			// the watch time that follows is not spent behind a modal.
+			Thread.sleep(1500);
+			ConsentHandler.handle(driver);
 
 		} catch (Exception e) {
 			logger.warn("error executing lambda", e);
