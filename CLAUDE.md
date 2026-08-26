@@ -122,6 +122,18 @@ RUNNING → STORINGDATA → SUCCESS | FAILURE | WARNING_JOBDATA | SKIPPED
 - Screenshots saved after each job
 - HAR files capture network traffic
 
+### Logging
+- `config/logback-spring.xml`. The `local` profile (what the VM runs) has root
+  DEBUG; `primemover.*` loggers are DEBUG explicitly.
+- **`org.springframework.web` stays at INFO, never lower.** At DEBUG Spring logs
+  every request body via `toString()` — under both `RestTemplate` and
+  `HttpLogging` — and the generated `UserSignInRequest` prints the Multilogin
+  password. That went to the log file, the journal and Loki once a minute until
+  2026-08-25. The models are generated, so the logger level is the only fix.
+- Log lines carry the MDC context (`correlationId=…, crawler.id=…, joblist.id=…`)
+  *between* the timestamp and the level; anything parsing these lines must
+  expect that.
+
 ### MultiLogin
 - MLX uses OpenAPI-generated client in `primemover-generated`
 - Regenerate: `mvn clean install` (openapi-generator-maven-plugin)
