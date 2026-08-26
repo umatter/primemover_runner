@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>news site - fixture</title></head>
+<body>
+<p>Article text. <a href="/cookie-policy" id="cookie-policy-link">Cookie policy</a></p>
+<div id="onetrust-consent-sdk">
+  <div id="onetrust-banner-sdk" style="position:fixed;bottom:0;left:0;right:0;background:#eee;padding:20px">
+    <p>We use cookies.</p>
+    <button id="onetrust-pc-btn-handler" onclick="window.__clicked='settings'">Cookie Settings</button>
+    <button id="onetrust-reject-all-handler" onclick="window.__clicked='reject'; document.getElementById('onetrust-consent-sdk').remove()">Reject All</button>
+    <button id="onetrust-accept-btn-handler" onclick="window.__clicked='accept'; document.getElementById('onetrust-consent-sdk').remove()">Accept All Cookies</button>
+  </div>
+</div>
+</body></html>

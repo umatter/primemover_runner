@@ -93,6 +93,11 @@ For detailed information, see our comprehensive documentation:
 - Smart navigation with automatic page load detection
 - Extension failure recovery with tab switching workarounds
 
+### 🍪 Consent Dialogs (GDPR)
+- Cookie/GDPR dialogs (YouTube consent bump, OneTrust, Cookiebot, Didomi, Usercentrics, TrustArc, Quantcast, Sourcepoint, generic) are answered automatically after every navigation, in EN/DE/FR/IT/ES
+- The answer — `accept`, `reject` or `ignore` — is part of the experiment design: job behaviour `consent` > crawler preference `cookie_pref` (`{"accept_all": true|false}`) > `consent.choice` property
+- Every decision is logged per job; a dialog that survives the click is a warning
+
 ### 🔐 Anti-Detection Capabilities
 - Integrates with MultiLogin for browser fingerprint management
 - Automatic CAPTCHA detection and solving via AntiCaptcha service

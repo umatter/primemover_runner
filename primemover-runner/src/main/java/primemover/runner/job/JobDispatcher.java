@@ -10,6 +10,8 @@ import primemover.config.StartupMode;
 import primemover.model.IJob;
 import primemover.model.jobs.*;
 import primemover.runner.context.IJobAwareRunnerContext;
+import primemover.util.consent.ConsentChoice;
+import primemover.util.consent.ConsentPolicy;
 import primemover.runner.job.handler.*;
 
 import java.util.HashMap;
@@ -21,6 +23,14 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 
 	@Value("${global.mode}")
 	private StartupMode mode;
+
+	/**
+	 * Runner-wide answer to cookie/GDPR consent dialogs when neither the job
+	 * (behaviour {@code consent}) nor the crawler ({@code cookie_pref}) says
+	 * otherwise. See {@link ConsentPolicy}.
+	 */
+	@Value("${consent.choice:accept}")
+	private String consentChoiceProperty;
 
 	private ApplicationContext ctx;
 
@@ -141,15 +151,25 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 			throw new UnsupportedOperationException("This type is not yet supported");
 		}
 
-		if (job.isFailsave()) {
-			// catch any exception
-			try {
+		// Bind the consent policy for this job to the executor thread so that
+		// navigation code and the modal dismisser answer consent dialogs the way
+		// this bot's arm requires.
+		ConsentChoice consent = ConsentPolicy.resolve(job, context.getCrawler(),
+				ConsentPolicy.runnerDefault(consentChoiceProperty));
+		ConsentPolicy.bind(consent);
+		try {
+			if (job.isFailsave()) {
+				// catch any exception
+				try {
+					h.handle(context);
+				} catch (Exception e) {
+					logger.warn("Error in Failsave Job {} of type {}", job.getId(), job.getClass().getSimpleName(), e);
+				}
+			} else {
 				h.handle(context);
-			} catch (Exception e) {
-				logger.warn("Error in Failsave Job {} of type {}", job.getId(), job.getClass().getSimpleName(), e);
 			}
-		} else {
-			h.handle(context);
+		} finally {
+			ConsentPolicy.unbind();
 		}
 
 	}

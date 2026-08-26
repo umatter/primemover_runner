@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>watch - fixture</title>
+<style>
+  ytd-consent-bump-v2-lightbox, tp-yt-paper-dialog, ytd-button-renderer, yt-button-shape { display: block; }
+  tp-yt-paper-dialog { position: fixed; inset: 10% 20%; background: #fff; border: 1px solid #000; }
+</style></head>
+<body>
+<!-- Structure copied from a real EU-served watch page (2026-08-26): the player has its own
+     aria-label="Close" buttons, which a naive "first close button" dismisser would hit. -->
+<div id="player">
+  <button class="ytp-cards-teaser-close-button" aria-label="Close" onclick="window.__clicked='player-close'">x</button>
+  <button class="ytp-large-play-button" aria-label="Play" onclick="window.__clicked='play'">play</button>
+</div>
+<ytd-app>
+<ytd-consent-bump-v2-lightbox id="lightbox">
+  <tp-yt-paper-dialog id="dialog" role="dialog" aria-labelledby="cb-header" modal="">
+    <h1 id="cb-header">Bevor Sie zu YouTube weitergehen</h1>
+    <div class="eom-buttons">
+      <div class="eom-button-row">
+        <ytd-button-renderer><yt-button-shape>
+          <button class="ytSpecButtonShapeNextHost" aria-label="Verwendung von Cookies und anderen Daten für die beschriebenen Zwecke ablehnen"
+                  onclick="window.__clicked='reject'; document.getElementById('lightbox').remove()">
+            <div><span role="text">Alle ablehnen</span></div></button>
+        </yt-button-shape></ytd-button-renderer>
+        <ytd-button-renderer><yt-button-shape>
+          <button class="ytSpecButtonShapeNextHost" aria-label="Verwendung von Cookies und anderen Daten für die beschriebenen Zwecke akzeptieren"
+                  onclick="window.__clicked='accept'; document.getElementById('lightbox').remove()">
+            <div><span role="text">Alle akzeptieren</span></div></button>
+        </yt-button-shape></ytd-button-renderer>
+      </div>
+      <div class="eom-button-row">
+        <ytd-button-renderer><yt-button-shape>
+          <a href="#" class="ytSpecButtonShapeNextHost" aria-label="Weitere Optionen" onclick="window.__clicked='more'; return false">
+            <div><span role="text">Weitere Optionen</span></div></a>
+        </yt-button-shape></ytd-button-renderer>
+      </div>
+    </div>
+  </tp-yt-paper-dialog>
+</ytd-consent-bump-v2-lightbox>
+</ytd-app>
+</body></html>
