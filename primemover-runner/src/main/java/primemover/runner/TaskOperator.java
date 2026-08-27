@@ -14,6 +14,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.chromium.HasCdp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import primemover.anticaptcha.CaptchaSolverFactory;
@@ -35,8 +36,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -50,6 +54,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TaskOperator implements ITaskOperator {
 	private static Logger logger = LoggerFactory.getLogger(TaskOperator.class);
+
+	/**
+	 * MDC key carrying the id of the job currently executing. Set for the
+	 * duration of one job and removed afterwards -- the executor pool reuses
+	 * threads, so a leaked job.id would mislabel every later line on that thread.
+	 * Kept as an individual key (like crawler.id / joblist.id) because promtail
+	 * extracts those by name from the rendered MDC map.
+	 */
+	private static final String MDC_JOB_ID = "job.id";
+
+	/** MDC key holding the hierarchical correlation id; set by JobListRunner. */
+	private static final String MDC_CORRELATION_ID = "correlationId";
 
 	@Value("${multilogin.StartupRetryCount:3}")
 	private Integer maxRetryCountMultiLogin;
@@ -265,7 +281,61 @@ public class TaskOperator implements ITaskOperator {
 		}
 	}
 
+	/**
+	 * Report a job state to the API and complain loudly if the report did not
+	 * land.
+	 *
+	 * <p>
+	 * {@code updateJobState} returns {@code false} when the update fails. Every
+	 * caller used to discard that, so a finished job could sit at "running" in the
+	 * database forever with nothing in the log saying why. It is an ERROR: the job
+	 * really ran, and the record of it is now wrong.
+	 *
+	 * <p>
+	 * Exceptions are deliberately <b>not</b> caught here -- the callers' existing
+	 * error handling depends on them propagating.
+	 */
+	private void reportJobState(IJob job, JobState state, String detail, Boolean captchaFound, Boolean captchaSolved,
+			ZonedDateTime startTime, ZonedDateTime endTime) {
+		Boolean reported = jobService.updateJobState(job, state, detail, captchaFound, captchaSolved, startTime,
+				endTime);
+
+		if (!Boolean.TRUE.equals(reported)) {
+			logger.error("Could not report state {} for job {}."
+					+ " The job stays at its previous state in the database.", state, job.getId());
+		}
+	}
+
 	private Boolean runJob(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming ipRecording) {
+		IJob job = jobContext.getJob();
+
+		// Job-scoped logging context. Keep the individual keys promtail reads
+		// (crawler.id, crawler.name, joblist.id are set by JobListRunner) and add
+		// job.id plus the |j-N segment of the canonical correlation id for the
+		// duration of this job only.
+		String outerCorrelationId = MDC.get(MDC_CORRELATION_ID);
+		MDC.put(MDC_JOB_ID, job.getId().toString());
+		if (outerCorrelationId != null) {
+			MDC.put(MDC_CORRELATION_ID, JobDiagnostics.withJob(outerCorrelationId, job.getId()));
+		}
+
+		// Warnings a job handler attaches while it runs; see JobDiagnostics.
+		JobDiagnostics.beginJob();
+
+		try {
+			return runJobInContext(jobContext, ipRecording);
+		} finally {
+			JobDiagnostics.endJob();
+			MDC.remove(MDC_JOB_ID);
+			if (outerCorrelationId == null) {
+				MDC.remove(MDC_CORRELATION_ID);
+			} else {
+				MDC.put(MDC_CORRELATION_ID, outerCorrelationId);
+			}
+		}
+	}
+
+	private Boolean runJobInContext(IJobAwareRunnerContext<?> jobContext, IpRecordingTiming ipRecording) {
 		boolean runJobResult = true;
 
 		IJob job = jobContext.getJob();
@@ -273,8 +343,12 @@ public class TaskOperator implements ITaskOperator {
 
 		logger.info("Starting job {}", job.getId());
 
+		// the exception that made the handler fail, kept so it can be reported to
+		// the API instead of being reduced to a boolean and thrown away
+		Exception jobFailure = null;
+
 		try {
-			jobService.updateJobState(job, JobState.RUNNING, null, null, ZonedDateTime.now(), null); // setting
+			reportJobState(job, JobState.RUNNING, null, null, null, ZonedDateTime.now(), null); // setting
 
 			// IP-Checking
 			try {
@@ -299,6 +373,7 @@ public class TaskOperator implements ITaskOperator {
 				runJobHandler.handle(jobContext);
 			} catch (Exception e) {
 				logger.warn("Catched exception running job {}", job.getId(), e);
+				jobFailure = e;
 				runJobResult = false;
 			}
 
@@ -335,7 +410,7 @@ public class TaskOperator implements ITaskOperator {
 				}
 			}
 
-			jobService.updateJobState(job, JobState.STORINGDATA, captchaFound, null, null, null);
+			reportJobState(job, JobState.STORINGDATA, null, captchaFound, null, null, null);
 
 			// save capturing screenshot
 			try {
@@ -396,13 +471,22 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId());
 			}
 
+			// warnings the handler attached to this job (e.g. the decision function
+			// fell back to random selection); carried along with the recorded data
+			List<String> jobWarnings = JobDiagnostics.warnings();
+
 			// Prepare writers
 			List<IDataWriter> writers = new ArrayList<>();
 			writerFactories.forEach((factory) -> {
-				writers.add(factory.getWriter(jobContext.getJobDataRecorder().getRecordings()));
+				RecordedJobData recordings = jobContext.getJobDataRecorder().getRecordings();
+				recordings.addWarnings(jobWarnings);
+				writers.add(factory.getWriter(recordings));
 			});
 
 			boolean writeRes = true;
+			// distinct causes of a failed write, so "problems writing jobresult" can
+			// say which backend failed and why instead of only that it did
+			Set<String> storageProblems = new LinkedHashSet<>();
 			// writing data
 
 			for (IDataWriter writer : writers) {
@@ -415,43 +499,66 @@ public class TaskOperator implements ITaskOperator {
 						// credentials) would otherwise suppress the local write entirely, silently dropping HAR
 						// and job data on disk. Each storage backend must be independent.
 						boolean storageOk = storage.writeData(job, cachedWriter);
+						if (!storageOk) {
+							storageProblems.add(storage.getClass().getSimpleName() + ": write refused");
+						}
 						writeRes = writeRes && storageOk;
 					} catch (Exception e) {
 						logger.warn("Error writing to job-data to storage({}) for job {}", storage, job.getId(), e);
+						storageProblems.add(storage.getClass().getSimpleName() + ": " + JobDiagnostics.describe(e));
 						writeRes = false;
 					}
 				}
 			}
 
-			if (writeRes && runJobResult) {
+			if (writeRes && runJobResult && jobWarnings.isEmpty()) {
 				logger.info("Done running job {}", job.getId());
-				jobService.updateJobState(job, JobState.SUCCESS, null, null, null, ZonedDateTime.now()); // setting
-																											// endtime
+				reportJobState(job, JobState.SUCCESS, null, null, null, null, ZonedDateTime.now()); // setting
+																									// endtime
+			} else if (!runJobResult) {
+				logger.warn("Done running job with failure {}", job.getId());
+				// the real cause, not just "error during execution"
+				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure), null, null, null,
+						ZonedDateTime.now()); // setting endtime
+			} else if (!writeRes) {
+				logger.warn("Done running job with warning (job data not written) {}", job.getId());
+				reportJobState(job, JobState.WARNING_JOBDATA, joinDetails(storageProblems, jobWarnings), null, null,
+						null, ZonedDateTime.now()); // setting endtime
 			} else {
-				logger.warn("Done running job with warning {}", job.getId());
-
-				if (!runJobResult) {
-					jobService.updateJobState(job, JobState.FAILURE, null, null, null, ZonedDateTime.now()); // setting
-				} else {
-					jobService.updateJobState(job, JobState.WARNING_JOBDATA, null, null, null, ZonedDateTime.now()); // setting
-				}
-				// endtime
+				// handler completed, but the result is degraded in a way the
+				// experiment cares about -- must not render as a green Success pill
+				logger.warn("Done running job with warning {}: {}", job.getId(), jobWarnings);
+				reportJobState(job, JobState.WARNING, String.join("; ", jobWarnings), null, null, null,
+						ZonedDateTime.now()); // setting endtime
 			}
 
 		} catch (Exception ex) {
 			logger.error("Exception executing job {}", job.getId(), ex);
 
 			try {
-				jobService.updateJobState(job, JobState.FAILURE, null, null, null, ZonedDateTime.now()); // setting
-																											// endtime
+				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure == null ? ex : jobFailure),
+						null, null, null, ZonedDateTime.now()); // setting endtime
 			} catch (Exception e) {
-				logger.error("Could not write Job-State for {}", job.getId(), ex); // FATAL!!!
+				// log the failure to WRITE the state (e), not the exception that got
+				// us here (ex) -- that one is already logged above, and this branch is
+				// the one nobody could diagnose
+				logger.error("Could not write Job-State for {}", job.getId(), e); // FATAL!!!
 			}
 
 			runJobResult = false;
 		}
 
 		return runJobResult;
+	}
+
+	/**
+	 * Join storage problems and handler warnings into one single-line detail.
+	 * JobService truncates it to the length the API column should carry.
+	 */
+	private static String joinDetails(Collection<String> first, Collection<String> second) {
+		List<String> parts = new ArrayList<>(first);
+		parts.addAll(second);
+		return parts.isEmpty() ? null : String.join("; ", parts);
 	}
 
 	private RecordingProxy setupRecorder(Crawler crawler) {
@@ -531,8 +638,9 @@ public class TaskOperator implements ITaskOperator {
 				} else {
 					logger.info("skipping job ({}) due to error in previous job ({})", job.getId(),
 							previousJob == null ? -1 : previousJob.getId());
-					jobService.updateJobState(job, JobState.SKIPPED, null, null, ZonedDateTime.now(),
-							ZonedDateTime.now());
+					reportJobState(job, JobState.SKIPPED,
+							previousJob == null ? null : "previous job " + previousJob.getId() + " did not succeed",
+							null, null, ZonedDateTime.now(), ZonedDateTime.now());
 				}
 			}
 

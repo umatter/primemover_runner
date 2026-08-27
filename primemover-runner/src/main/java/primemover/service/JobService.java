@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.retry.RetryContext;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -34,8 +36,93 @@ public class JobService implements IJobService {
 
 	private static Logger logger = LoggerFactory.getLogger(JobService.class);
 
+	/**
+	 * Upper bound on the {@code status_message} sent to the API. The Laravel
+	 * column is TEXT and its validation rule is {@code nullable} with no length
+	 * limit, so this cap is ours: it keeps one runaway exception message from
+	 * bloating a row, not a schema constraint.
+	 */
+	static final int MAX_STATUS_MESSAGE_LENGTH = 1800;
+
+	private static final String TRUNCATION_MARKER = "...";
+
 	public JobService() {
 		// nothing to do
+	}
+
+	/**
+	 * Build the {@code status_message} for a state report.
+	 *
+	 * <p>
+	 * Either the bare state text, or {@code "<state text> - <detail>"} with the
+	 * detail collapsed onto a single line and truncated. Callers must pass a
+	 * cause, never a stack trace.
+	 */
+	static String buildStatusMessage(String stateText, @Nullable String detail) {
+		if (detail == null) {
+			return stateText;
+		}
+
+		// single-line: newlines and tabs would break every log/CSV consumer of
+		// this field, and a stack trace pasted in here would be unreadable anyway
+		String singleLine = detail.replaceAll("\\s+", " ").trim();
+		if (singleLine.isEmpty()) {
+			return stateText;
+		}
+
+		String message = stateText + " - " + singleLine;
+		if (message.length() <= MAX_STATUS_MESSAGE_LENGTH) {
+			return message;
+		}
+
+		return message.substring(0, truncationEnd(message, MAX_STATUS_MESSAGE_LENGTH - TRUNCATION_MARKER.length()))
+				+ TRUNCATION_MARKER;
+	}
+
+	/**
+	 * The largest cut point at or below {@code limit} that does not split a
+	 * character.
+	 *
+	 * <p>
+	 * Java indexes {@link String} by UTF-16 code unit, so a non-BMP character --
+	 * an emoji, a CJK extension ideograph, a mathematical symbol -- is two chars.
+	 * Cutting between them leaves a lone high surrogate, which is not a character
+	 * at all: it survives {@code toString()}, but the JSON encoder that puts this
+	 * field on the wire has no legal encoding for it, and what the API stores is
+	 * {@code ?}. A video title is attacker-supplied text arriving from YouTube via
+	 * a failed job's message, so a truncation boundary landing inside an emoji is
+	 * a question of when, not whether.
+	 *
+	 * <p>
+	 * The result may therefore be one char shorter than {@code limit}. Everything
+	 * upstream deals in "at most", so that is free.
+	 */
+	private static int truncationEnd(String message, int limit) {
+		if (limit <= 0) {
+			return 0;
+		}
+		if (limit >= message.length()) {
+			return message.length();
+		}
+
+		// only a high surrogate immediately before the cut can have its partner
+		// after it; a lone one already in the input is left exactly as it was
+		if (Character.isHighSurrogate(message.charAt(limit - 1)) && Character.isLowSurrogate(message.charAt(limit))) {
+			return limit - 1;
+		}
+
+		return limit;
+	}
+
+	/**
+	 * Current retry attempt, or 0 when called outside a retry context.
+	 * {@link RetrySynchronizationManager#getContext()} returns {@code null} when
+	 * the call did not go through the retry proxy (self-invocation, tests), and
+	 * dereferencing it there used to be an NPE waiting to happen.
+	 */
+	private static int currentRetryCount() {
+		RetryContext context = RetrySynchronizationManager.getContext();
+		return context == null ? 0 : context.getRetryCount();
 	}
 
 	private static DateTimeFormatter dateFormater = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -68,19 +155,27 @@ public class JobService implements IJobService {
 	@Override
 	public Boolean updateJoblistState(Joblist jobs, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
-		logger.info("updateing joblist-state. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
-		return updateJoblistState(jobs.getId(), state, startTime, endTime, processed, processing);
+		logger.info("updateing joblist-state. Retry {}", currentRetryCount());
+		return updateJoblistState(jobs.getId(), state, null, startTime, endTime, processed, processing);
 	}
 
-	private Boolean updateJoblistState(Long queueId, JoblistState state, ZonedDateTime startTime, ZonedDateTime endTime,
-			Boolean processed, Boolean processing) {
+	@Retryable
+	@Override
+	public Boolean updateJoblistState(Joblist jobs, JoblistState state, @Nullable String detail,
+			ZonedDateTime startTime, ZonedDateTime endTime, Boolean processed, Boolean processing) {
+		logger.info("updateing joblist-state. Retry {}", currentRetryCount());
+		return updateJoblistState(jobs.getId(), state, detail, startTime, endTime, processed, processing);
+	}
+
+	private Boolean updateJoblistState(Long queueId, JoblistState state, @Nullable String detail,
+			ZonedDateTime startTime, ZonedDateTime endTime, Boolean processed, Boolean processing) {
 		String url = calculateJobListUrl(queueId);
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		JSONObject data = new JSONObject();
 		data.put("status_code", state.getCode());
-		data.put("status_message", state.getText());
+		data.put("status_message", buildStatusMessage(state.getText(), detail));
 		if (!(startTime == null)) {
 			data.put("started_at", dateFormater.format(startTime));
 		}
@@ -115,20 +210,30 @@ public class JobService implements IJobService {
 	@Retryable
 	@Override
 	public Boolean updateCaptchaStateOnJob(final IJob job, Boolean captchaFound, Boolean captchaSolved) {
-		logger.info("updateing captcha-state. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
-		return updateJobState(job.getId(), null, captchaFound, captchaSolved, null, null);
+		logger.info("updateing captcha-state. Retry {}", currentRetryCount());
+		return updateJobState(job.getId(), null, null, captchaFound, captchaSolved, null, null);
 	}
 
 	@Retryable
 	@Override
 	public Boolean updateJobState(final IJob job, final JobState state, Boolean captchaFound,
 			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
-		logger.info("updateing job-state. Retry {}", RetrySynchronizationManager.getContext().getRetryCount());
-		return updateJobState(job.getId(), state, captchaFound, captchaSolved, startTime, endTime);
+		logger.info("updateing job-state. Retry {}", currentRetryCount());
+		return updateJobState(job.getId(), state, null, captchaFound, captchaSolved, startTime, endTime);
 	}
 
-	private Boolean updateJobState(final Long jobID, final JobState state, final Boolean captchaFound,
-			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
+	@Retryable
+	@Override
+	public Boolean updateJobState(final IJob job, final JobState state, @Nullable final String detail,
+			final Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime,
+			final ZonedDateTime endTime) {
+		logger.info("updateing job-state. Retry {}", currentRetryCount());
+		return updateJobState(job.getId(), state, detail, captchaFound, captchaSolved, startTime, endTime);
+	}
+
+	private Boolean updateJobState(final Long jobID, final JobState state, @Nullable final String detail,
+			final Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime,
+			final ZonedDateTime endTime) {
 		// do we have something to update?
 		if (state == null && captchaFound == null && captchaSolved == null && startTime != null && endTime != null) {
 			logger.debug("skipping call nothing to update");
@@ -145,7 +250,7 @@ public class JobService implements IJobService {
 		// state data
 		if (state != null) {
 			data.put("status_code", state.getCode());
-			data.put("status_message", state.getText());
+			data.put("status_message", buildStatusMessage(state.getText(), detail));
 		}
 
 		// captcha recording and solving
