@@ -88,6 +88,7 @@ public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 			String localStorage = datePrefix + "_page_localstorage_" + jobId + ".json";
 			String sessionStorage = datePrefix + "_page_sessionstorage_" + jobId + ".json";
 			String screenshot = datePrefix + "_page_screenshot_" + jobId + ".png";
+			String warnings = datePrefix + "_job_warnings_" + jobId + ".json";
 
 			ZipEntry zipEntry;
 
@@ -144,6 +145,22 @@ public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 				zipEntry = new ZipEntry(screenshot);
 				zipOut.putNextEntry(zipEntry);
 				zipOut.write(data.getScreenshot());
+			}
+
+			// Job warnings: why this job is reported as `warning` rather than
+			// `success` -- most importantly a lost treatment, which makes the very
+			// recordings in this archive control-arm data. The status_message in the
+			// database is truncated and eventually rotated away; this archive is the
+			// experiment's evidence trail, and a reading of it that cannot tell a
+			// degraded session from a clean one is exactly the confusion the whole
+			// status contract exists to remove. Written only when there are any, so
+			// an unaffected job's archive is byte-for-byte what it always was.
+			if (data.hasWarnings()) {
+				zipEntry = new ZipEntry(warnings);
+				zipOut.putNextEntry(zipEntry);
+				byte[] tmpByte = mapper.writeValueAsString(data.getWarnings())
+						.getBytes(StandardCharsets.UTF_8);
+				zipOut.write(tmpByte);
 			}
 
 			// make sure everything is written

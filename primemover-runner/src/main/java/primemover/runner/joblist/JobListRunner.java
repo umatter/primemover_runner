@@ -9,11 +9,15 @@ import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 import primemover.runner.ITaskOperator;
+import primemover.runner.JobDiagnostics;
 import primemover.service.IJobService;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Runs joblists on the specified crawler
@@ -23,6 +27,26 @@ import java.time.temporal.ChronoUnit;
  */
 public class JobListRunner implements IJobListRunner {
 	private static Logger logger = LoggerFactory.getLogger(JobListRunner.class);
+
+	/**
+	 * Canonical correlation-id format, documented in
+	 * {@code docs/integration-contract.md} as
+	 * {@code exp-{experiment}|cr-{crawler}|q-{queue}|j-{job}}. The runner never
+	 * learns the experiment id -- the API's crawler payload does not carry one --
+	 * so the {@code exp-} segment is omitted rather than invented, and TaskOperator
+	 * appends {@code |j-<id>} for the duration of each job. The individual MDC
+	 * keys below stay exactly as they were: promtail extracts crawler_id and
+	 * queue_id from {@code crawler.id} / {@code joblist.id} by name.
+	 */
+	private static final String MDC_CORRELATION_ID = "correlationId";
+
+	/**
+	 * Every MDC key this class sets, so {@link #run()} can put them all back the
+	 * way it found them. Keeping the list here is what stops the next key from
+	 * being added to {@code run()} and forgotten in the cleanup.
+	 */
+	private static final List<String> MDC_KEYS = List.of("crawler.id", "crawler.name", "joblist.id",
+			MDC_CORRELATION_ID);
 
 	private ITaskOperator taskOperator;
 	private Crawler crawler;
@@ -42,16 +66,15 @@ public class JobListRunner implements IJobListRunner {
 		// check for empty joblist
 		if (jobs == null) {
 			logger.warn("failure running jobs for {} ({}), joblist is empty", crawler.getId(), crawler.getName());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null,
-					Boolean.TRUE);
+			reportJoblistState(JoblistState.RUNNING_INPROGRESS, null, ZonedDateTime.now(), null, null, Boolean.TRUE);
 			return SetupState.NO_JOBS;
 		}
 
 		// Check for max delay
 		long diff = ChronoUnit.MINUTES.between(jobs.getStartTime(), ZonedDateTime.now());
 		logger.info("setup crawler for {} ({}) with delay of {} minutes", crawler.getId(), crawler.getName(), diff);
-		jobService.updateJoblistState(jobs, JoblistState.RUNNING_INPROGRESS, ZonedDateTime.now(), null, null,
-				Boolean.TRUE); // set start time and processing, commit later
+		// set start time and processing, commit later
+		reportJoblistState(JoblistState.RUNNING_INPROGRESS, null, ZonedDateTime.now(), null, null, Boolean.TRUE);
 
 		if (diff > redoMinutes) {
 			logger.info("skipping run as the jobs timed out after {} minutes. Max delay is {} minutes", diff,
@@ -66,15 +89,13 @@ public class JobListRunner implements IJobListRunner {
 
 		if (isStartedUp) {
 			logger.debug("setup completed successfully for crawler {} for joblist {}", crawler.getId(), jobs.getId());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITDONE, ZonedDateTime.now(), null, null, null); // set
-																														// new
-																														// state
+			reportJoblistState(JoblistState.RUNNING_INITDONE, null, ZonedDateTime.now(), null, null, null); // set new state
 			return SetupState.SUCCESS;
 		} else {
 			logger.warn("setup failure for crawler {} for joblist {}", crawler.getId(), jobs.getId());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_INITFAILED, ZonedDateTime.now(), null, null, null); // set
-																															// new
-			// state
+			reportJoblistState(JoblistState.RUNNING_INITFAILED,
+					"browser/profile startup did not complete for crawler " + crawler.getId(), ZonedDateTime.now(), null,
+					null, null); // set new state
 			return SetupState.FAILURE;
 		}
 	}
@@ -89,11 +110,11 @@ public class JobListRunner implements IJobListRunner {
 		Boolean jobsRes = taskOperator.runJobList(jobs);
 		if (jobsRes) {
 			logger.debug("success running jobs for {} ({})", crawler.getId(), crawler.getName());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSDONE, null, null, null, null);
+			reportJoblistState(JoblistState.RUNNING_JOBSDONE, null, null, null, null, null);
 			return RunningState.SUCCESS;
 		} else {
 			logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
-			jobService.updateJoblistState(jobs, JoblistState.RUNNING_JOBSFAILURE, null, null, null, null);
+			reportJoblistState(JoblistState.RUNNING_JOBSFAILURE, null, null, null, null, null);
 			return RunningState.FAILURE;
 		}
 	}
@@ -105,42 +126,106 @@ public class JobListRunner implements IJobListRunner {
 
 		switch (setupRes) {
 		case FAILURE:
-			jobService.updateJoblistState(jobs, JoblistState.DONE_INITFAILED, null, ZonedDateTime.now(), Boolean.TRUE,
-					Boolean.FALSE);
+			reportJoblistState(JoblistState.DONE_INITFAILED,
+					"browser/profile startup did not complete for crawler " + crawler.getId(), null,
+					ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 
 			break;
 		case SKIPPED:
-			jobService.updateJoblistState(jobs, JoblistState.SKIPPED_TIMEDOUT, null, ZonedDateTime.now(), Boolean.TRUE,
+			reportJoblistState(JoblistState.SKIPPED_TIMEDOUT,
+					"start time was more than " + redoMinutes + " minutes ago", null, ZonedDateTime.now(), Boolean.TRUE,
 					Boolean.FALSE); // set execution end time
 			break;
 		case NO_JOBS:
-			jobService.updateJoblistState(jobs, JoblistState.DONE_JOBLIST_EMPTY, null, ZonedDateTime.now(),
-					Boolean.TRUE, Boolean.FALSE); // set execution end time
+			reportJoblistState(JoblistState.DONE_JOBLIST_EMPTY, null, null, ZonedDateTime.now(), Boolean.TRUE,
+					Boolean.FALSE); // set execution end time
 			break;
 
 		case SUCCESS:
 
 			switch (jobsRes) {
 			case SUCCESS:
-				jobService.updateJoblistState(jobs, JoblistState.DONE_SUCCESS, null, ZonedDateTime.now(), Boolean.TRUE,
+				reportJoblistState(JoblistState.DONE_SUCCESS, null, null, ZonedDateTime.now(), Boolean.TRUE,
 						Boolean.FALSE);
 				break;
 			case FAILURE:
-				jobService.updateJoblistState(jobs, JoblistState.DONE_JOBSFAILURE, null, ZonedDateTime.now(),
-						Boolean.TRUE, Boolean.FALSE);
+				reportJoblistState(JoblistState.DONE_JOBSFAILURE, "at least one job did not finish successfully", null,
+						ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 				break;
 			}
 			break;
 		}
 	}
 
-	public Boolean run() {
-		// add some context
-		MDC.put("crawler.id", crawler.getId().toString());
-		MDC.put("crawler.name", crawler.getName());
-		MDC.put("joblist.id", jobs.getId().toString());
-		MDC.put("correlationId", "cr-" + crawler.getId().toString() + "|jl-" + jobs.getId().toString());
+	/**
+	 * Report a queue state and complain loudly if the report did not land.
+	 *
+	 * <p>
+	 * {@code updateJoblistState} returns {@code false} when the update fails, and
+	 * every caller used to ignore that -- which is how a queue ends up stuck at
+	 * {@code processing=1, processed=0} with nothing in the log explaining it.
+	 *
+	 * <p>
+	 * Exceptions are deliberately <b>not</b> caught here -- {@link #run()} already
+	 * has a catch-all that reports DONE_FAILURE and tears the crawler down.
+	 */
+	private void reportJoblistState(JoblistState state, String detail, ZonedDateTime startTime, ZonedDateTime endTime,
+			Boolean processed, Boolean processing) {
+		Boolean reported = jobService.updateJoblistState(jobs, state, detail, startTime, endTime, processed,
+				processing);
 
+		if (!Boolean.TRUE.equals(reported)) {
+			logger.error("Could not report state {} for joblist {}."
+					+ " The queue stays at its previous state in the database.", state,
+					jobs == null ? null : jobs.getId());
+		}
+	}
+
+	/**
+	 * Run this joblist inside a logging context that is removed again afterwards.
+	 *
+	 * <p>
+	 * These four keys used to be put and never removed. The runner executes
+	 * joblists on a pooled executor ({@code runner.MaxParallelExecution} threads),
+	 * so the keys outlived the run and stamped the <em>next</em> joblist's -- and
+	 * every between-jobs -- log line with the previous crawler's id, name and
+	 * correlation id. Promtail turns those into Loki labels, so the damage is not
+	 * cosmetic: lines get filed under the wrong crawler and a trace query answers
+	 * with another bot's work. {@code TaskOperator} already does this for
+	 * {@code job.id} one level down; the enclosing keys get the same discipline.
+	 *
+	 * <p>
+	 * Prior values are restored rather than blindly removed, so a caller that
+	 * established its own context keeps it.
+	 */
+	public Boolean run() {
+		Map<String, String> previous = new LinkedHashMap<>();
+		for (String key : MDC_KEYS) {
+			previous.put(key, MDC.get(key));
+		}
+
+		try {
+			// add some context
+			MDC.put("crawler.id", crawler.getId().toString());
+			MDC.put("crawler.name", crawler.getName());
+			MDC.put("joblist.id", jobs.getId().toString());
+			// canonical form; the exp- segment is omitted because the runner is never
+			// told the experiment id (the API's crawler payload carries none)
+			MDC.put(MDC_CORRELATION_ID, JobDiagnostics.correlationId(null, crawler.getId(), jobs.getId(), null));
+
+			return runInContext();
+		} finally {
+			for (Map.Entry<String, String> entry : previous.entrySet()) {
+				if (entry.getValue() == null) {
+					MDC.remove(entry.getKey());
+				} else {
+					MDC.put(entry.getKey(), entry.getValue());
+				}
+			}
+		}
+	}
+
+	private Boolean runInContext() {
 		// running joblist
 		try {
 			SetupState setupRes = null;
@@ -170,8 +255,8 @@ public class JobListRunner implements IJobListRunner {
 			try {
 				logger.error("uncaught error during execution of joblist {} for crawler {}", crawler.getName(),
 						crawler.getId(), e);
-				jobService.updateJoblistState(jobs, JoblistState.DONE_FAILURE, null, ZonedDateTime.now(), Boolean.TRUE,
-						Boolean.FALSE);
+				reportJoblistState(JoblistState.DONE_FAILURE, JobDiagnostics.describe(e), null, ZonedDateTime.now(),
+						Boolean.TRUE, Boolean.FALSE);
 
 				// make sure to tear down!
 				logger.debug("tearing down crawler {} running joblistr {}", crawler.getId(), jobs.getId());

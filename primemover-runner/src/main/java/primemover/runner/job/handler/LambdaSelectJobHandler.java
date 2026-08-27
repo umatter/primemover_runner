@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import primemover.lambda.LambdaCaller;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.model.jobs.LambdaSelectJob;
+import primemover.runner.JobDiagnostics;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.service.IStorageService;
@@ -35,10 +36,26 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LambdaSelectJobHandler implements IJobHandler {
 	private static Logger logger = LoggerFactory.getLogger(LambdaSelectJobHandler.class);
+
+	/**
+	 * Longest single warning detail attached to a job. JobService truncates the
+	 * whole status_message at 1800 characters, so no single warning may be allowed
+	 * to crowd out the others.
+	 */
+	static final int MAX_WARNING_DETAIL_CHARS = 200;
+
+	/**
+	 * How many of the decision function's own free-text warnings are attached to
+	 * the job. The rest stay in the runner log and in the recorded payload; the
+	 * status_message only has to say that the decision was degraded and why.
+	 */
+	static final int MAX_LAMBDA_WARNINGS_REPORTED = 4;
 
 	@Autowired(required = false)
 	private List<IStorageService> storages = new ArrayList<IStorageService>();
@@ -85,6 +102,194 @@ public class LambdaSelectJobHandler implements IJobHandler {
 		}
 
 		xpath.compile(value);
+	}
+
+	/**
+	 * Turn the decision function's degradation report into the short, single-line
+	 * warnings that become the job's {@code status_message} detail.
+	 *
+	 * <p>
+	 * Returns an empty list for a clean decision <em>and</em> for a payload that
+	 * carries no degradation report at all (see {@link LambdaSelectJobResult}), so
+	 * running against the decision function that is deployed today keeps reporting
+	 * {@code success} exactly as before. That second case is not a detail: the
+	 * deployed function emits a non-empty {@code warnings[]} for roughly 5% of
+	 * decisions (19 of 358 measured on this host), several of them benign, so
+	 * attaching those unconditionally would flip those jobs from success to warning
+	 * the moment this jar is deployed -- with no other component having changed.
+	 * Their text is still logged at WARN by {@link #reportDegradation}; it simply
+	 * does not move the job's status. Once the decision function is redeployed, the
+	 * explicit {@code degraded} / {@code treatment_lost} flags govern.
+	 *
+	 * <p>
+	 * Kept pure and package-private so the mapping from payload to warning text can
+	 * be tested without a browser.
+	 */
+	static List<String> describeDegradation(LambdaSelectJobResult parsed) {
+		List<String> out = new ArrayList<>();
+
+		if (parsed == null || !parsed.hasDegradationReport()) {
+			return out;
+		}
+
+		if (parsed.isTreatmentLost()) {
+			// The single most important line in this file: the arm LOST its treatment.
+			//
+			// Gated on the decision function's own treatment_lost flag, which is
+			// "degraded AND no requested treatment applied" computed once at the source.
+			// It is emphatically NOT gated on selection_mode: a control crawler
+			// (pi=psi=kappa=tau=0) requests no LLM rating filter at all, so it draws
+			// uniformly and the decision function correctly reports
+			// selection_mode=random with degraded=false and treatment_lost=false
+			// (bot-decision-yt tests/test_degradation_reporting.py). 295 of the 358
+			// lambda payloads in this host's rotated runner logs are that case, so
+			// keying the warning on the mode alone reports ~82% of all select jobs as
+			// degraded and buries the handful that really are.
+			//
+			// For a payload predating the flag, isTreatmentLost() recomputes the same
+			// two-term rule locally -- see LambdaSelectJobResult.
+			out.add("lambda treatment_lost: a requested treatment did not apply, so this job produced"
+					+ " control-arm data" + modeSuffix(parsed) + suffix(parsed.describeLlmProblem(), "llm "));
+		}
+
+		for (String failed : parsed.failedFilters()) {
+			out.add("lambda filter " + shorten(failed, MAX_WARNING_DETAIL_CHARS));
+		}
+
+		if (out.isEmpty() && parsed.isDegraded()) {
+			// degraded, but neither the treatment flag nor a named filter says why
+			out.add("lambda reported a degraded decision" + suffix(parsed.describeLlmProblem(), "llm "));
+		}
+
+		if (out.isEmpty()) {
+			// A report is present and it says nothing went wrong. The decision
+			// function's own warnings[] are then informational (a control crawler that
+			// skipped a filter still warns about it), so they stay in the log and in
+			// the recorded payload rather than turning a healthy job into a warning.
+			return out;
+		}
+
+		List<String> lambdaWarnings = parsed.getWarnings();
+		int reported = 0;
+		for (String warning : lambdaWarnings) {
+			if (reported >= MAX_LAMBDA_WARNINGS_REPORTED) {
+				out.add("lambda: (+" + (lambdaWarnings.size() - reported)
+						+ " more warnings, see the recorded lambda payload)");
+				break;
+			}
+
+			String text = shorten(warning, MAX_WARNING_DETAIL_CHARS);
+			if (text != null) {
+				out.add("lambda: " + text);
+				reported++;
+			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * Log the degradation report and attach it to the running job.
+	 *
+	 * <p>
+	 * The attached warnings make {@link primemover.runner.TaskOperator} finish the
+	 * job as {@code warning} instead of {@code success} -- the whole point of
+	 * parsing the report at all. A degraded decision is <b>not</b> a job failure:
+	 * the click still happened and the recorded data is still worth keeping, it
+	 * simply must not be read as clean treatment data.
+	 *
+	 * <p>
+	 * Package-private so a test can drive it without a browser or a Spring context.
+	 *
+	 * @param alreadyReported warnings already attached during this job, so a
+	 *                        re-invocation on a click retry does not attach the same
+	 *                        text twice
+	 */
+	void reportDegradation(LambdaSelectJobResult parsed, Long jobId, Set<String> alreadyReported) {
+		if (parsed == null) {
+			return;
+		}
+
+		List<String> lambdaWarnings = parsed.getWarnings();
+
+		if (!parsed.hasDegradationReport()) {
+			// A payload from a decision function that predates the report. Absence
+			// reads as "unknown", never as degraded: say what came back, leave the
+			// job's status alone.
+			if (!lambdaWarnings.isEmpty()) {
+				logger.warn("Lambda returned {} warning(s) for job {} in a payload carrying no degradation report"
+						+ " (the deployed decision function predates it), so the job status is left unchanged: {}",
+						lambdaWarnings.size(), jobId, lambdaWarnings);
+			}
+			return;
+		}
+
+		if (parsed.isTreatmentLost()) {
+			logger.error(
+					"Lambda decision LOST THE TREATMENT for job {}: a requested treatment did not apply, so this"
+							+ " crawler produced control-arm data for this job whatever its assignment says."
+							+ " selection_mode={} llm={} filters={}",
+					jobId, parsed.getSelectionMode(), parsed.describeLlmProblem(), parsed.filtersSnapshot());
+		} else if (parsed.isDegraded()) {
+			logger.warn("Lambda reported a degraded decision for job {}: selection_mode={} filters={} llm={}", jobId,
+					parsed.getSelectionMode(), parsed.filtersSnapshot(), parsed.describeLlmProblem());
+		} else if (parsed.isRandomSelection()) {
+			// Random, and nothing degraded: this crawler requested no rating filter,
+			// i.e. it IS a control. Expected, and by far the common case -- not a
+			// warning. Note this branch is reached only after the two above, so the
+			// mode is never read on its own.
+			logger.debug("Lambda picked the video at random for job {} with nothing degraded (control crawler)."
+					+ " filters={}", jobId, parsed.filtersSnapshot());
+		}
+
+		List<String> failedFilters = parsed.failedFilters();
+		if (!failedFilters.isEmpty()) {
+			logger.warn("Lambda decision degraded for job {}: {} filter(s) failed: {} (applied: {})", jobId,
+					failedFilters.size(), failedFilters, parsed.appliedFilters());
+		}
+
+		if (!lambdaWarnings.isEmpty()) {
+			logger.warn("Lambda returned {} warning(s) for job {}: {}", lambdaWarnings.size(), jobId, lambdaWarnings);
+		}
+
+		for (String warning : describeDegradation(parsed)) {
+			if (alreadyReported.add(warning)) {
+				JobDiagnostics.addWarning(warning);
+			}
+		}
+	}
+
+	/**
+	 * {@code " (selection_mode=random)"}, or nothing when the payload did not say.
+	 * Descriptive detail only -- the decision to warn was already taken by the
+	 * caller.
+	 */
+	private static String modeSuffix(LambdaSelectJobResult parsed) {
+		String mode = shorten(parsed.getSelectionMode(), 40);
+		return mode == null ? "" : " (selection_mode=" + mode + ")";
+	}
+
+	private static String suffix(String detail, String label) {
+		String text = shorten(detail, MAX_WARNING_DETAIL_CHARS);
+		return text == null ? "" : " (" + label + text + ")";
+	}
+
+	/**
+	 * Collapse to a single truncated line. The status_message is one field in one
+	 * database column: a multi-line detail, or a whole stack trace, does not belong
+	 * in it.
+	 */
+	private static String shorten(String value, int limit) {
+		if (value == null) {
+			return null;
+		}
+
+		String text = value.replaceAll("\\s+", " ").strip();
+		if (text.isEmpty()) {
+			return null;
+		}
+
+		return text.length() > limit ? text.substring(0, limit - 3) + "..." : text;
 	}
 
 	private void init() {
@@ -180,6 +385,14 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			LambdaSelectJobResult parsedResult = mapper.readValue(lambdaResponsePayload,
 					LambdaSelectJobResult.class);
 
+			// Warnings already attached to this job, so the re-invocation below cannot
+			// attach the same text a second time.
+			Set<String> reportedDegradation = new LinkedHashSet<>();
+			// Read the degradation report BEFORE validating the xpath: when the decision
+			// function returned no selection at all, why it failed is exactly what the
+			// resulting job failure needs to say.
+			reportDegradation(parsedResult, typedJob.getId(), reportedDegradation);
+
 			XPath xpath = factory.newXPath();
 			validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
 
@@ -231,6 +444,10 @@ public class LambdaSelectJobHandler implements IJobHandler {
 						logger.info("Retry Lambda response payload: {}", lambdaResponsePayload);
 						parsedResult = mapper.readValue(lambdaResponsePayload, LambdaSelectJobResult.class);
 
+						// The retry is a second, independent decision: it can be degraded
+						// even when the first one was not (and vice versa).
+						reportDegradation(parsedResult, typedJob.getId(), reportedDegradation);
+
 						// Validate new XPath. The re-invocation can just as easily come back
 						// with no selection as the first call did, so it needs the same guard.
 						validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
@@ -251,7 +468,19 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				} else {
 					logger.error("All {} click attempts failed and no selected video ID available for fallback",
 							maxAttempts);
-					throw lastNSEE;
+
+					// lastNSEE is null whenever the loop ended for a reason other than a
+					// NoSuchElementException. Rethrowing it unguarded then raised a bare
+					// NullPointerException from this line, which says nothing about the
+					// recommendation that could not be clicked and sends whoever reads the
+					// job failure looking for a bug here instead of at the page.
+					if (lastNSEE != null) {
+						throw lastNSEE;
+					}
+
+					throw new RuntimeException("Lambda select job " + typedJob.getId()
+							+ " neither clicked a recommendation nor received a video id to fall back to."
+							+ " xpath was: " + parsedResult.getXpath());
 				}
 			}
 
