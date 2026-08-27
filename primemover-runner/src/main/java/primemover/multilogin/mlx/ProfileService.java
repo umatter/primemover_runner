@@ -119,7 +119,7 @@ public class ProfileService {
 		// Without this, YouTube's SPA accumulates JS heap up to 4GB+, causing
 		// GC thrashing that makes the renderer unresponsive to WebDriver commands.
 		strBuilder.append(", \"parameters\": {\"fingerprint\": {\"cmd_params\": {\"params\": [");
-		strBuilder.append("{\"flag\": \"js-flags\", \"value\": \"--max-old-space-size=512\"}");
+		strBuilder.append("{\"flag\": \"js-flags\", \"value\": \"--max-old-space-size=2048\"}");
 		strBuilder.append(",{\"flag\": \"load-extension\", \"value\": \"/home/primemover/primemover_runner/primemover-runner/config/h264-override-extension\"}");
 		strBuilder.append("]}}}");
 

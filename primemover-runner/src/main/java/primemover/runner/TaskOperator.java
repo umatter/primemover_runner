@@ -23,6 +23,9 @@ import primemover.capture.HarRecordingFilter;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
 import primemover.model.*;
+import primemover.model.jobs.LambdaSelectJob;
+import primemover.model.jobs.VisitJob;
+import primemover.util.RendererRecycler;
 import primemover.multilogin.ml6.MulitLoginBrowserProfile;
 import primemover.multilogin.ml6.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.*;
@@ -75,6 +78,12 @@ public class TaskOperator implements ITaskOperator {
 	private Integer maxRetryCountInit;
 	@Value("${anticaptcha.check.enabled:true}")
 	private Boolean runCaptchaChecks;
+	// How many navigations one renderer may serve before it is bounced. The V8
+	// heap leaks ~14 MB per same-site SPA navigation, so this bounds peak heap
+	// instead of letting it grow with queue length. 0 disables recycling.
+	@Value("${runner.RendererRecycleAfterNavigations:25}")
+	private int rendererRecycleAfterNavigations;
+
 	@Value("${runner.skipIpRecording:false}")
 	private boolean skipIpRecording = false;
 
@@ -471,6 +480,23 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId());
 			}
 
+			// A dead renderer does not fail the write -- it produces a successful,
+			// EMPTY archive. Five sessions on 2026-08-27 crashed mid-queue and every
+			// one still reported success, three of them writing a 194-byte zip whose
+			// only entry was `page_cookies: []`. WARNING_JOBDATA cannot catch that,
+			// because the write genuinely succeeded. Absence of every browser-derived
+			// field is the honest signal, and it routes through the existing warning
+			// branch below without needing a new JobState.
+			if (context.getDriver() != null) {
+				RecordedJobData captured = dataRecorder.getRecordings();
+				if (captured != null && captured.getPageSource() == null && captured.getScreenshot() == null
+						&& captured.getLocalStorage() == null && captured.getSessionStorage() == null) {
+					JobDiagnostics.addWarning(
+							"no browser data recorded: page source, screenshot, local storage and session storage "
+									+ "were all unavailable (the browser was most likely dead)");
+				}
+			}
+
 			// warnings the handler attached to this job (e.g. the decision function
 			// fell back to random selection); carried along with the recorded data
 			List<String> jobWarnings = JobDiagnostics.warnings();
@@ -607,8 +633,27 @@ public class TaskOperator implements ITaskOperator {
 			IJob previousJob = null;
 			List<IJob> jobList = jobs.getJobs();
 
+			// Navigations served by the current renderer. Counted by observing the
+			// URL actually change, so it stays correct whatever the workflow does.
+			int navigationsThisRenderer = 0;
+			String lastSeenUrl = null;
+
 			for (int i = 0; i < jobList.size(); i++) {
 				IJob job = jobList.get(i);
+
+				// Bounce only immediately before a job that navigates anyway, so the
+				// reload costs nothing the workflow was not already going to do. A
+				// LambdaSelectJob reads the CURRENT page to choose a recommendation,
+				// so recycling before it hands it a freshly-loaded copy of the same
+				// URL rather than destroying a page a later job still needs.
+				boolean jobNavigates = (job instanceof VisitJob) || (job instanceof LambdaSelectJob);
+				if (rendererRecycleAfterNavigations > 0 && jobNavigates
+						&& navigationsThisRenderer >= rendererRecycleAfterNavigations) {
+					if (RendererRecycler.recycle(this.context.getDriver(), job.getId())) {
+						navigationsThisRenderer = 0;
+						lastSeenUrl = null;
+					}
+				}
 
 				boolean runCurrentJob = previousResult;
 
@@ -632,6 +677,22 @@ public class TaskOperator implements ITaskOperator {
 					}
 
 					logger.info("finished job ({}) with {}", job.getId(), currentResult ? "success" : "failure");
+
+					// Count a navigation only when the URL really changed; a wait or a
+					// scroll leaves the renderer where it was and leaks nothing extra.
+					if (rendererRecycleAfterNavigations > 0 && RendererRecycler.onRecyclablePage(this.context.getDriver())) {
+						try {
+							String url = this.context.getDriver().getCurrentUrl();
+							if (url != null && !url.equals(lastSeenUrl)) {
+								if (lastSeenUrl != null) {
+									navigationsThisRenderer++;
+								}
+								lastSeenUrl = url;
+							}
+						} catch (Exception e) {
+							logger.debug("could not read URL after job {} for navigation counting", job.getId());
+						}
+					}
 
 					previousJob = job;
 					previousResult = currentResult;
