@@ -23,7 +23,19 @@
 	<logger name="primemover.api" level="WARN" />
 	<logger name="org.apache" level="WARN"/>
 	<logger name="org.littleshoot" level="WARN"/>
+	<!-- BrowserUp renamed this package: the runner embeds com.browserup.bup, and
+	     net.lightbody produces ZERO lines, so the rule below it was silencing a
+	     package that is no longer present. Measured over 400k lines of the
+	     2026-08-27 logs, the proxy/netty stack was 71.5% of all runner output
+	     (com.browserup 18191, io.netty.handler.ssl 6649, o.l.proxy 2788 in the
+	     same sample), almost entirely TLS handshake chatter from hosts that
+	     refuse the MITM recorder's certificate. That is expected behaviour for
+	     certificate-pinned hosts and fails no jobs (48,056 such lines and zero job
+	     failures on 2026-08-24), but it buries real errors and inflates Loki
+	     ingestion. -->
 	<logger name="net.lightbody" level="WARN"/>
+	<logger name="com.browserup" level="WARN"/>
+	<logger name="io.netty" level="WARN"/>
 
 	<!-- Enable DEBUG for our utility classes -->
 	<logger name="primemover.util" level="DEBUG"/>
