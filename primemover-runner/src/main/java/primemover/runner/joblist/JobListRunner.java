@@ -9,6 +9,7 @@ import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 import primemover.runner.ITaskOperator;
+import primemover.runner.JobListOutcome;
 import primemover.runner.JobDiagnostics;
 import primemover.service.IJobService;
 
@@ -49,6 +50,9 @@ public class JobListRunner implements IJobListRunner {
 			MDC_CORRELATION_ID);
 
 	private ITaskOperator taskOperator;
+
+	// Set by runJoblist so tearDown can put the real counts in status_message.
+	private JobListOutcome lastOutcome;
 	private Crawler crawler;
 	private Joblist jobs;
 
@@ -101,21 +105,33 @@ public class JobListRunner implements IJobListRunner {
 	}
 
 	private enum RunningState {
-		NOTSTARTED, SUCCESS, FAILURE
+		NOTSTARTED, SUCCESS, WARNING, FAILURE
 	}
 
 	private RunningState runJoblist() {
 		logger.trace("running joblist {} for crawler {}", jobs.getId(), crawler.getId());
 
-		Boolean jobsRes = taskOperator.runJobList(jobs);
-		if (jobsRes) {
-			logger.debug("success running jobs for {} ({})", crawler.getId(), crawler.getName());
+		JobListOutcome jobsRes = taskOperator.runJobList(jobs);
+		lastOutcome = jobsRes;
+
+		// A run that lost jobs is neither a success nor a total failure. Reporting
+		// it as either is what recorded five truncated 113-job sessions as
+		// "success, done" on 2026-08-27.
+		if (jobsRes.isTotalFailure()) {
+			logger.warn("failure running jobs for {} ({}): {}", crawler.getId(), crawler.getName(),
+					jobsRes.describe());
+			reportJoblistState(JoblistState.RUNNING_JOBSFAILURE, null, null, null, null, null);
+			return RunningState.FAILURE;
+		} else if (jobsRes.isClean()) {
+			logger.debug("success running jobs for {} ({}): {}", crawler.getId(), crawler.getName(),
+					jobsRes.describe());
 			reportJoblistState(JoblistState.RUNNING_JOBSDONE, null, null, null, null, null);
 			return RunningState.SUCCESS;
 		} else {
-			logger.warn("failure running jobs for {} ({})", crawler.getId(), crawler.getName());
-			reportJoblistState(JoblistState.RUNNING_JOBSFAILURE, null, null, null, null, null);
-			return RunningState.FAILURE;
+			logger.warn("completed with lost jobs for {} ({}): {}", crawler.getId(), crawler.getName(),
+					jobsRes.describe());
+			reportJoblistState(JoblistState.RUNNING_JOBSDONE, null, null, null, null, null);
+			return RunningState.WARNING;
 		}
 	}
 
@@ -145,12 +161,22 @@ public class JobListRunner implements IJobListRunner {
 
 			switch (jobsRes) {
 			case SUCCESS:
-				reportJoblistState(JoblistState.DONE_SUCCESS, null, null, ZonedDateTime.now(), Boolean.TRUE,
-						Boolean.FALSE);
+				reportJoblistState(JoblistState.DONE_SUCCESS, lastOutcome == null ? null : lastOutcome.describe(), null,
+						ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
+				break;
+			case WARNING:
+				// Completed, but lost jobs. The counts go into status_message so the
+				// run's own record says how much of it survived.
+				reportJoblistState(JoblistState.DONE_JOBSWARNING,
+						lastOutcome == null ? "completed with lost jobs" : lastOutcome.describe(), null,
+						ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 				break;
 			case FAILURE:
-				reportJoblistState(JoblistState.DONE_JOBSFAILURE, "at least one job did not finish successfully", null,
-						ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
+				reportJoblistState(JoblistState.DONE_JOBSFAILURE,
+						lastOutcome == null ? "at least one job did not finish successfully" : lastOutcome.describe(),
+						null, ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
+				break;
+			default:
 				break;
 			}
 			break;

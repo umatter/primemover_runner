@@ -10,6 +10,7 @@ import primemover.model.Crawler;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
 import primemover.runner.ITaskOperator;
+import primemover.runner.JobListOutcome;
 import primemover.service.IJobService;
 
 import java.time.ZonedDateTime;
@@ -60,7 +61,9 @@ class JobListRunnerMdcTest {
 
 		when(jobService.updateJoblistState(any(), any(), any(), any(), any(), any(), any())).thenReturn(Boolean.TRUE);
 		when(taskOperator.prepareExeuction(eq(crawler))).thenReturn(Boolean.TRUE);
-		when(taskOperator.runJobList(eq(jobs))).thenReturn(Boolean.TRUE);
+		JobListOutcome cleanRun = new JobListOutcome();
+		cleanRun.countSucceeded();
+		when(taskOperator.runJobList(eq(jobs))).thenReturn(cleanRun);
 	}
 
 	@AfterEach
@@ -82,7 +85,9 @@ class JobListRunnerMdcTest {
 			for (String key : KEYS) {
 				seen.put(key, MDC.get(key));
 			}
-			return Boolean.TRUE;
+			JobListOutcome ok = new JobListOutcome();
+			ok.countSucceeded();
+			return ok;
 		});
 
 		assertThat(runner().run()).isTrue();

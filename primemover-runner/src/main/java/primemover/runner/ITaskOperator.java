@@ -25,5 +25,5 @@ public interface ITaskOperator {
 	 * 
 	 * @return true indicates success
 	 */
-	Boolean runJobList(Joblist jobs);
+	JobListOutcome runJobList(Joblist jobs);
 }

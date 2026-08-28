@@ -84,6 +84,12 @@ public class TaskOperator implements ITaskOperator {
 	@Value("${runner.RendererRecycleAfterNavigations:25}")
 	private int rendererRecycleAfterNavigations;
 
+	// The state the last finished job was reported with, so runJobList can tell a
+	// clean success from a completed-but-degraded one. Safe as a field: a
+	// TaskOperator is created per joblist by TaskOperatorFactory and its jobs run
+	// sequentially.
+	private JobState lastJobState;
+
 	@Value("${runner.skipIpRecording:false}")
 	private boolean skipIpRecording = false;
 
@@ -539,21 +545,25 @@ public class TaskOperator implements ITaskOperator {
 
 			if (writeRes && runJobResult && jobWarnings.isEmpty()) {
 				logger.info("Done running job {}", job.getId());
+				lastJobState = JobState.SUCCESS;
 				reportJobState(job, JobState.SUCCESS, null, null, null, null, ZonedDateTime.now()); // setting
 																									// endtime
 			} else if (!runJobResult) {
 				logger.warn("Done running job with failure {}", job.getId());
 				// the real cause, not just "error during execution"
+				lastJobState = JobState.FAILURE;
 				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure), null, null, null,
 						ZonedDateTime.now()); // setting endtime
 			} else if (!writeRes) {
 				logger.warn("Done running job with warning (job data not written) {}", job.getId());
+				lastJobState = JobState.WARNING_JOBDATA;
 				reportJobState(job, JobState.WARNING_JOBDATA, joinDetails(storageProblems, jobWarnings), null, null,
 						null, ZonedDateTime.now()); // setting endtime
 			} else {
 				// handler completed, but the result is degraded in a way the
 				// experiment cares about -- must not render as a green Success pill
 				logger.warn("Done running job with warning {}: {}", job.getId(), jobWarnings);
+				lastJobState = JobState.WARNING;
 				reportJobState(job, JobState.WARNING, String.join("; ", jobWarnings), null, null, null,
 						ZonedDateTime.now()); // setting endtime
 			}
@@ -620,8 +630,8 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	@Override
-	public Boolean runJobList(Joblist jobs) {
-		Boolean res = false;
+	public JobListOutcome runJobList(Joblist jobs) {
+		JobListOutcome outcome = new JobListOutcome();
 		if (!isSetup.get()) {
 			throw new IllegalStateException("please setup service first");
 		}
@@ -663,6 +673,7 @@ public class TaskOperator implements ITaskOperator {
 				}
 
 				if (runCurrentJob) {
+					lastJobState = null;
 					boolean currentResult = previousResult;
 					IJobAwareRunnerContext<?> jobAwareContext = getJobAwareContext(job);
 
@@ -677,6 +688,17 @@ public class TaskOperator implements ITaskOperator {
 					}
 
 					logger.info("finished job ({}) with {}", job.getId(), currentResult ? "success" : "failure");
+
+					// Count what actually happened, so the queue's own status can
+					// reflect it. JobDiagnostics still holds this job's warnings at
+					// this point only if the handler attached any.
+					if (!currentResult) {
+						outcome.countFailed();
+					} else if (lastJobState == JobState.WARNING || lastJobState == JobState.WARNING_JOBDATA) {
+						outcome.countWarned();
+					} else {
+						outcome.countSucceeded();
+					}
 
 					// Count a navigation only when the URL really changed; a wait or a
 					// scroll leaves the renderer where it was and leaks nothing extra.
@@ -702,17 +724,17 @@ public class TaskOperator implements ITaskOperator {
 					reportJobState(job, JobState.SKIPPED,
 							previousJob == null ? null : "previous job " + previousJob.getId() + " did not succeed",
 							null, null, ZonedDateTime.now(), ZonedDateTime.now());
+					outcome.countSkipped();
 				}
 			}
 
-			res = true;
 		} catch (
 
 		Exception ex) {
 			logger.warn("Error running joblist {}", jobs.getId(), ex);
 		}
 
-		return res;
+		return outcome;
 	}
 
 	@Override
