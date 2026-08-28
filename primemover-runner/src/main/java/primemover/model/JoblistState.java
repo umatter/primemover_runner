@@ -7,6 +7,10 @@ public enum JoblistState {
 	DONE_JOBLIST_EMPTY("failure", "joblist empty"), RUNNING_JOBSDONE("running", "jobs done"),
 	RUNNING_INITFAILED("running", "init failed"), RUNNING_JOBSFAILURE("running", "failure running jobs"),
 	DONE_SUCCESS("success", "done"), DONE_JOBSFAILURE("failure", "failure running jobs"),
+	// completed, but lost jobs along the way -- neither a clean success nor a
+	// total failure. Without this a run that lost a third of its jobs reported
+	// "success"; see JobListOutcome.
+	DONE_JOBSWARNING("warning", "completed with lost jobs"),
 	DONE_FAILURE("failure", "stoped with fatal failure"), DONE_PROCESSING_TIMEOUT("failure", "processing timed out");
 
 	private String code;

@@ -23,8 +23,11 @@ class StatusContractTest {
 	private static final Set<String> JOB_CODES = new HashSet<>(
 			Set.of("running", "success", "warning", "failure", "skipped"));
 
+	// "warning" is on queues as well as jobs since 2026-08-28: a run that lost
+	// jobs is neither a success nor a total failure. Keep in step with
+	// QueueStatus in orchestrator/status.py and Queue::STATUS_* in the API.
 	private static final Set<String> QUEUE_CODES = new HashSet<>(
-			Set.of("running", "success", "failure", "skipped"));
+			Set.of("running", "success", "warning", "failure", "skipped"));
 
 	@Test
 	void everyJobStateUsesACanonicalCode() {
