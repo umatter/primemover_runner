@@ -245,4 +245,39 @@ class LambdaSelectJobResultTest {
 			assertThat(degradedButRated.isTreatmentLost()).isFalse();
 		}
 	}
+
+	@Nested
+	@DisplayName("an empty xpath with a selection is recoverable, not fatal")
+	class EmptyXpathWithSelection {
+
+		@Test
+		@DisplayName("the decision function can select a video it cannot point at")
+		void selectionSurvivesAnEmptyXpath() throws Exception {
+			// When the recommendations sidebar has not rendered, the decision
+			// function reads its candidates from the page's ytInitialData and can
+			// still choose one -- but there is no element to build an xpath
+			// against, so it returns the selection with an empty xpath. The runner
+			// navigates by id instead of failing a job whose answer it already has.
+			String body = "{\"xpath\": \"\", \"selected\": {\"id\": \"50bTsatwNYs\","
+					+ " \"title\": \"Semiconductor tariffs\"},"
+					+ " \"degraded\": true, \"treatment_lost\": false}";
+
+			LambdaSelectJobResult parsed = new ObjectMapper().readValue(body, LambdaSelectJobResult.class);
+
+			assertThat(parsed.getXpath()).isNullOrEmpty();
+			assertThat(parsed.getSelected()).isNotNull();
+			assertThat(parsed.getSelected().getId()).isEqualTo("50bTsatwNYs");
+			assertThat(parsed.isDegraded()).isTrue();
+		}
+
+		@Test
+		@DisplayName("an empty xpath with no selection stays fatal")
+		void nothingToRecoverFrom() throws Exception {
+			LambdaSelectJobResult parsed = new ObjectMapper()
+					.readValue("{\"xpath\": \"\", \"degraded\": true}", LambdaSelectJobResult.class);
+
+			assertThat(parsed.getXpath()).isNullOrEmpty();
+			assertThat(parsed.getSelected()).as("nothing to navigate to").isNull();
+		}
+	}
 }

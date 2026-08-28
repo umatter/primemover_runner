@@ -394,99 +394,125 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			reportDegradation(parsedResult, typedJob.getId(), reportedDegradation);
 
 			XPath xpath = factory.newXPath();
-			validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
+			boolean navigatedDirectly = false;
 
-			// --- Layer A: Retry with re-invocation ---
-			// Try up to 3 times to find and click the element, re-invoking lambda on each retry
-			int maxAttempts = 3;
-			boolean clicked = false;
-			NoSuchElementException lastNSEE = null;
-
-			for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-				try {
-					WebElement element = driver.findElement(By.xpath(parsedResult.getXpath()));
-
-					// Scroll element into view with offset to avoid sticky headers
-					JavascriptExecutor js = (JavascriptExecutor) driver;
-					js.executeScript("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element);
-
-					// Small pause to allow scroll to complete and any overlays to settle
-					Thread.sleep(300);
-
-					// Wait for element to be clickable
-					WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-					wait.until(ExpectedConditions.elementToBeClickable(element));
-
-					// Use JavaScript click to bypass overlapping elements like sticky headers
-					js.executeScript("arguments[0].click();", element);
-
-					clicked = true;
-					if (attempt > 1) {
-						logger.info("Element found and clicked on attempt {}/{}", attempt, maxAttempts);
-					}
-					break;
-				} catch (NoSuchElementException nsee) {
-					lastNSEE = nsee;
-					if (attempt < maxAttempts) {
-						logger.warn("Element not found on attempt {}/{}, re-capturing page and re-invoking lambda",
-								attempt, maxAttempts);
-						Thread.sleep(2000); // wait for DOM to settle
-
-						// Re-capture page source and re-invoke lambda
-						param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
-								driver.getPageSource(), context.getCrawler().getRawConfiguration());
-						data.setInputJson(mapper.writeValueAsString(param));
-						result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
-						data.setOutputJson(mapper.writeValueAsString(result));
-
-						// Re-parse result
-						lambdaResponsePayload = result.getPayload();
-						logger.info("Retry Lambda response payload: {}", lambdaResponsePayload);
-						parsedResult = mapper.readValue(lambdaResponsePayload, LambdaSelectJobResult.class);
-
-						// The retry is a second, independent decision: it can be degraded
-						// even when the first one was not (and vice versa).
-						reportDegradation(parsedResult, typedJob.getId(), reportedDegradation);
-
-						// Validate new XPath. The re-invocation can just as easily come back
-						// with no selection as the first call did, so it needs the same guard.
-						validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
-					}
-				}
+			// An empty xpath with a selection is recoverable, and used to be fatal.
+			// When the recommendations sidebar has not rendered, the decision
+			// function can still choose a video -- it reads the candidates from the
+			// page's ytInitialData -- but there is no element on the page to build
+			// an xpath against, so it returns the selection with an empty xpath.
+			// validateXpath then threw before Layer B's navigate-by-id fallback
+			// could run, failing a job whose answer we already had. Observed on
+			// experiment 146: 20 recommendations recovered, one selected, job failed.
+			if (StringUtils.isBlank(parsedResult.getXpath()) && parsedResult.getSelected() != null
+					&& StringUtils.isNotBlank(parsedResult.getSelected().getId())) {
+				String videoId = parsedResult.getSelected().getId();
+				String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+				logger.warn("No xpath for job {} (the page had no rendered recommendation elements);"
+						+ " navigating directly to the selected video {}", typedJob.getId(), videoUrl);
+				JobDiagnostics.addWarning("no clickable recommendation on the page; navigated directly to "
+						+ videoId + " using the decision function's selection");
+				driver.get(videoUrl);
+				Thread.sleep(3000);
+				navigatedDirectly = true;
 			}
 
-			// --- Layer B: Direct URL navigation fallback ---
-			if (!clicked) {
-				if (parsedResult.getSelected() != null && parsedResult.getSelected().getId() != null) {
-					String videoId = parsedResult.getSelected().getId();
-					String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
-					logger.warn("Element not found after {} attempts, falling back to direct navigation: {}",
-							maxAttempts, videoUrl);
-					driver.get(videoUrl);
-					// Wait for page load
-					Thread.sleep(3000);
-				} else {
-					logger.error("All {} click attempts failed and no selected video ID available for fallback",
-							maxAttempts);
+			if (!navigatedDirectly) {
+				validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
 
-					// lastNSEE is null whenever the loop ended for a reason other than a
-					// NoSuchElementException. Rethrowing it unguarded then raised a bare
-					// NullPointerException from this line, which says nothing about the
-					// recommendation that could not be clicked and sends whoever reads the
-					// job failure looking for a bug here instead of at the page.
-					if (lastNSEE != null) {
-						throw lastNSEE;
+				// --- Layer A: Retry with re-invocation ---
+				// Try up to 3 times to find and click the element, re-invoking lambda on each retry
+				int maxAttempts = 3;
+				boolean clicked = false;
+				NoSuchElementException lastNSEE = null;
+
+				for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+					try {
+						WebElement element = driver.findElement(By.xpath(parsedResult.getXpath()));
+
+						// Scroll element into view with offset to avoid sticky headers
+						JavascriptExecutor js = (JavascriptExecutor) driver;
+						js.executeScript("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element);
+
+						// Small pause to allow scroll to complete and any overlays to settle
+						Thread.sleep(300);
+
+						// Wait for element to be clickable
+						WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+						wait.until(ExpectedConditions.elementToBeClickable(element));
+
+						// Use JavaScript click to bypass overlapping elements like sticky headers
+						js.executeScript("arguments[0].click();", element);
+
+						clicked = true;
+						if (attempt > 1) {
+							logger.info("Element found and clicked on attempt {}/{}", attempt, maxAttempts);
+						}
+						break;
+					} catch (NoSuchElementException nsee) {
+						lastNSEE = nsee;
+						if (attempt < maxAttempts) {
+							logger.warn("Element not found on attempt {}/{}, re-capturing page and re-invoking lambda",
+									attempt, maxAttempts);
+							Thread.sleep(2000); // wait for DOM to settle
+
+							// Re-capture page source and re-invoke lambda
+							param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
+									driver.getPageSource(), context.getCrawler().getRawConfiguration());
+							data.setInputJson(mapper.writeValueAsString(param));
+							result = this.caller.invoke(typedJob.getLinkValue(), data.getInputJson());
+							data.setOutputJson(mapper.writeValueAsString(result));
+
+							// Re-parse result
+							lambdaResponsePayload = result.getPayload();
+							logger.info("Retry Lambda response payload: {}", lambdaResponsePayload);
+							parsedResult = mapper.readValue(lambdaResponsePayload, LambdaSelectJobResult.class);
+
+							// The retry is a second, independent decision: it can be degraded
+							// even when the first one was not (and vice versa).
+							reportDegradation(parsedResult, typedJob.getId(), reportedDegradation);
+
+							// Validate new XPath. The re-invocation can just as easily come back
+							// with no selection as the first call did, so it needs the same guard.
+							validateXpath(xpath, parsedResult.getXpath(), typedJob.getId());
+						}
 					}
-
-					throw new RuntimeException("Lambda select job " + typedJob.getId()
-							+ " neither clicked a recommendation nor received a video id to fall back to."
-							+ " xpath was: " + parsedResult.getXpath());
 				}
+
+				// --- Layer B: Direct URL navigation fallback ---
+				if (!clicked) {
+					if (parsedResult.getSelected() != null && parsedResult.getSelected().getId() != null) {
+						String videoId = parsedResult.getSelected().getId();
+						String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+						logger.warn("Element not found after {} attempts, falling back to direct navigation: {}",
+								maxAttempts, videoUrl);
+						driver.get(videoUrl);
+						// Wait for page load
+						Thread.sleep(3000);
+					} else {
+						logger.error("All {} click attempts failed and no selected video ID available for fallback",
+								maxAttempts);
+
+						// lastNSEE is null whenever the loop ended for a reason other than a
+						// NoSuchElementException. Rethrowing it unguarded then raised a bare
+						// NullPointerException from this line, which says nothing about the
+						// recommendation that could not be clicked and sends whoever reads the
+						// job failure looking for a bug here instead of at the page.
+						if (lastNSEE != null) {
+							throw lastNSEE;
+						}
+
+						throw new RuntimeException("Lambda select job " + typedJob.getId()
+								+ " neither clicked a recommendation nor received a video id to fall back to."
+								+ " xpath was: " + parsedResult.getXpath());
+					}
+				}
+
+				// The click (SPA navigation) or the fallback driver.get() can bring the
+				// consent bump back, e.g. after a full reload; answer it per policy so
+				// the watch time that follows is not spent behind a modal.
 			}
 
-			// The click (SPA navigation) or the fallback driver.get() can bring the
-			// consent bump back, e.g. after a full reload; answer it per policy so
-			// the watch time that follows is not spent behind a modal.
 			Thread.sleep(1500);
 			ConsentHandler.handle(driver);
 
