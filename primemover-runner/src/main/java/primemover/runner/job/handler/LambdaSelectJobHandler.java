@@ -364,6 +364,15 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				// passing as ordinary.
 				JobDiagnostics.addWarning(
 						"watch page had no recommendation container; recovered by reloading once");
+			} else if (anchored == WatchPageAnchor.Outcome.REANCHORED) {
+				// The session continues from an earlier page, so the chain of
+				// recommendations has a hole in it: the video that would have
+				// followed the previous click was never shown. Worth recording
+				// distinctly from a plain reload recovery -- an analysis may want
+				// to drop these sessions, and cannot if they look identical.
+				JobDiagnostics.addWarning(
+						"watch page was unusable and a reload did not fix it; session re-anchored to the "
+								+ "last page with recommendations, so one step of the chain is missing");
 			} else if (anchored == WatchPageAnchor.Outcome.ABSENT) {
 				JobDiagnostics.addWarning(
 						"watch page had no recommendation container, and it could not be restored");

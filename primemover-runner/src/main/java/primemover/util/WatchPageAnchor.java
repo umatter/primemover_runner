@@ -1,7 +1,10 @@
 package primemover.util;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -64,11 +67,44 @@ public final class WatchPageAnchor {
 		PRESENT,
 		/** The page was empty and a reload brought it back. Degraded, not normal. */
 		RECOVERED,
+		/**
+		 * The page could not be restored, so the session was returned to the last
+		 * page that did carry recommendations. The session continues, but the
+		 * chain is broken: the video that would have followed was never shown.
+		 * Strictly worse than RECOVERED and strictly better than losing the rest
+		 * of the run.
+		 */
+		REANCHORED,
 		/** Still no recommendations. The decision will fail, and should. */
 		ABSENT
 	}
 
+	/**
+	 * The last URL on which each session saw recommendations.
+	 *
+	 * Keyed by driver, not held in a field: the handler that calls this is
+	 * created once and shared by every bot the runner is running, so a single
+	 * field would let one session re-anchor onto another session's video --
+	 * silently mixing two bots' viewing histories, which is worse than the
+	 * failure being fixed. Weak keys so a finished session's entry goes away
+	 * with its driver.
+	 */
+	private static final Map<WebDriver, String> LAST_GOOD_URL =
+			Collections.synchronizedMap(new WeakHashMap<>());
+
 	private WatchPageAnchor() {
+	}
+
+	private static void remember(WebDriver driver) {
+		try {
+			String url = driver.getCurrentUrl();
+			if (url != null && url.startsWith("http")) {
+				LAST_GOOD_URL.put(driver, url);
+			}
+		} catch (Exception e) {
+			// Not worth failing a healthy job over; the next one re-records.
+			logger.debug("could not record the last good URL", e);
+		}
 	}
 
 	public static Outcome ensureRecommendations(WebDriver driver, long jobId, boolean recoveryEnabled) {
@@ -88,6 +124,7 @@ public final class WatchPageAnchor {
 			Duration firstWait, Duration secondWait, Duration poll) {
 
 		if (awaitRecommendations(driver, firstWait, poll)) {
+			remember(driver);
 			return Outcome.PRESENT;
 		}
 
@@ -108,11 +145,41 @@ public final class WatchPageAnchor {
 
 		if (awaitRecommendations(driver, secondWait, poll)) {
 			logger.info("recommendation container recovered after reload for job {}", jobId);
+			remember(driver);
 			return Outcome.RECOVERED;
+		}
+
+		// A reload only helps a page that was transiently broken. It cannot help
+		// a page that is doing exactly what it is supposed to: an age-restricted
+		// video reloads straight back to "Sign in to confirm your age", which is
+		// how bot soak4_us_06 spent the rest of its run on one page. Leaving is
+		// the only move left, so go back to the last page that worked.
+		String anchor = LAST_GOOD_URL.get(driver);
+		String current = currentUrl(driver);
+		if (anchor != null && !anchor.equals(current)) {
+			logger.warn("reload did not restore recommendations for job {}; re-anchoring to {}", jobId, anchor);
+			try {
+				driver.get(anchor);
+			} catch (Exception e) {
+				logger.warn("re-anchor navigation failed for job {}", jobId, e);
+				return Outcome.ABSENT;
+			}
+			if (awaitRecommendations(driver, secondWait, poll)) {
+				logger.info("re-anchored session for job {} onto {}", jobId, anchor);
+				return Outcome.REANCHORED;
+			}
 		}
 
 		logger.warn("recommendation container still absent after reload for job {}; proceeding as-is", jobId);
 		return Outcome.ABSENT;
+	}
+
+	private static String currentUrl(WebDriver driver) {
+		try {
+			return driver.getCurrentUrl();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private static boolean awaitRecommendations(WebDriver driver, Duration timeout, Duration poll) {
