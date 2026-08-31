@@ -11,6 +11,11 @@ public enum JoblistState {
 	// total failure. Without this a run that lost a third of its jobs reported
 	// "success"; see JobListOutcome.
 	DONE_JOBSWARNING("warning", "completed with lost jobs"),
+	// Completed with every job run, but some finished degraded -- a recovered
+	// page, a filter that did not apply. Same status_code as DONE_JOBSWARNING
+	// (it is still "a human should look"), different text, because nothing was
+	// lost and saying otherwise misreports the run.
+	DONE_JOBSDEGRADED("warning", "completed, some jobs degraded"),
 	DONE_FAILURE("failure", "stoped with fatal failure"), DONE_PROCESSING_TIMEOUT("failure", "processing timed out");
 
 	private String code;
