@@ -17,11 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import primemover.util.consent.ConsentHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import primemover.lambda.LambdaCaller;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.runner.JobDiagnostics;
+import primemover.util.WatchPageAnchor;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.service.IStorageService;
@@ -61,6 +63,27 @@ public class LambdaSelectJobHandler implements IJobHandler {
 	private List<IStorageService> storages = new ArrayList<IStorageService>();
 
 	private XPathFactory factory = XPathFactory.newInstance();
+
+	/**
+	 * Reload once when the watch page has no recommendation container.
+	 *
+	 * A YouTube SPA navigation can leave the shell in place -- ytd-watch-flexy
+	 * and an empty #related -- while the data fetch that fills it never lands.
+	 * The page is then permanently useless: no recommendations, no present
+	 * video, nothing to decide from. Nothing in the workflow re-anchors, because
+	 * the two visitjobs run only at the start, so every remaining
+	 * lambdasingleselectjob grinds against the same dead page.
+	 *
+	 * Observed on experiment 147: bot soak3_us_04 clicked a recommendation at
+	 * 23:01 and spent its remaining 49 decisions and 147 skipped jobs on the
+	 * resulting shell, finishing 86 of 284 jobs while the other ten bots
+	 * finished 270-278.
+	 *
+	 * Set false to restore the previous behaviour (send the dead page to the
+	 * decision function and let the job fail).
+	 */
+	@Value("${runner.RecoverUnrenderedWatchPage:true}")
+	private boolean recoverUnrenderedWatchPage;
 
 	@Autowired
 	private LambdaCallerFactory callerFac;
@@ -329,15 +352,21 @@ public class LambdaSelectJobHandler implements IJobHandler {
 		try {
 
 			// --- Layer C: DOM Stabilization ---
-			// Wait for YouTube recommendation elements to be present and stable before capturing page source
-			try {
-				new WebDriverWait(driver, Duration.ofSeconds(10))
-					.until(ExpectedConditions.presenceOfElementLocated(
-						By.cssSelector("#related yt-lockup-view-model, #secondary yt-lockup-view-model")));
-				Thread.sleep(1000); // extra settle time after elements appear
-				logger.debug("Recommendation container stabilized");
-			} catch (Exception stabilizeEx) {
-				logger.warn("Recommendation container not found during stabilization wait, proceeding anyway");
+			// Wait for recommendations, and re-anchor once if the page came back
+			// as an empty SPA shell. Without this a single bad landing costs the
+			// rest of the session, not one job: nothing else in the workflow
+			// navigates again.
+			WatchPageAnchor.Outcome anchored = WatchPageAnchor.ensureRecommendations(
+					driver, typedJob.getId(), recoverUnrenderedWatchPage);
+			if (anchored == WatchPageAnchor.Outcome.RECOVERED) {
+				// Recovered is not normal: this page is not what the previous
+				// click produced, so the session is marked degraded rather than
+				// passing as ordinary.
+				JobDiagnostics.addWarning(
+						"watch page had no recommendation container; recovered by reloading once");
+			} else if (anchored == WatchPageAnchor.Outcome.ABSENT) {
+				JobDiagnostics.addWarning(
+						"watch page had no recommendation container, and it could not be restored");
 			}
 
 			// prepare input JSON
