@@ -1,5 +1,6 @@
 package primemover.runner;
 
+import java.time.Duration;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.OutputType;
@@ -26,6 +27,7 @@ import primemover.model.*;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.VisitJob;
 import primemover.util.RendererRecycler;
+import primemover.util.StartupBackoff;
 import primemover.multilogin.ml6.MulitLoginBrowserProfile;
 import primemover.multilogin.ml6.MultiLoginBrowserProfileFactory;
 import primemover.runner.context.*;
@@ -69,6 +71,21 @@ public class TaskOperator implements ITaskOperator {
 
 	/** MDC key holding the hierarchical correlation id; set by JobListRunner. */
 	private static final String MDC_CORRELATION_ID = "correlationId";
+
+	/**
+	 * Delay between startup retries for an ordinary failure. Short: a transient
+	 * local problem should retry promptly.
+	 */
+	@Value("${multilogin.StartupRetryDelaySeconds:5}")
+	private int startupRetryDelaySeconds;
+
+	/**
+	 * Delay between startup retries after a rate-limit rejection. Must exceed the
+	 * Multilogin window (50 operations per minute) or the retry is spent inside
+	 * the same window that rejected the first attempt.
+	 */
+	@Value("${multilogin.RateLimitBackoffSeconds:75}")
+	private int rateLimitBackoffSeconds;
 
 	@Value("${multilogin.StartupRetryCount:3}")
 	private Integer maxRetryCountMultiLogin;
@@ -811,6 +828,28 @@ public class TaskOperator implements ITaskOperator {
 				done = true;
 			} catch (Exception ex) {
 				logger.error("error during setup for crawler {}", crawler.getId(), ex);
+
+				// Wait before going round again. This loop used to retry with no
+				// delay at all, which made the retries worthless against the one
+				// failure that actually costs bots: Multilogin's 50 operations
+				// per minute. On experiment 147 all three rounds for one crawler
+				// ran inside eleven seconds, so all three drew the same 429 and
+				// the bot was lost with its 284 jobs. A rate limit is a clock --
+				// only time clears it.
+				if (curRetry < maxRetryCountInit) {
+					Duration wait = StartupBackoff.afterFailure(ex,
+							Duration.ofSeconds(startupRetryDelaySeconds),
+							Duration.ofSeconds(rateLimitBackoffSeconds));
+					logger.info("waiting {}s before startup round {} for crawler {}{}", wait.toSeconds(),
+							curRetry + 1, crawler.getId(),
+							StartupBackoff.isRateLimited(ex) ? " (rate limited)" : "");
+					try {
+						Thread.sleep(wait.toMillis());
+					} catch (InterruptedException ie) {
+						Thread.currentThread().interrupt();
+						break;
+					}
+				}
 			}
 		}
 
