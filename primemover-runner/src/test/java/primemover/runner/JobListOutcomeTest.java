@@ -82,4 +82,46 @@ class JobListOutcomeTest {
 		assertFalse(o.isTotalFailure(), "an empty joblist is handled by DONE_JOBLIST_EMPTY, not here");
 		assertEquals(0, o.getTotal());
 	}
+
+	@Test
+	@DisplayName("a warned job is not a lost job")
+	void warningsAreNotLosses() {
+		// Round 4 (experiment 148) reported "completed with lost jobs -
+		// 283/284 jobs succeeded (1 warning, 0 failed, 0 skipped)" on nine of
+		// twelve bots. Nothing was lost: those jobs ran to the end and produced
+		// their data. Overstating it in the one field an analysis reads first
+		// blurs the line between a session to inspect and one to discard.
+		JobListOutcome o = new JobListOutcome();
+		for (int i = 0; i < 283; i++) {
+			o.countSucceeded();
+		}
+		o.countWarned();
+
+		assertFalse(o.hasLostJobs(), "a warning is not a loss");
+		// Still degraded, and still reported as such: the status_code is unchanged.
+		assertTrue(o.isDegraded());
+		assertFalse(o.isClean());
+	}
+
+	@Test
+	@DisplayName("a failed or skipped job is a lost job")
+	void failuresAndSkipsAreLosses() {
+		JobListOutcome failed = new JobListOutcome();
+		failed.countSucceeded();
+		failed.countFailed();
+		assertTrue(failed.hasLostJobs());
+
+		JobListOutcome skipped = new JobListOutcome();
+		skipped.countSucceeded();
+		skipped.countSkipped();
+		assertTrue(skipped.hasLostJobs(), "a job that never ran is lost too");
+	}
+
+	@Test
+	@DisplayName("a clean run has lost nothing")
+	void cleanRunHasNoLosses() {
+		JobListOutcome o = new JobListOutcome();
+		o.countSucceeded();
+		assertFalse(o.hasLostJobs());
+	}
 }

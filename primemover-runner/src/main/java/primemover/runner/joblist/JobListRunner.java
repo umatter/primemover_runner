@@ -128,8 +128,8 @@ public class JobListRunner implements IJobListRunner {
 			reportJoblistState(JoblistState.RUNNING_JOBSDONE, null, null, null, null, null);
 			return RunningState.SUCCESS;
 		} else {
-			logger.warn("completed with lost jobs for {} ({}): {}", crawler.getId(), crawler.getName(),
-					jobsRes.describe());
+			logger.warn("{} for {} ({}): {}", jobsRes.hasLostJobs() ? "completed with lost jobs" : "completed, some jobs degraded",
+					crawler.getId(), crawler.getName(), jobsRes.describe());
 			reportJoblistState(JoblistState.RUNNING_JOBSDONE, null, null, null, null, null);
 			return RunningState.WARNING;
 		}
@@ -167,7 +167,8 @@ public class JobListRunner implements IJobListRunner {
 			case WARNING:
 				// Completed, but lost jobs. The counts go into status_message so the
 				// run's own record says how much of it survived.
-				reportJoblistState(JoblistState.DONE_JOBSWARNING,
+				reportJoblistState(lastOutcome != null && !lastOutcome.hasLostJobs()
+						? JoblistState.DONE_JOBSDEGRADED : JoblistState.DONE_JOBSWARNING,
 						lastOutcome == null ? "completed with lost jobs" : lastOutcome.describe(), null,
 						ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 				break;

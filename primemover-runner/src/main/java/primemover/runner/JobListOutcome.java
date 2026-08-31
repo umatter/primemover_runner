@@ -70,6 +70,20 @@ public final class JobListOutcome {
 		return !isClean() && succeeded > 0;
 	}
 
+	/**
+	 * True when work was actually lost: a job failed, or never ran at all.
+	 *
+	 * A warned job is not lost. It ran to the end and produced its data;
+	 * something about it merely deserves a look. Reporting "completed with lost
+	 * jobs - 283/284 (1 warning, 0 failed, 0 skipped)" -- which round 4 did on
+	 * nine of twelve bots -- overstates the damage in the one field an analysis
+	 * reads first, and blurs the line between a session to inspect and a session
+	 * to discard.
+	 */
+	public boolean hasLostJobs() {
+		return failed > 0 || skipped > 0;
+	}
+
 	/** True when nothing at all came out of the run. */
 	public boolean isTotalFailure() {
 		return succeeded == 0 && (failed > 0 || skipped > 0);
