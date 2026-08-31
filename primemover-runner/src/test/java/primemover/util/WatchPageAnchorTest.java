@@ -123,6 +123,103 @@ class WatchPageAnchorTest {
 	}
 
 	@Test
+	@DisplayName("when a reload cannot help, the session returns to the last good page")
+	void reAnchorsToTheLastGoodPage() {
+		// The age-gate case: reloading an age-restricted video returns the same
+		// wall, so leaving is the only move. soak4_us_06 spent its run on one.
+		WebDriver driver = mock(WebDriver.class);
+		WebDriver.Navigation navigation = mock(WebDriver.Navigation.class);
+		when(driver.navigate()).thenReturn(navigation);
+
+		// First a healthy page, so the anchor is recorded.
+		when(driver.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=goodgoodgo1");
+		when(driver.findElements(any(By.class))).thenReturn(tiles(20));
+		assertEquals(WatchPageAnchor.Outcome.PRESENT, run(driver, true));
+
+		// Then an age gate: empty, and it stays empty through the reload. It only
+		// comes back once we navigate away to the remembered URL.
+		AtomicBoolean left = new AtomicBoolean(false);
+		when(driver.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=agegateabc");
+		doAnswer(inv -> {
+			left.set(true);
+			return null;
+		}).when(driver).get(anyString());
+		when(driver.findElements(any(By.class)))
+				.thenAnswer(inv -> left.get() ? tiles(20) : tiles(0));
+
+		assertEquals(WatchPageAnchor.Outcome.REANCHORED, run(driver, true));
+		verify(navigation, times(1)).refresh();
+		verify(driver).get("https://www.youtube.com/watch?v=goodgoodgo1");
+	}
+
+	@Test
+	@DisplayName("with no remembered page there is nothing to re-anchor to")
+	void withoutAnAnchorItGivesUp() {
+		WebDriver driver = mock(WebDriver.class);
+		WebDriver.Navigation navigation = mock(WebDriver.Navigation.class);
+		when(driver.navigate()).thenReturn(navigation);
+		when(driver.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=agegateabc");
+		when(driver.findElements(any(By.class))).thenReturn(tiles(0));
+
+		assertEquals(WatchPageAnchor.Outcome.ABSENT, run(driver, true));
+		verify(driver, never()).get(anyString());
+	}
+
+	@Test
+	@DisplayName("one session never re-anchors onto another session's video")
+	void anchorsAreNotSharedBetweenSessions() {
+		// The handler is created once and shared by every bot, so a single field
+		// would mix two bots' viewing histories -- worse than the bug being fixed.
+		WebDriver a = mock(WebDriver.class);
+		when(a.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=botAbotAbo1");
+		when(a.findElements(any(By.class))).thenReturn(tiles(20));
+		assertEquals(WatchPageAnchor.Outcome.PRESENT, run(a, true));
+
+		WebDriver b = mock(WebDriver.class);
+		WebDriver.Navigation nav = mock(WebDriver.Navigation.class);
+		when(b.navigate()).thenReturn(nav);
+		when(b.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=botBstuckXX");
+		when(b.findElements(any(By.class))).thenReturn(tiles(0));
+
+		// B has no anchor of its own and must not borrow A's.
+		assertEquals(WatchPageAnchor.Outcome.ABSENT, run(b, true));
+		verify(b, never()).get(anyString());
+	}
+
+	@Test
+	@DisplayName("it does not re-anchor to the page it is already on")
+	void doesNotReAnchorToItself() {
+		WebDriver driver = mock(WebDriver.class);
+		WebDriver.Navigation navigation = mock(WebDriver.Navigation.class);
+		when(driver.navigate()).thenReturn(navigation);
+		when(driver.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=samepagexxx");
+		when(driver.findElements(any(By.class))).thenReturn(tiles(20));
+		assertEquals(WatchPageAnchor.Outcome.PRESENT, run(driver, true));
+
+		// Same URL, now empty: navigating to where we already are is pointless.
+		when(driver.findElements(any(By.class))).thenReturn(tiles(0));
+		assertEquals(WatchPageAnchor.Outcome.ABSENT, run(driver, true));
+		verify(driver, never()).get(anyString());
+	}
+
+	@Test
+	@DisplayName("a failed re-anchor navigation degrades instead of aborting")
+	void reAnchorNavigationFailureIsNotFatal() {
+		WebDriver driver = mock(WebDriver.class);
+		WebDriver.Navigation navigation = mock(WebDriver.Navigation.class);
+		when(driver.navigate()).thenReturn(navigation);
+		when(driver.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=goodpage001");
+		when(driver.findElements(any(By.class))).thenReturn(tiles(20));
+		run(driver, true);
+
+		when(driver.getCurrentUrl()).thenReturn("https://www.youtube.com/watch?v=deadpage002");
+		when(driver.findElements(any(By.class))).thenReturn(tiles(0));
+		doThrow(new WebDriverException("tab crashed")).when(driver).get(anyString());
+
+		assertEquals(WatchPageAnchor.Outcome.ABSENT, run(driver, true));
+	}
+
+	@Test
 	@DisplayName("the selector matches both containers YouTube renders into")
 	void selectorCoversBothContainers() {
 		// #related is the classic container; #secondary is what a number of the
