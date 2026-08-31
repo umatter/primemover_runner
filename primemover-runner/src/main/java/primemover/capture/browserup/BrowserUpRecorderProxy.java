@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import primemover.capture.HarContentFilter;
+import primemover.capture.HarTimingSanitizer;
 import primemover.capture.IRecorderProxy;
 import primemover.capture.ProxyDecoratorFactory;
 import primemover.capture.SessionDecorator;
@@ -246,6 +247,17 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 
 	private String harToString(Har har) {
 		try {
+			// Impossible durations are corrected first, and unconditionally. A
+			// request that never got a response has its wait computed against an
+			// unset response time, so the entry carries something like
+			// "time": -1303303604 -- minus fifteen days. This is a correctness
+			// problem, not a size optimisation, so it does not sit behind the
+			// har.filter.enabled flag below.
+			int correctedTimings = HarTimingSanitizer.sanitize(har);
+			if (correctedTimings > 0) {
+				log.debug("HAR: {} entries had no usable duration and were marked -1", correctedTimings);
+			}
+
 			// Apply content filtering before serialization
 			if (harContentFilter != null && harContentFilter.isFilterEnabled()) {
 				log.debug("Applying HAR content filtering");
