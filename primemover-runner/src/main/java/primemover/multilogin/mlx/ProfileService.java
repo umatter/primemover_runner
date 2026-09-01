@@ -1,5 +1,7 @@
 package primemover.multilogin.mlx;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import primemover.capture.BasicAuthorization;
 import primemover.capture.RecordingProxy;
@@ -10,6 +12,7 @@ import primemover.multilogin.mlx.api.ProfileManagementApi;
 import primemover.multilogin.mlx.model.*;
 import primemover.multilogin.mlx.utils.TemplateMapper;
 
+import java.util.List;
 import java.util.Optional;
 
 public class ProfileService {
@@ -18,12 +21,25 @@ public class ProfileService {
 	
 	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper) {
+		this(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper, null);
+	}
+
+	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
+			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
+			ProfileCreateBatcher batcher) {
 		super();
 		this.launcherApi = launcherApi;
 		this.profileManagementApi = profileManagementApi;
 		this.profileAccessManagementApi = profileAccessManagementApi;
 		this.templateMapper = templateMapper;
+		this.batcher = batcher;
 	}
+
+	/**
+	 * Groups concurrent creations into one call. Null keeps the old behaviour of
+	 * one request per crawler.
+	 */
+	private ProfileCreateBatcher batcher;
 
 	TemplateMapper templateMapper;
 	
@@ -77,13 +93,76 @@ public class ProfileService {
 		}
 		
 		String profileJson = templateMapper.getReplacedTemplate(agent, proxy);
-		ProfileCreate201Response createResult = profileManagementApi.profileCreate("application/json", "false", profileJson);
-		
-		if (createResult.getStatus().getHttpCode() == 201) {
-			return Optional.of(createResult.getData().getIds().get(0));
+
+		if (batcher == null) {
+			return Optional.ofNullable(createOne(profileJson));
 		}
-		
-		return Optional.empty();
+
+		// Multilogin's own 429 says to do this: one request with "times" rather
+		// than one request per bot. See ProfileCreateBatcher for why sharing a
+		// template across a batch cannot leak another bot's proxy.
+		try {
+			return Optional.ofNullable(batcher.acquire(profileJson, this::createMany));
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException("failed to create profile", e);
+		}
+	}
+
+	/** One profile, the way it has always worked. */
+	private String createOne(String profileJson) {
+		ProfileCreate201Response createResult = profileManagementApi.profileCreate("application/json", "false",
+				profileJson);
+
+		if (createResult.getStatus().getHttpCode() == 201) {
+			return createResult.getData().getIds().get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Sets {@code times} on a profile template.
+	 *
+	 * <p>
+	 * Parsed rather than rewritten textually, because the field is not reliably
+	 * there to rewrite. {@code TemplateMapper} uses the agent's own
+	 * {@code multiLoginCreationJson} when it has one and the config default
+	 * otherwise, and only the former carries {@code "times"} --
+	 * {@code config/DefaultMultiLoginProfile.json} has no such field at all. A
+	 * regex would silently no-op on that template, leaving the API to default to
+	 * one profile, so a batch of twelve would receive a single id and fail the
+	 * other eleven. That is worse than not batching.
+	 *
+	 * @return the template with {@code times} set, or the original if it cannot
+	 *         be parsed -- an unreadable template is the caller's problem to
+	 *         report, not something to fail here
+	 */
+	static String withTimes(String profileJson, int times) {
+		if (times <= 1) {
+			return profileJson;
+		}
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode root = (ObjectNode) mapper.readTree(profileJson);
+			root.put("times", times);
+			return mapper.writeValueAsString(root);
+		} catch (Exception e) {
+			return profileJson;
+		}
+	}
+
+	/** {@code times} identical profiles in a single call. */
+	List<String> createMany(String profileJson, int times) {
+		ProfileCreate201Response createResult = profileManagementApi.profileCreate("application/json", "false",
+				withTimes(profileJson, times));
+
+		if (createResult.getStatus().getHttpCode() == 201) {
+			return createResult.getData().getIds();
+		}
+
+		return java.util.Collections.emptyList();
 	}
 	
 	
