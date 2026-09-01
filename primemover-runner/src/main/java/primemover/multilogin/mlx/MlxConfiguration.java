@@ -1,5 +1,6 @@
 package primemover.multilogin.mlx;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -91,10 +92,31 @@ public class MlxConfiguration {
     	return new AuthService(profileAccessManagementApi);    	
     }
     
+    /**
+     * Batches concurrent profile creations into one API call.
+     *
+     * Multilogin allows 50 operations per minute and asks for this explicitly in
+     * the body of its own 429: "Try sending a single request with \"times\"
+     * parameter instead". Twelve bots launching together previously made twelve
+     * separate calls in the same second, which cost one bot its run on
+     * 2026-08-31 and four on 2026-09-01.
+     *
+     * Size 0 disables batching and restores one request per crawler.
+     */
+    @Bean
+    public ProfileCreateBatcher profileCreateBatcher(
+            @Value("${multilogin.ProfileCreateBatchSize:12}") int batchSize,
+            @Value("${multilogin.ProfileCreateBatchWindowMs:2500}") long windowMs,
+            @Value("${multilogin.ProfileCreateWaitTimeoutMs:120000}") long waitTimeoutMs) {
+        return batchSize <= 1 ? null : new ProfileCreateBatcher(batchSize, windowMs, waitTimeoutMs);
+    }
+
     @Bean
     public ProfileService profileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
-			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper) {
-    	return new ProfileService(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper);
+			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
+			@Autowired(required = false) ProfileCreateBatcher profileCreateBatcher) {
+    	return new ProfileService(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper,
+    			profileCreateBatcher);
     }
     
     @Bean(name = "MlxContextBuilder")
