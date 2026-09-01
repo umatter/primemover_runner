@@ -77,6 +77,16 @@ public class ProfileCreateBatcher {
 		}
 	}
 
+	/**
+	 * Multilogin caps {@code times} at 10. A request for more is rejected whole:
+	 * "400 BAD_REQUEST_BODY: invalid profile times value. Should be from 1 to
+	 * 10". That is not a per-caller mistake to guard at the config boundary --
+	 * it is a hard limit of the endpoint, so it is enforced here where the call
+	 * is made, and a config value above it is clamped rather than trusted. A
+	 * launch larger than 10 simply forms more than one batch.
+	 */
+	static final int API_MAX_TIMES = 10;
+
 	private final int maxBatch;
 	private final long windowMillis;
 	private final long waitTimeoutMillis;
@@ -86,9 +96,14 @@ public class ProfileCreateBatcher {
 	private boolean leaderActive;
 
 	public ProfileCreateBatcher(int maxBatch, long windowMillis, long waitTimeoutMillis) {
-		this.maxBatch = Math.max(1, maxBatch);
+		this.maxBatch = Math.min(API_MAX_TIMES, Math.max(1, maxBatch));
 		this.windowMillis = Math.max(0, windowMillis);
 		this.waitTimeoutMillis = waitTimeoutMillis;
+	}
+
+	/** The effective batch size after clamping to the API maximum. */
+	int maxBatch() {
+		return maxBatch;
 	}
 
 	/**
