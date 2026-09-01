@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -330,6 +332,20 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 	}
 
+	/**
+	 * Whether a click failure is one Layer A retries and Layer B can recover.
+	 *
+	 * Exactly two cases, both ending in the same navigate-by-id fallback:
+	 * {@link NoSuchElementException} (the xpath matched nothing) and
+	 * {@link TimeoutException} (the element was found but never became clickable,
+	 * e.g. obscured by YouTube's endscreen video-wall). Every other
+	 * WebDriverException keeps its previous behaviour of propagating, so this does
+	 * not silently swallow an unrelated driver fault.
+	 */
+	static boolean isRecoverableClickFailure(Throwable t) {
+		return t instanceof NoSuchElementException || t instanceof TimeoutException;
+	}
+
 	@Override
 	public void handle(IJobAwareRunnerContext<?> context) {
 		logger.debug("running job");
@@ -462,7 +478,10 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				// Try up to 3 times to find and click the element, re-invoking lambda on each retry
 				int maxAttempts = 3;
 				boolean clicked = false;
-				NoSuchElementException lastNSEE = null;
+				// Tracks the last click failure across attempts. Widened from
+				// NoSuchElementException to WebDriverException so it also carries a
+				// TimeoutException from elementToBeClickable -- see the catch below.
+				WebDriverException lastClickFailure = null;
 
 				for (int attempt = 1; attempt <= maxAttempts; attempt++) {
 					try {
@@ -487,11 +506,24 @@ public class LambdaSelectJobHandler implements IJobHandler {
 							logger.info("Element found and clicked on attempt {}/{}", attempt, maxAttempts);
 						}
 						break;
-					} catch (NoSuchElementException nsee) {
-						lastNSEE = nsee;
+					} catch (WebDriverException e) {
+						// Two distinct page states, one recovery. NoSuchElement: the
+						// xpath matched nothing. Timeout: the element was found but
+						// never became clickable -- e.g. a recommendation obscured by
+						// YouTube's endscreen video-wall overlay. Only the not-found
+						// case was handled before; the timeout escaped the loop and
+						// skipped Layer B entirely, failing a job whose selected video
+						// id was already in hand (round 8, soak8_ch_03: 29 failures,
+						// all found-but-not-clickable). Any other WebDriverException
+						// keeps its old behaviour -- it propagates -- so this widens
+						// recovery to exactly the two click failures we mean to retry.
+						if (!isRecoverableClickFailure(e)) {
+							throw e;
+						}
+						lastClickFailure = e;
 						if (attempt < maxAttempts) {
-							logger.warn("Element not found on attempt {}/{}, re-capturing page and re-invoking lambda",
-									attempt, maxAttempts);
+							logger.warn("Element not found or not clickable on attempt {}/{}, "
+									+ "re-capturing page and re-invoking lambda", attempt, maxAttempts);
 							Thread.sleep(2000); // wait for DOM to settle
 
 							// Re-capture page source and re-invoke lambda
@@ -531,13 +563,13 @@ public class LambdaSelectJobHandler implements IJobHandler {
 						logger.error("All {} click attempts failed and no selected video ID available for fallback",
 								maxAttempts);
 
-						// lastNSEE is null whenever the loop ended for a reason other than a
-						// NoSuchElementException. Rethrowing it unguarded then raised a bare
+						// lastClickFailure is null whenever the loop ended for a reason other
+						// than a caught click failure. Rethrowing it unguarded then raised a bare
 						// NullPointerException from this line, which says nothing about the
 						// recommendation that could not be clicked and sends whoever reads the
 						// job failure looking for a bug here instead of at the page.
-						if (lastNSEE != null) {
-							throw lastNSEE;
+						if (lastClickFailure != null) {
+							throw lastClickFailure;
 						}
 
 						throw new RuntimeException("Lambda select job " + typedJob.getId()
