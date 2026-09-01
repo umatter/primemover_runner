@@ -175,4 +175,50 @@ class ProfileCreateBatcherTest {
 			assertTrue(size <= 3, "batch of " + size + " exceeds the configured maximum");
 		}
 	}
+
+	@Test
+	@DisplayName("the batch size is clamped to Multilogin's max of 10")
+	void clampsToApiMax() {
+		// Round 6 (experiment 151) failed all twelve bots because the batcher
+		// sent times:12 and the API rejected the whole call: "invalid profile
+		// times value. Should be from 1 to 10". A config value above the API
+		// limit must be clamped here, not trusted.
+		assertEquals(10, new ProfileCreateBatcher(12, 100, 1000).maxBatch());
+		assertEquals(10, new ProfileCreateBatcher(50, 100, 1000).maxBatch());
+		assertEquals(1, new ProfileCreateBatcher(0, 100, 1000).maxBatch());
+		assertEquals(8, new ProfileCreateBatcher(8, 100, 1000).maxBatch());
+	}
+
+	@Test
+	@DisplayName("more than ten concurrent creations never ask for more than ten at once")
+	void neverExceedsTenPerCall() throws Exception {
+		ProfileCreateBatcher batcher = new ProfileCreateBatcher(12, 300, 10_000);
+		List<Integer> requested = new CopyOnWriteArrayList<>();
+		ExecutorService pool = Executors.newFixedThreadPool(12);
+		CountDownLatch done = new CountDownLatch(12);
+
+		for (int i = 0; i < 12; i++) {
+			pool.submit(() -> {
+				try {
+					batcher.acquire("{\"times\": 1}", (template, times) -> {
+						requested.add(times);
+						return ids(times);
+					});
+				} catch (Exception ignored) {
+					// counted by the latch
+				} finally {
+					done.countDown();
+				}
+			});
+		}
+		assertTrue(done.await(20, TimeUnit.SECONDS));
+		pool.shutdown();
+
+		assertFalse(requested.isEmpty());
+		for (int times : requested) {
+			assertTrue(times <= 10, "asked the API for " + times + ", over its max of 10");
+		}
+		// 12 creations must come out as 12 ids across however many calls it took.
+		assertEquals(12, requested.stream().mapToInt(Integer::intValue).sum());
+	}
 }
