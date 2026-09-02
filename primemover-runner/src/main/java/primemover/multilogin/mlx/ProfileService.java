@@ -24,7 +24,19 @@ public class ProfileService {
 	// needs no code change. Was previously a hardcoded constant here.
 	private static final String DEFAULT_FOLDER_ID = "2e8c5d68-bade-44dc-a45b-211c5435ebfd";
 
+	// The H.264 codec-override extension is loaded into every profile (see
+	// updateProxy). Its path is absolute and host-specific: on ex63 hardware
+	// VA-API decode makes it redundant, but on a GPU-less VM it is load-bearing
+	// again -- forcing H.264 keeps software decode affordable instead of pinning
+	// the renderer main thread on VP9/AV1. A wrong/absent path makes Chrome drop
+	// the extension silently, which reintroduces the renderer death with nothing
+	// in the logs, so it is injectable (multilogin.h264ExtensionPath) with the
+	// ex63 path as the fallback for callers that pass nothing.
+	private static final String DEFAULT_H264_EXTENSION_PATH =
+			"/home/primemover/primemover_runner/primemover-runner/config/h264-override-extension";
+
 	private final String folderId;
+	private final String h264ExtensionPath;
 
 	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper) {
@@ -41,6 +53,13 @@ public class ProfileService {
 	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
 			ProfileCreateBatcher batcher, String folderId) {
+		this(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper, batcher, folderId,
+				DEFAULT_H264_EXTENSION_PATH);
+	}
+
+	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
+			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
+			ProfileCreateBatcher batcher, String folderId, String h264ExtensionPath) {
 		super();
 		this.launcherApi = launcherApi;
 		this.profileManagementApi = profileManagementApi;
@@ -50,11 +69,18 @@ public class ProfileService {
 		// Fall back to the default only if a caller passes nothing, never silently
 		// accept an empty configured value.
 		this.folderId = (folderId == null || folderId.isBlank()) ? DEFAULT_FOLDER_ID : folderId;
+		this.h264ExtensionPath = (h264ExtensionPath == null || h264ExtensionPath.isBlank())
+				? DEFAULT_H264_EXTENSION_PATH : h264ExtensionPath;
 	}
 
 	/** The workspace folder profiles are created/started in (test seam). */
 	String folderId() {
 		return folderId;
+	}
+
+	/** The H.264 override extension path loaded into every profile (test seam). */
+	String h264ExtensionPath() {
+		return h264ExtensionPath;
 	}
 
 	/**
@@ -221,7 +247,7 @@ public class ProfileService {
 		// GC thrashing that makes the renderer unresponsive to WebDriver commands.
 		strBuilder.append(", \"parameters\": {\"fingerprint\": {\"cmd_params\": {\"params\": [");
 		strBuilder.append("{\"flag\": \"js-flags\", \"value\": \"--max-old-space-size=2048\"}");
-		strBuilder.append(",{\"flag\": \"load-extension\", \"value\": \"/home/primemover/primemover_runner/primemover-runner/config/h264-override-extension\"}");
+		strBuilder.append(",{\"flag\": \"load-extension\", \"value\": \"").append(h264ExtensionPath).append("\"}");
 		strBuilder.append("]}}}");
 
 		strBuilder.append("}");

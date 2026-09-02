@@ -115,9 +115,10 @@ public class MlxConfiguration {
     public ProfileService profileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
 			@Autowired(required = false) ProfileCreateBatcher profileCreateBatcher,
-			@Value("${multilogin.defaultFolderId}") String defaultFolderId) {
+			@Value("${multilogin.defaultFolderId}") String defaultFolderId,
+			@Value("${multilogin.h264ExtensionPath:}") String h264ExtensionPath) {
     	return new ProfileService(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper,
-    			profileCreateBatcher, defaultFolderId);
+    			profileCreateBatcher, defaultFolderId, h264ExtensionPath);
     }
     
     @Bean(name = "MlxContextBuilder")
