@@ -188,6 +188,13 @@ public class PrimemoverApiConverter {
 		job.setUsername(behaviours.get("username"));
 		job.setPassword(behaviours.get("password"));
 
+		// Carry the raw behaviours through to the decision function. The typed
+		// fields above consume the job-control behaviours; the rest -- notably a
+		// `strategy` marker and any strategy-specific treatment keys -- were
+		// previously dropped here and never reached the lambda. A defensive copy so
+		// the job does not alias the converter's working map.
+		job.setBehaviors(new HashMap<String, String>(behaviours));
+
 		return job;
 	}
 
