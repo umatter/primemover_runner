@@ -17,8 +17,15 @@ import java.util.Optional;
 
 public class ProfileService {
 	
-	private static String FOLDER_ID = "2e8c5d68-bade-44dc-a45b-211c5435ebfd"; // Fixed to default folder
-	
+	// The Multilogin workspace folder is account-specific. It is injected from
+	// multilogin.defaultFolderId (the same property TemplateMapper reads); the
+	// literal below is only a fallback for the legacy constructors that predate
+	// the parameter, so a new account is configured entirely in properties and
+	// needs no code change. Was previously a hardcoded constant here.
+	private static final String DEFAULT_FOLDER_ID = "2e8c5d68-bade-44dc-a45b-211c5435ebfd";
+
+	private final String folderId;
+
 	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper) {
 		this(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper, null);
@@ -27,12 +34,27 @@ public class ProfileService {
 	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
 			ProfileCreateBatcher batcher) {
+		this(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper, batcher,
+				DEFAULT_FOLDER_ID);
+	}
+
+	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
+			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
+			ProfileCreateBatcher batcher, String folderId) {
 		super();
 		this.launcherApi = launcherApi;
 		this.profileManagementApi = profileManagementApi;
 		this.profileAccessManagementApi = profileAccessManagementApi;
 		this.templateMapper = templateMapper;
 		this.batcher = batcher;
+		// Fall back to the default only if a caller passes nothing, never silently
+		// accept an empty configured value.
+		this.folderId = (folderId == null || folderId.isBlank()) ? DEFAULT_FOLDER_ID : folderId;
+	}
+
+	/** The workspace folder profiles are created/started in (test seam). */
+	String folderId() {
+		return folderId;
 	}
 
 	/**
@@ -67,7 +89,7 @@ public class ProfileService {
 			throw new IllegalArgumentException("Profile id is empty");
 		}
 		
-		StartBrowserProfile200Response startResponse = launcherApi.startBrowserProfile("selenium", "false", FOLDER_ID, id, "application/json", "true");
+		StartBrowserProfile200Response startResponse = launcherApi.startBrowserProfile("selenium", "false", folderId, id, "application/json", "true");
 		
 		return new StartProfileResult(
 				startResponse.getStatus().getHttpCode() == 200,
