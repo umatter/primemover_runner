@@ -114,9 +114,10 @@ public class MlxConfiguration {
     @Bean
     public ProfileService profileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
-			@Autowired(required = false) ProfileCreateBatcher profileCreateBatcher) {
+			@Autowired(required = false) ProfileCreateBatcher profileCreateBatcher,
+			@Value("${multilogin.defaultFolderId}") String defaultFolderId) {
     	return new ProfileService(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper,
-    			profileCreateBatcher);
+    			profileCreateBatcher, defaultFolderId);
     }
     
     @Bean(name = "MlxContextBuilder")
