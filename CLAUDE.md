@@ -63,6 +63,21 @@ runner.ProcessingTimeoutMinutes=180    # Job timeout
 
 multilogin.StartupRetryCount=3
 multilogin.StartupDelaySeconds=30
+# Startup retry backoff (see "Lambda-select reliability" below). A 429 from
+# Multilogin's profile-create is a rate limit -- only time clears it -- so it
+# waits out the window; other failures retry promptly.
+multilogin.StartupRetryDelaySeconds=5
+multilogin.RateLimitBackoffSeconds=75
+# Batch concurrent profile creations into one API call (Multilogin caps `times`
+# at 10; the batcher clamps to that). 12 bots -> one call of 10 + one of 2,
+# instead of 12 calls that trip the 50/min limit. 1 disables batching.
+multilogin.ProfileCreateBatchSize=10
+multilogin.ProfileCreateBatchWindowMs=2500
+multilogin.ProfileCreateWaitTimeoutMs=120000
+# Renderer recycled every N navigations to bound a per-navigation V8 heap leak;
+# reload+re-anchor a watch page that came back without recommendations.
+runner.RendererRecycleAfterNavigations=25
+runner.RecoverUnrenderedWatchPage=true
 
 har.recording.enabled=true
 har.recording.excludeJobTypes=WaitJob,ScrollByDurationJob,...  # Skip HAR for these
@@ -206,3 +221,48 @@ har.filter.enabled=true
 har.filter.removeStaticResources=true
 har.filter.excludeDomains=google-analytics.com,facebook.com
 ```
+
+
+## Lambda-select reliability
+
+`LambdaSelectJobHandler` turns a decision into a click. A single YouTube page
+quirk used to cost a whole session, because the workflow's two `visitjob`s run
+only at the start -- nothing re-navigates -- so one bad landing failed every
+remaining job. These layers, added across 2026-08/09, each recover a distinct
+failure and mark the job degraded (a recovered session is not an ordinary one):
+
+- **Empty xpath with a selection → navigate by id.** The decision function can
+  choose a video from `ytInitialData` when the sidebar never rendered into the
+  DOM, returning the id with an empty xpath. `validateXpath` used to throw before
+  the fallback; now the runner navigates straight to the video.
+- **Found but not clickable → recover, don't fail.** An element that is located
+  but never becomes clickable (e.g. obscured by YouTube's endscreen video-wall)
+  throws `TimeoutException`, which is *not* `NoSuchElementException`. The retry
+  loop now treats both as recoverable (`isRecoverableClickFailure`) and falls
+  through to navigate-by-id; other `WebDriverException`s still propagate.
+- **Empty shell / unusable page → reload once, then re-anchor**
+  (`primemover.util.WatchPageAnchor`, `runner.RecoverUnrenderedWatchPage`). A SPA
+  navigation can leave `ytd-watch-flexy` + an empty `#related`. A reload fixes a
+  *transiently* broken page; it cannot fix one behaving correctly (an
+  age-restricted video reloads back to "Sign in to confirm your age"), so when
+  the reload fails the session returns to the last page that had recommendations.
+  The last-good URL is keyed by driver, not a field -- the handler is shared
+  across bots, and a field would mix two bots' viewing histories.
+- **Profile-create rate limit → batch, then back off**
+  (`primemover.util.StartupBackoff`, `ProfileCreateBatcher`). 12 bots launching
+  together made 12 `POST /profile/create` calls in one second and tripped
+  Multilogin's 50/min limit. Batching collapses them to one call with `times`
+  (capped at 10); a 429 that still occurs waits out the 60s window rather than
+  retrying into it.
+- **HAR timings sanitised** (`primemover.util`/`capture.HarTimingSanitizer`, runs
+  unconditionally before serialization). A request that never got a response has
+  its `wait` computed against an unset time, so the recorder writes `time`
+  ≈ -1.3e9 ms. Values below the spec's `-1` are rewritten to `-1` (not 0 -- a
+  request nobody timed is not an instantaneous one), so a consumer summing them
+  gets a real total.
+
+Queue rollups distinguish loss from degradation: `DONE_JOBSWARNING`
+("completed with lost jobs") when jobs failed or were skipped, `DONE_JOBSDEGRADED`
+("completed, some jobs degraded") when every job ran but some finished degraded.
+Both carry `status_code = warning`; only the sentence differs, so a consumer
+gating on `failure OR warning` is unaffected.
