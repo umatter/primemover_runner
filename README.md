@@ -15,7 +15,7 @@ Think of PrimeMover as a sophisticated "robot browser" that can:
 ## Quick Start
 
 ### Prerequisites
-- Java 17 or higher
+- Java 25 (production runtime; CI also builds against 17)
 - Maven 3.6+
 - Chrome or Firefox browser installed
 - Multilogin X
@@ -47,23 +47,25 @@ The `global.mode` setting in your configuration file determines which API endpoi
 
 See `CrawlerService.calculateCrawlerUrl()` for implementation details.
 
+Both endpoints are also partitioned by `runner_user_id` since 2026-09-02: a runner only fetches experiments assigned to it, and the default runner additionally fetches unassigned ones.
+
 ### ⚠️ Important: MultiLogin X Core Version Requirements
 
 MultiLogin X enforces minimum browser core version requirements that can increase over time:
 
-- **Current minimum core version**: 137 (as of 2025)
+- **Current minimum core version**: 147 (rejects below); the designer's default profile is 149
 - **Error to watch for**: `400 Bad Request: "Can't set core older than X. Please set higher core version"`
 
 **If you encounter this error:**
 
 1. Update your agent's MultiLogin profile template in the database
-2. Set `"core_version": 137` (or higher, as required)
+2. Set `"core_version": 149` (or higher, as required)
 3. **Recommended**: Set `"auto_update_core": true` to automatically use the latest version and avoid future issues
 
 **Example profile configuration:**
 ```json
 {
-  "core_version": 137,
+  "core_version": 149,
   "auto_update_core": true,
   ...
 }
@@ -130,7 +132,7 @@ For detailed information, see our comprehensive documentation:
 
 ## Technology Stack
 
-- **Java 17** with Spring Boot framework
+- **Java 25** (production runtime; CI also builds against 17) with Spring Boot framework
 - **Selenium WebDriver** for browser automation
 - **Maven** for dependency management
 - **AWS SDK** for cloud storage integration

@@ -15,6 +15,8 @@ mvn spring-boot:run                  # Production mode
 mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"  # Local dev
 ```
 
+Production runs Java 25; build with it, not an older JDK, if you are building against a live jar.
+
 ### Testing
 ```bash
 mvn test                             # All tests
@@ -49,14 +51,18 @@ primemover_runner/
 
 **API endpoint selection**: Implemented in `CrawlerService.calculateCrawlerUrl()` (lines 61-74).
 
+Both `/crawlers-unprocessed` and `/crawlers-testing` are also partitioned by
+`runner_user_id` since 2026-09-02: a runner only fetches experiments assigned
+to it, and the default runner additionally fetches unassigned ones.
+
 ### MultiLogin X Core Version
-- **Minimum**: Core version 137+ (as of 2025)
+- **Minimum**: Core version 147+ (rejects below); the designer's default profile is 149
 - **Error**: `400 Bad Request: "Can't set core older than X"`
 - **Fix**: Set `"auto_update_core": true` in agent's `multilogin_profile` DB field
 
 ### Key Properties (`primemover-runner/config/application.properties`)
 ```properties
-runner.MaxParallelExecution=2          # Concurrent browser threads
+runner.MaxParallelExecution=2          # Concurrent browser threads (tuned per box: ex63=15, VM=10)
 runner.UpdateInterval=15               # Minutes between job polls
 runner.MaxRedoMinutes=45               # Max job age to execute
 runner.ProcessingTimeoutMinutes=180    # Job timeout
@@ -266,3 +272,8 @@ Queue rollups distinguish loss from degradation: `DONE_JOBSWARNING`
 ("completed, some jobs degraded") when every job ran but some finished degraded.
 Both carry `status_code = warning`; only the sentence differs, so a consumer
 gating on `failure OR warning` is unaffected.
+
+PR #82 (`master` `1826600`, deployed 2026-09-03) carries `lambda_select` job
+behaviours into the decision payload — this underlies the newly-deployed
+strategy-marker gate in `bot-decision-yt` (the behaviours channel activates only
+when the job carries a `strategy`; legacy experiments are unaffected).
