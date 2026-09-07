@@ -329,8 +329,23 @@ public class TaskOperator implements ITaskOperator {
 	 */
 	private void reportJobState(IJob job, JobState state, String detail, Boolean captchaFound, Boolean captchaSolved,
 			ZonedDateTime startTime, ZonedDateTime endTime) {
+		reportJobState(job, state, detail, captchaFound, captchaSolved, startTime, endTime, null);
+	}
+
+	/**
+	 * As above, additionally carrying the decision function's verdict for this job.
+	 *
+	 * <p>
+	 * Only the <em>terminal</em> reports pass one: the verdict does not exist yet
+	 * when the job is reported RUNNING or STORINGDATA, and a SKIPPED job never ran
+	 * a handler at all. {@code null} means "no verdict", which the service turns
+	 * into "send no decision fields" and the API reads as unknown -- never as
+	 * clean.
+	 */
+	private void reportJobState(IJob job, JobState state, String detail, Boolean captchaFound, Boolean captchaSolved,
+			ZonedDateTime startTime, ZonedDateTime endTime, DecisionVerdict decision) {
 		Boolean reported = jobService.updateJobState(job, state, detail, captchaFound, captchaSolved, startTime,
-				endTime);
+				endTime, decision);
 
 		if (!Boolean.TRUE.equals(reported)) {
 			logger.error("Could not report state {} for job {}."
@@ -524,6 +539,15 @@ public class TaskOperator implements ITaskOperator {
 			// fell back to random selection); carried along with the recorded data
 			List<String> jobWarnings = JobDiagnostics.warnings();
 
+			// The decision function's verdict for this job, if it made a decision at
+			// all. Only the lambda-select handler ever records one and the slot is
+			// per-job, so this is null for every other job type -- which is what makes
+			// the API store "unknown" for them rather than a manufactured "clean".
+			// It is attached to every terminal state, failures included: a job that
+			// could not click still had a decision, and whether that decision lost the
+			// treatment is exactly what an analysis needs to know about the session.
+			DecisionVerdict decision = JobDiagnostics.decisionVerdict();
+
 			// Prepare writers
 			List<IDataWriter> writers = new ArrayList<>();
 			writerFactories.forEach((factory) -> {
@@ -563,34 +587,36 @@ public class TaskOperator implements ITaskOperator {
 			if (writeRes && runJobResult && jobWarnings.isEmpty()) {
 				logger.info("Done running job {}", job.getId());
 				lastJobState = JobState.SUCCESS;
-				reportJobState(job, JobState.SUCCESS, null, null, null, null, ZonedDateTime.now()); // setting
-																									// endtime
+				reportJobState(job, JobState.SUCCESS, null, null, null, null, ZonedDateTime.now(), decision); // setting
+																												// endtime
 			} else if (!runJobResult) {
 				logger.warn("Done running job with failure {}", job.getId());
 				// the real cause, not just "error during execution"
 				lastJobState = JobState.FAILURE;
 				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure), null, null, null,
-						ZonedDateTime.now()); // setting endtime
+						ZonedDateTime.now(), decision); // setting endtime
 			} else if (!writeRes) {
 				logger.warn("Done running job with warning (job data not written) {}", job.getId());
 				lastJobState = JobState.WARNING_JOBDATA;
 				reportJobState(job, JobState.WARNING_JOBDATA, joinDetails(storageProblems, jobWarnings), null, null,
-						null, ZonedDateTime.now()); // setting endtime
+						null, ZonedDateTime.now(), decision); // setting endtime
 			} else {
 				// handler completed, but the result is degraded in a way the
 				// experiment cares about -- must not render as a green Success pill
 				logger.warn("Done running job with warning {}: {}", job.getId(), jobWarnings);
 				lastJobState = JobState.WARNING;
 				reportJobState(job, JobState.WARNING, String.join("; ", jobWarnings), null, null, null,
-						ZonedDateTime.now()); // setting endtime
+						ZonedDateTime.now(), decision); // setting endtime
 			}
 
 		} catch (Exception ex) {
 			logger.error("Exception executing job {}", job.getId(), ex);
 
 			try {
+				// read here rather than reusing the local above: this catch also covers
+				// the path that threw before that local was assigned
 				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure == null ? ex : jobFailure),
-						null, null, null, ZonedDateTime.now()); // setting endtime
+						null, null, null, ZonedDateTime.now(), JobDiagnostics.decisionVerdict()); // setting endtime
 			} catch (Exception e) {
 				// log the failure to WRITE the state (e), not the exception that got
 				// us here (ex) -- that one is already logged above, and this branch is

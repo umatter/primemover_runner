@@ -26,6 +26,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * successful handler run and finishes the job as
  * {@link primemover.model.JobState#WARNING} instead of {@code SUCCESS}, with the
  * warnings as the {@code status_message} detail.</li>
+ * <li><b>The decision verdict.</b> {@code LambdaSelectJobHandler} records the
+ * parsed {@link DecisionVerdict} for the job it is running, and
+ * {@link TaskOperator} hands it to the service so it becomes four columns on the
+ * job row rather than prose inside {@code status_message}. It travels the same
+ * per-job path as the warnings above, and for the same reason: a job handler has
+ * no other way to reach the code that reports the job's outcome.</li>
  * <li><b>{@link #describe(Throwable)}.</b> The single-line rendering of an
  * exception that is safe to send to the API -- class name plus message plus the
  * root cause when it differs, and never a stack trace.</li>
@@ -61,6 +67,15 @@ public final class JobDiagnostics {
 	static final int MAX_WARNINGS = 20;
 
 	private static final ThreadLocal<CopyOnWriteArrayList<String>> WARNINGS = new ThreadLocal<>();
+
+	/**
+	 * The decision-function verdict for the job on this thread, if it had one.
+	 * Scoped exactly like {@link #WARNINGS}: set by the lambda-select handler,
+	 * read by {@link TaskOperator} when it reports the job's terminal state,
+	 * cleared at both ends of the job so a pooled thread cannot carry one job's
+	 * verdict into the next.
+	 */
+	private static final ThreadLocal<DecisionVerdict> DECISION = new ThreadLocal<>();
 
 	private JobDiagnostics() {
 		// static utility
@@ -129,6 +144,47 @@ public final class JobDiagnostics {
 	}
 
 	/**
+	 * Record the decision function's verdict for the job currently executing on
+	 * this thread. {@code null} is ignored, so a payload that carried no
+	 * degradation report leaves the slot empty -- and the job PUT then omits the
+	 * decision fields entirely, which is how the API learns "unknown" rather than
+	 * being told a {@code false} nobody measured.
+	 *
+	 * <p>
+	 * A job can invoke the decision function more than once: the handler
+	 * re-invokes it when the recommendation it was given could not be clicked.
+	 * The <b>more severe</b> verdict wins (treatment lost &gt; degraded &gt;
+	 * clean), with a later verdict winning a tie. A job whose first decision lost
+	 * the treatment must not end up recorded as clean because a retry happened to
+	 * come back fine -- the session already contains that degraded decision, and
+	 * its warnings are already on the job's status message.
+	 */
+	public static void recordDecisionVerdict(@Nullable DecisionVerdict verdict) {
+		if (verdict == null) {
+			return;
+		}
+
+		DecisionVerdict existing = DECISION.get();
+		if (existing == null || verdict.severity() >= existing.severity()) {
+			DECISION.set(verdict);
+		}
+	}
+
+	/**
+	 * The decision verdict recorded for the job currently executing on this
+	 * thread, or {@code null} when there is none.
+	 *
+	 * <p>
+	 * {@code null} means <b>unknown</b>, not clean: a non-lambda job, or a
+	 * decision function whose payload predates the degradation report. Callers
+	 * must send nothing rather than a default.
+	 */
+	@Nullable
+	public static DecisionVerdict decisionVerdict() {
+		return DECISION.get();
+	}
+
+	/**
 	 * {@code true} when at least one warning has been attached to the job
 	 * currently executing on this thread.
 	 */
@@ -138,21 +194,23 @@ public final class JobDiagnostics {
 	}
 
 	/**
-	 * Start collecting warnings for a job on this thread, discarding anything
-	 * left over. Called by {@link TaskOperator} only.
+	 * Start collecting warnings and the decision verdict for a job on this
+	 * thread, discarding anything left over. Called by {@link TaskOperator} only.
 	 */
 	static void beginJob() {
 		WARNINGS.set(new CopyOnWriteArrayList<>());
+		DECISION.remove();
 	}
 
 	/**
-	 * Stop collecting and return what was collected, removing the thread-local so
-	 * nothing leaks to the next job on a pooled thread. Called by
-	 * {@link TaskOperator} only.
+	 * Stop collecting and return the warnings, removing both thread-locals so
+	 * nothing -- warning or verdict -- leaks to the next job on a pooled thread.
+	 * Called by {@link TaskOperator} only.
 	 */
 	static List<String> endJob() {
 		List<String> collected = warnings();
 		WARNINGS.remove();
+		DECISION.remove();
 		return collected;
 	}
 

@@ -62,6 +62,13 @@ public class LambdaSelectJobResult {
 	/** Value used by the decision function for a filter that applied cleanly. */
 	private static final String FILTER_OK = "ok";
 
+	/**
+	 * Value used by the decision function for a filter that was <em>not
+	 * requested</em>. It is not a failure -- five of the six filters are
+	 * {@code skipped} on every healthy control-crawler invocation.
+	 */
+	private static final String FILTER_SKIPPED = "skipped";
+
 	private String xpath;
 	private Selected selected;
 
@@ -261,6 +268,41 @@ public class LambdaSelectJobResult {
 			if (status != null && status.toLowerCase().startsWith(FILTER_FAILED_PREFIX)) {
 				out.add(entry.getKey() + " " + status);
 			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * The filters the crawler actually <em>asked for</em>, by name: every filter
+	 * whose state is not {@code skipped}.
+	 *
+	 * <p>
+	 * This is the denominator the whole degradation contract is written against.
+	 * "Degraded" means a <b>requested</b> filter did not apply, and
+	 * "treatment lost" means none of the requested ones did; a control crawler
+	 * requests nothing, so it can lose nothing however it picked its video. Reading
+	 * {@code skipped} as a casualty is the single most common way to turn this
+	 * contract back into a false-alarm generator -- see
+	 * {@code docs/integration-contract.md} &sect;7.3.
+	 *
+	 * <p>
+	 * A filter present with a blank state said nothing about itself and is left
+	 * out: absence of a state is not evidence that it was requested.
+	 */
+	@JsonIgnore
+	public List<String> requestedFilters() {
+		if (filters == null || filters.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<String> out = new ArrayList<>();
+		for (Map.Entry<String, String> entry : filters.entrySet()) {
+			String status = trimmed(entry.getValue());
+			if (status == null || FILTER_SKIPPED.equalsIgnoreCase(status)) {
+				continue;
+			}
+			out.add(entry.getKey());
 		}
 
 		return out;

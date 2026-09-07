@@ -17,6 +17,7 @@ import primemover.model.IJob;
 import primemover.model.JobState;
 import primemover.model.Joblist;
 import primemover.model.JoblistState;
+import primemover.runner.DecisionVerdict;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -211,7 +212,7 @@ public class JobService implements IJobService {
 	@Override
 	public Boolean updateCaptchaStateOnJob(final IJob job, Boolean captchaFound, Boolean captchaSolved) {
 		logger.info("updateing captcha-state. Retry {}", currentRetryCount());
-		return updateJobState(job.getId(), null, null, captchaFound, captchaSolved, null, null);
+		return updateJobState(job.getId(), null, null, captchaFound, captchaSolved, null, null, null);
 	}
 
 	@Retryable
@@ -219,7 +220,7 @@ public class JobService implements IJobService {
 	public Boolean updateJobState(final IJob job, final JobState state, Boolean captchaFound,
 			final Boolean captchaSolved, final ZonedDateTime startTime, final ZonedDateTime endTime) {
 		logger.info("updateing job-state. Retry {}", currentRetryCount());
-		return updateJobState(job.getId(), state, null, captchaFound, captchaSolved, startTime, endTime);
+		return updateJobState(job.getId(), state, null, captchaFound, captchaSolved, startTime, endTime, null);
 	}
 
 	@Retryable
@@ -228,12 +229,21 @@ public class JobService implements IJobService {
 			final Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime,
 			final ZonedDateTime endTime) {
 		logger.info("updateing job-state. Retry {}", currentRetryCount());
-		return updateJobState(job.getId(), state, detail, captchaFound, captchaSolved, startTime, endTime);
+		return updateJobState(job.getId(), state, detail, captchaFound, captchaSolved, startTime, endTime, null);
+	}
+
+	@Retryable
+	@Override
+	public Boolean updateJobState(final IJob job, final JobState state, @Nullable final String detail,
+			final Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime,
+			final ZonedDateTime endTime, @Nullable final DecisionVerdict decision) {
+		logger.info("updateing job-state. Retry {}", currentRetryCount());
+		return updateJobState(job.getId(), state, detail, captchaFound, captchaSolved, startTime, endTime, decision);
 	}
 
 	private Boolean updateJobState(final Long jobID, final JobState state, @Nullable final String detail,
 			final Boolean captchaFound, final Boolean captchaSolved, final ZonedDateTime startTime,
-			final ZonedDateTime endTime) {
+			final ZonedDateTime endTime, @Nullable final DecisionVerdict decision) {
 		// do we have something to update?
 		if (state == null && captchaFound == null && captchaSolved == null && startTime != null && endTime != null) {
 			logger.debug("skipping call nothing to update");
@@ -269,6 +279,9 @@ public class JobService implements IJobService {
 			data.put("finished_at", dateFormater.format(endTime));
 		}
 
+		// the decision function's verdict on this job, when there was one
+		addDecisionFields(data, decision);
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("sending JSON:\n{}", data);
 		}
@@ -290,5 +303,50 @@ public class JobService implements IJobService {
 			logger.warn("failure updating job {} ", jobID, ex);
 			return false;
 		}
+	}
+
+	/**
+	 * Put the decision function's verdict into the job PUT body, or nothing at all.
+	 *
+	 * <p>
+	 * Four keys, named exactly as the API's columns:
+	 * {@code decision_degraded}, {@code decision_treatment_lost},
+	 * {@code decision_selection_mode} and {@code decision_report}
+	 * ({@code {filters, llm, warnings, applied, requested}}).
+	 *
+	 * <p>
+	 * <b>All four are omitted when {@code decision} is {@code null}</b>, and that
+	 * is the load-bearing half of this method. {@code null} arrives for a
+	 * non-lambda job, for a legacy payload, and for any decision function that
+	 * predates degradation reporting -- three different ways of saying "nobody
+	 * measured this". A missing key reads as <em>unknown</em> on the API side; a
+	 * {@code false} would read as "we checked, and the treatment applied", which
+	 * is exactly the false-clean reading that made silent treatment-arm loss
+	 * invisible in the first place (docs/integration-contract.md &sect;7.3).
+	 *
+	 * <p>
+	 * {@code decision_selection_mode} is sent as an explicit JSON {@code null}
+	 * when the report carried no mode: the report exists, the mode simply was not
+	 * in it, and that is a different statement from having no report.
+	 * {@code selection_mode} is a descriptor, never a gate -- {@code "random"} is
+	 * the correct answer for a control crawler.
+	 *
+	 * <p>
+	 * The report is bounded by {@link DecisionVerdict} before it gets here, so a
+	 * pathological payload -- hundreds of warnings, a filter status carrying a
+	 * traceback -- cannot inflate this request.
+	 */
+	private static void addDecisionFields(JSONObject data, @Nullable DecisionVerdict decision) {
+		if (decision == null) {
+			return;
+		}
+
+		data.put("decision_degraded", decision.isDegraded());
+		data.put("decision_treatment_lost", decision.isTreatmentLost());
+
+		String mode = decision.getSelectionMode();
+		data.put("decision_selection_mode", mode == null ? JSONObject.NULL : mode);
+
+		data.put("decision_report", decision.reportJson());
 	}
 }

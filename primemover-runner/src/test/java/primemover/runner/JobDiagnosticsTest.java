@@ -1,7 +1,11 @@
 package primemover.runner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import primemover.runner.job.handler.LambdaSelectJobResult;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -12,7 +16,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -76,6 +82,104 @@ class JobDiagnosticsTest {
 		assertEquals(List.of("degraded"), JobDiagnostics.endJob());
 		assertFalse(JobDiagnostics.hasWarnings());
 		assertEquals(List.of(), JobDiagnostics.warnings());
+	}
+
+	// ------------------------------------------------------------------
+	// The decision verdict shares the per-job lifecycle above, and gets its own
+	// cases because it fails differently. A leaked *warning* adds noise to one
+	// job's status message; a leaked *verdict* writes four columns of false
+	// science -- job B recorded as "treatment lost" because job A lost its
+	// treatment on the same pooled thread, or recorded "clean" from a decision
+	// that was never made for it. That is exactly the false-clean/false-alarm
+	// reading docs/integration-contract.md 7.3 exists to prevent, so the
+	// clearing at both ends of the job is asserted rather than assumed.
+	// ------------------------------------------------------------------
+
+	/**
+	 * A payload carrying a degradation report, i.e. one {@code of()} maps.
+	 *
+	 * <p>
+	 * The filter state and the selection mode are kept consistent with the flags
+	 * so the fixture is a payload the decision function could actually emit: a
+	 * degraded one lost its {@code similar} filter and fell back to a random draw,
+	 * a clean one applied it and picked on the LLM's rating.
+	 */
+	private static DecisionVerdict verdict(boolean degraded, boolean treatmentLost) throws Exception {
+		String similar = degraded ? "failed: RateLimitError: Rate limit reached" : "ok";
+		String mode = degraded ? "random" : "llm";
+
+		LambdaSelectJobResult parsed = new ObjectMapper()
+				.readValue("{\"xpath\": \"//a\", \"degraded\": " + degraded + ", \"treatment_lost\": "
+						+ treatmentLost + ", \"selection_mode\": \"" + mode + "\","
+						+ " \"filters\": {\"similar\": \"" + similar + "\"}}",
+						LambdaSelectJobResult.class);
+
+		DecisionVerdict built = DecisionVerdict.of(parsed);
+		assertNotNull(built, "the fixture must carry a degradation report, or it tests nothing");
+		return built;
+	}
+
+	@Test
+	@DisplayName("beginJob discards a verdict left by an earlier job on the same thread")
+	void beginJobDiscardsADecisionVerdictFromAnEarlierJobOnTheSameThread() throws Exception {
+		JobDiagnostics.beginJob();
+		JobDiagnostics.recordDecisionVerdict(verdict(true, true));
+
+		JobDiagnostics.beginJob();
+
+		assertNull(JobDiagnostics.decisionVerdict(),
+				"a pooled thread must not carry one job's decision verdict into the next");
+	}
+
+	@Test
+	@DisplayName("endJob clears the verdict as well as the warnings")
+	void endJobClearsTheDecisionVerdict() throws Exception {
+		JobDiagnostics.beginJob();
+		JobDiagnostics.recordDecisionVerdict(verdict(true, false));
+
+		JobDiagnostics.endJob();
+
+		assertNull(JobDiagnostics.decisionVerdict());
+	}
+
+	@Test
+	@DisplayName("a second, legacy payload does not wipe the verdict already recorded")
+	void aNullVerdictDoesNotWipeWhatWasAlreadyRecorded() throws Exception {
+		// The handler re-invokes the decision function on a click retry, and
+		// DecisionVerdict.of() returns null for a payload with no degradation
+		// report. Null means "we cannot tell", which must never overwrite a
+		// measurement that was made.
+		JobDiagnostics.beginJob();
+		DecisionVerdict lost = verdict(true, true);
+		JobDiagnostics.recordDecisionVerdict(lost);
+
+		JobDiagnostics.recordDecisionVerdict(null);
+
+		assertSame(lost, JobDiagnostics.decisionVerdict());
+	}
+
+	@Test
+	@DisplayName("the worse of two verdicts is the one the job is reported with")
+	void theMoreSevereVerdictSurvives() throws Exception {
+		JobDiagnostics.beginJob();
+		DecisionVerdict lost = verdict(true, true);
+		JobDiagnostics.recordDecisionVerdict(lost);
+
+		// a retry that came back fine must not launder the lost treatment: the
+		// recorded session already contains the degraded decision
+		JobDiagnostics.recordDecisionVerdict(verdict(false, false));
+
+		assertSame(lost, JobDiagnostics.decisionVerdict());
+	}
+
+	@Test
+	@DisplayName("a job that never asked the decision function has no verdict, not a clean one")
+	void aJobWithNoDecisionHasNoVerdict() {
+		// every visitjob and waitjob takes this path: nothing recorded, so
+		// JobService sends none of the four keys and the API stores NULL = unknown
+		JobDiagnostics.beginJob();
+
+		assertNull(JobDiagnostics.decisionVerdict());
 	}
 
 	@Test
