@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import primemover.lambda.LambdaCaller;
 import primemover.lambda.LambdaCallerFactory;
 import primemover.model.jobs.LambdaSelectJob;
+import primemover.runner.DecisionVerdict;
 import primemover.runner.JobDiagnostics;
 import primemover.util.WatchPageAnchor;
 import primemover.runner.context.IJobAwareRunnerContext;
@@ -224,6 +225,15 @@ public class LambdaSelectJobHandler implements IJobHandler {
 	 * simply must not be read as clean treatment data.
 	 *
 	 * <p>
+	 * It also records the parsed verdict on the job
+	 * ({@link JobDiagnostics#recordDecisionVerdict}), which is what carries
+	 * {@code degraded} / {@code treatment_lost} / {@code selection_mode} / the
+	 * filter report into the job PUT and therefore onto the job row. That is a
+	 * strictly additive step: it changes no status and no message, and it happens
+	 * only for a payload that carried a degradation report, so a legacy payload
+	 * still records nothing at all rather than a manufactured "clean".
+	 *
+	 * <p>
 	 * Package-private so a test can drive it without a browser or a Spring context.
 	 *
 	 * @param alreadyReported warnings already attached during this job, so a
@@ -248,6 +258,12 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			}
 			return;
 		}
+
+		// Persist the verdict on the job row. Note this happens for a CLEAN report
+		// too -- degraded=false on a control crawler is a measurement, and recording
+		// it is what lets the API tell "this decision was fine" apart from "nobody
+		// ever looked". It is deliberately not gated on the branches below.
+		JobDiagnostics.recordDecisionVerdict(DecisionVerdict.of(parsed));
 
 		if (parsed.isTreatmentLost()) {
 			logger.error(

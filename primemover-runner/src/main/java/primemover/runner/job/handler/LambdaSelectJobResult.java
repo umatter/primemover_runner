@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The decision function's answer to one {@code LambdaSelectJob}.
@@ -61,6 +63,31 @@ public class LambdaSelectJobResult {
 
 	/** Value used by the decision function for a filter that applied cleanly. */
 	private static final String FILTER_OK = "ok";
+
+	/**
+	 * Value used by the decision function for a filter that was <em>not
+	 * requested</em>. It is not a failure -- five of the six filters are
+	 * {@code skipped} on every healthy control-crawler invocation.
+	 */
+	private static final String FILTER_SKIPPED = "skipped";
+
+	/**
+	 * Filters that are <em>always-on hygiene</em> rather than something a
+	 * crawler's configuration can ask for, and which therefore can never be part
+	 * of "the treatments this crawler requested".
+	 *
+	 * <p>
+	 * This mirrors the decision function's own {@code requested_treatments} map
+	 * ({@code bot-decision-yt/bot-decision-EN/lambda_function.py}), which is
+	 * initialised for all six filter names and only ever set true for
+	 * {@code mainstream_media}, {@code children_entertainment}, {@code similar},
+	 * {@code political} and {@code fringe}. Its own comment says why:
+	 * "already_watched is deliberately absent: it is always-on hygiene ... not a
+	 * configured treatment". That set is the denominator behind
+	 * {@code treatment_lost}, so anything the runner derives has to use the same
+	 * one or the two will disagree about whether a session was void.
+	 */
+	private static final Set<String> NON_TREATMENT_FILTERS = Set.of("already_watched");
 
 	private String xpath;
 	private Selected selected;
@@ -266,7 +293,79 @@ public class LambdaSelectJobResult {
 		return out;
 	}
 
-	/** The filters that applied cleanly, by name. */
+	/**
+	 * The <em>configured treatments</em> this crawler asked for, by name.
+	 *
+	 * <p>
+	 * This is the denominator the whole degradation contract is written against.
+	 * "Degraded" means a <b>requested</b> filter did not apply, and
+	 * "treatment lost" means none of the requested ones did; a control crawler
+	 * requests nothing, so it can lose nothing however it picked its video. Reading
+	 * a non-request as a request is the single most common way to turn this
+	 * contract back into a false-alarm generator -- see
+	 * {@code docs/integration-contract.md} &sect;7.3 -- and a <b>false</b>
+	 * treatment_lost is as damaging as a missed one: it voids sessions that were
+	 * fine.
+	 *
+	 * <p>
+	 * The decision function does not (yet) put its own {@code requested} set on the
+	 * wire, so it is reconstructed here from {@code filters}, and the
+	 * reconstruction has to match {@code lambda_function.py}'s
+	 * {@code requested_treatments} exactly. Two rules do that:
+	 *
+	 * <ul>
+	 * <li><b>Only a configured treatment counts</b> -- see
+	 * {@link #NON_TREATMENT_FILTERS}. {@code already_watched} is always-on hygiene
+	 * and is never in the function's request set, so it is never in this one.</li>
+	 * <li><b>Only a state that evidences a request counts</b>: {@code "ok"} or
+	 * {@code "failed: ..."}, the only two states the function gives a filter it was
+	 * asked to apply. Everything else -- {@code "skipped"} (not requested),
+	 * {@code "not_implemented"} (the state the deployed function writes for
+	 * {@code already_watched} on <em>every single invocation</em>), a blank state,
+	 * or any state a future version invents -- says nothing about whether the
+	 * filter was requested, and unknown is never a request.</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * Inferring "requested" from "not skipped" instead put
+	 * {@code requested = [already_watched]}, {@code applied = []} on every healthy
+	 * control job -- about 82% of the lambdaselect jobs on this box -- which reads,
+	 * in the GUI and in any SQL that computes casualties as
+	 * {@code requested - applied}, as exactly the "a requested treatment did not
+	 * apply" verdict {@code treatment_lost} exists to stop anyone re-deriving.
+	 */
+	@JsonIgnore
+	public List<String> requestedFilters() {
+		if (filters == null || filters.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<String> out = new ArrayList<>();
+		for (Map.Entry<String, String> entry : filters.entrySet()) {
+			if (!isConfiguredTreatment(entry.getKey())) {
+				continue;
+			}
+			if (!statesTheFilterWasRequested(trimmed(entry.getValue()))) {
+				continue;
+			}
+			out.add(entry.getKey());
+		}
+
+		return out;
+	}
+
+	/**
+	 * The requested treatments that applied cleanly, by name.
+	 *
+	 * <p>
+	 * Kept over the same denominator as {@link #requestedFilters()} on purpose:
+	 * the two travel together in {@code decision_report} and are read as a pair,
+	 * and the decision function defines its own {@code applied} as
+	 * {@code {name in requested : filters[name] == 'ok'}}. An always-on hygiene
+	 * filter reported {@code ok} is not a treatment that applied, and letting it
+	 * into this list would let a consumer that asks "did any treatment apply?"
+	 * answer yes about a session in which none did.
+	 */
 	@JsonIgnore
 	public List<String> appliedFilters() {
 		if (filters == null || filters.isEmpty()) {
@@ -275,12 +374,45 @@ public class LambdaSelectJobResult {
 
 		List<String> out = new ArrayList<>();
 		for (Map.Entry<String, String> entry : filters.entrySet()) {
+			if (!isConfiguredTreatment(entry.getKey())) {
+				continue;
+			}
 			if (FILTER_OK.equalsIgnoreCase(trimmed(entry.getValue()))) {
 				out.add(entry.getKey());
 			}
 		}
 
 		return out;
+	}
+
+	/**
+	 * {@code true} when {@code name} is a filter a crawler's configuration can ask
+	 * for, as opposed to always-on hygiene the decision function applies to every
+	 * invocation. Unknown names are treated as treatments so that a filter added
+	 * to the contract later is counted rather than silently dropped.
+	 */
+	private static boolean isConfiguredTreatment(String name) {
+		String trimmed = trimmed(name);
+		return trimmed != null && !NON_TREATMENT_FILTERS.contains(trimmed.toLowerCase(Locale.ROOT));
+	}
+
+	/**
+	 * {@code true} when a filter's state is evidence that the filter was actually
+	 * requested: it either applied ({@code "ok"}) or was attempted and raised
+	 * ({@code "failed: ..."}). Those are the only two states the decision function
+	 * leaves on a filter it was asked for; anything else is not a request.
+	 */
+	private static boolean statesTheFilterWasRequested(String status) {
+		if (status == null || FILTER_SKIPPED.equalsIgnoreCase(status)) {
+			// "skipped" is the contract's "never requested", and the normal state of
+			// five of the six filters on every healthy control invocation. Spelled out
+			// rather than left to the whitelist below because misreading it as a
+			// casualty is the mistake this method exists to prevent.
+			return false;
+		}
+
+		String lower = status.toLowerCase(Locale.ROOT);
+		return FILTER_OK.equals(lower) || lower.startsWith(FILTER_FAILED_PREFIX);
 	}
 
 	/**

@@ -47,7 +47,10 @@ class LambdaSelectJobResultTest {
 			+ "\"degraded\": true,"
 			+ "\"treatment_lost\": true,"
 			+ "\"selection_mode\": \"random\","
-			+ "\"filters\": {\"already_watched\": \"ok\", \"mainstream_media\": \"failed: KeyError: 'channel'\","
+			// "not_implemented" is the state the deployed decision function writes for
+			// already_watched on EVERY invocation -- never "ok", never "skipped".
+			+ "\"filters\": {\"already_watched\": \"not_implemented\","
+			+ " \"mainstream_media\": \"failed: KeyError: 'channel'\","
 			+ " \"children_entertainment\": \"skipped\", \"similar\": \"failed: RateLimitError: quota\","
 			+ " \"political\": \"skipped\", \"fringe\": \"skipped\"},"
 			+ "\"llm\": {\"available\": false, \"error_type\": \"insufficient_quota\","
@@ -111,7 +114,10 @@ class LambdaSelectJobResultTest {
 			assertThat(result.failedFilters())
 					.containsExactlyInAnyOrder("mainstream_media failed: KeyError: 'channel'",
 							"similar failed: RateLimitError: quota");
-			assertThat(result.appliedFilters()).containsExactly("already_watched");
+			// Two treatments were requested (both raised) and none applied. The hygiene
+			// filter is in neither list whatever it reports about itself.
+			assertThat(result.requestedFilters()).containsExactlyInAnyOrder("mainstream_media", "similar");
+			assertThat(result.appliedFilters()).isEmpty();
 		}
 
 		@Test
@@ -158,9 +164,126 @@ class LambdaSelectJobResultTest {
 			assertThat(result.getLlm()).isEmpty();
 			assertThat(result.failedFilters()).isEmpty();
 			assertThat(result.appliedFilters()).isEmpty();
+			assertThat(result.requestedFilters()).isEmpty();
 			assertThat(result.filtersSnapshot()).isEmpty();
 			assertThat(result.llmErrorType()).isNull();
 			assertThat(result.llmError()).isNull();
+		}
+	}
+
+	/**
+	 * What "the crawler requested this treatment" is derived from.
+	 *
+	 * <p>
+	 * The decision function does not put its own {@code requested} set on the wire,
+	 * so the runner reconstructs it from {@code filters} -- and the reconstruction
+	 * has to land on the same set the function used as the denominator for
+	 * {@code treatment_lost}, or the job row and the alarm disagree about whether a
+	 * session was scientifically void.
+	 *
+	 * <p>
+	 * The two states that are <em>not</em> requests and are easy to mistake for
+	 * one:
+	 * <ul>
+	 * <li>{@code not_implemented} -- what the deployed function writes for
+	 * {@code already_watched} on <b>every single invocation</b>.</li>
+	 * <li>anything else it has not defined -- unknown, and unknown is never a
+	 * request.</li>
+	 * </ul>
+	 */
+	@Nested
+	@DisplayName("requested / applied, the denominator behind treatment_lost")
+	class RequestedFilters {
+
+		/** The filters block of a real control-crawler response, verbatim. */
+		private static final String CONTROL_FILTERS = "\"filters\": {\"already_watched\": \"not_implemented\","
+				+ " \"mainstream_media\": \"skipped\", \"children_entertainment\": \"skipped\","
+				+ " \"similar\": \"skipped\", \"political\": \"skipped\", \"fringe\": \"skipped\"}";
+
+		@Test
+		@DisplayName("not_implemented is not a request, so a control job requests nothing")
+		void notImplementedIsNotARequest() throws Exception {
+			// 236 of 243 live bot configurations are control-arm and every one of them
+			// gets this exact filters block. Counting already_watched as requested made
+			// each of them persist requested=[already_watched] with applied=[] -- a
+			// treatment asked for and not applied, on a job where nothing was asked for
+			// at all.
+			LambdaSelectJobResult result = handlerMapper()
+					.readValue("{\"xpath\": \"//a\", \"degraded\": false, \"treatment_lost\": false,"
+							+ " \"selection_mode\": \"random\", " + CONTROL_FILTERS + "}",
+							LambdaSelectJobResult.class);
+
+			assertThat(result.requestedFilters()).isEmpty();
+			assertThat(result.appliedFilters()).isEmpty();
+			assertThat(result.failedFilters()).isEmpty();
+			// and the job is not an alarm on any reading
+			assertThat(result.isDegraded()).isFalse();
+			assertThat(result.isTreatmentLost()).isFalse();
+		}
+
+		@Test
+		@DisplayName("already_watched is never requested, in any state it can report")
+		void theHygieneFilterIsNeverRequested() throws Exception {
+			for (String state : new String[] { "not_implemented", "ok", "skipped", "failed: KeyError: 'id'" }) {
+				LambdaSelectJobResult result = handlerMapper().readValue(
+						"{\"degraded\": true, \"filters\": {\"already_watched\": \"" + state + "\"}}",
+						LambdaSelectJobResult.class);
+
+				assertThat(result.requestedFilters()).as("requested for state %s", state).isEmpty();
+				assertThat(result.appliedFilters()).as("applied for state %s", state).isEmpty();
+			}
+		}
+
+		@Test
+		@DisplayName("a treatment that was asked for is counted, applied or failed")
+		void aRealTreatmentIsCounted() throws Exception {
+			// The correction must not go the other way: under-counting requested would
+			// hide a genuine casualty. pi=1 with the CSV broken is the incident this
+			// whole contract was written for.
+			LambdaSelectJobResult applied = handlerMapper().readValue(
+					"{\"degraded\": false, \"filters\": {\"already_watched\": \"not_implemented\","
+							+ " \"mainstream_media\": \"ok\", \"similar\": \"skipped\"}}",
+					LambdaSelectJobResult.class);
+
+			assertThat(applied.requestedFilters()).containsExactly("mainstream_media");
+			assertThat(applied.appliedFilters()).containsExactly("mainstream_media");
+
+			LambdaSelectJobResult lost = handlerMapper().readValue(
+					"{\"degraded\": true, \"treatment_lost\": true,"
+							+ " \"filters\": {\"already_watched\": \"not_implemented\","
+							+ " \"mainstream_media\": \"failed: FileNotFoundError: csv\","
+							+ " \"similar\": \"skipped\"}}",
+					LambdaSelectJobResult.class);
+
+			assertThat(lost.requestedFilters()).containsExactly("mainstream_media");
+			assertThat(lost.appliedFilters()).isEmpty();
+			assertThat(lost.isTreatmentLost()).isTrue();
+		}
+
+		@Test
+		@DisplayName("an unrecognised or blank state says nothing, so it is not a request")
+		void anUnknownStateIsNotARequest() throws Exception {
+			LambdaSelectJobResult result = handlerMapper().readValue(
+					"{\"degraded\": false, \"filters\": {\"similar\": \"deferred\", \"political\": \"  \","
+							+ " \"fringe\": \"ok\"}}",
+					LambdaSelectJobResult.class);
+
+			assertThat(result.requestedFilters()).containsExactly("fringe");
+			assertThat(result.appliedFilters()).containsExactly("fringe");
+		}
+
+		@Test
+		@DisplayName("a filter name added to the contract later is still counted")
+		void anUnknownFilterNameIsStillATreatment() throws Exception {
+			// The name list is not hard-coded: only the hygiene exclusion is. A future
+			// treatment must be visible the day it ships, not the day this file is
+			// edited.
+			LambdaSelectJobResult result = handlerMapper().readValue(
+					"{\"degraded\": true, \"filters\": {\"a_treatment_invented_next_year\": \"failed: X: y\"}}",
+					LambdaSelectJobResult.class);
+
+			assertThat(result.requestedFilters()).containsExactly("a_treatment_invented_next_year");
+			assertThat(result.appliedFilters()).isEmpty();
 		}
 	}
 
