@@ -120,7 +120,10 @@ class JobServiceDecisionVerdictTest {
 	void degradedPayloadSendsAllFourFields() throws Exception {
 		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"xpath\": \"//a\", \"degraded\": true,"
 				+ " \"treatment_lost\": false, \"selection_mode\": \"llm\","
-				+ " \"filters\": {\"already_watched\": \"ok\","
+				// "not_implemented" is what the deployed decision function writes for
+				// the always-on hygiene filter, on every invocation
+				+ " \"filters\": {\"already_watched\": \"not_implemented\","
+				+ " \"children_entertainment\": \"ok\","
 				+ " \"similar\": \"failed: RateLimitError: Rate limit reached\","
 				+ " \"political\": \"skipped\"},"
 				+ " \"llm\": {\"available\": false, \"error_type\": \"rate_limit\", \"error\": \"Rate limit\"},"
@@ -138,9 +141,12 @@ class JobServiceDecisionVerdictTest {
 		assertThat(report.getJSONObject("filters").getString("similar")).startsWith("failed: RateLimitError");
 		assertThat(report.getJSONObject("filters").getString("political")).isEqualTo("skipped");
 		assertThat(report.getJSONObject("llm").getString("error_type")).isEqualTo("rate_limit");
-		assertThat(stringsOf(report.getJSONArray("applied"))).containsExactly("already_watched");
-		// "skipped" is NOT REQUESTED, so political must not appear as a casualty
-		assertThat(stringsOf(report.getJSONArray("requested"))).containsExactlyInAnyOrder("already_watched", "similar");
+		assertThat(stringsOf(report.getJSONArray("applied"))).containsExactly("children_entertainment");
+		// "skipped" is NOT REQUESTED, so political must not appear as a casualty; nor
+		// may already_watched, which is hygiene and never a configured treatment
+		assertThat(stringsOf(report.getJSONArray("requested")))
+				.containsExactlyInAnyOrder("children_entertainment", "similar");
+		assertThat(stringsOf(report.getJSONArray("requested"))).doesNotContain("already_watched", "political");
 		assertThat(stringsOf(report.getJSONArray("warnings"))).containsExactly("similar filter could not be applied");
 
 		// and the status is untouched: this stage adds fields only
@@ -216,9 +222,11 @@ class JobServiceDecisionVerdictTest {
 		// A control crawler (pi=psi=kappa=tau=0) requests no LLM filter, so it draws
 		// at random by design -- 236 of 243 bot configurations on this box. Here the
 		// falses are measurements, not defaults: the report exists and says so.
+		// The filters block is the one the deployed decision function really returns:
+		// already_watched is "not_implemented" on EVERY invocation, never "skipped".
 		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"xpath\": \"//a\", \"degraded\": false,"
 				+ " \"treatment_lost\": false, \"selection_mode\": \"random\","
-				+ " \"filters\": {\"already_watched\": \"skipped\", \"mainstream_media\": \"skipped\","
+				+ " \"filters\": {\"already_watched\": \"not_implemented\", \"mainstream_media\": \"skipped\","
 				+ " \"children_entertainment\": \"skipped\", \"similar\": \"skipped\","
 				+ " \"political\": \"skipped\", \"fringe\": \"skipped\"}}"));
 
@@ -228,7 +236,10 @@ class JobServiceDecisionVerdictTest {
 		assertThat(body.getBoolean("decision_treatment_lost")).isFalse();
 		// the mode is recorded, and it is emphatically not an error signal
 		assertThat(body.getString("decision_selection_mode")).isEqualTo("random");
+		// nothing was requested, so nothing can read as a casualty: no consumer
+		// computing `requested - applied` may find one on a healthy control job
 		assertThat(body.getJSONObject("decision_report").getJSONArray("requested").length()).isZero();
+		assertThat(body.getJSONObject("decision_report").getJSONArray("applied").length()).isZero();
 		// nothing about this job is bad: the status is success and stays success
 		assertThat(body.getString("status_code")).isEqualTo("success");
 	}

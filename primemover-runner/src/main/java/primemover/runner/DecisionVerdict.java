@@ -185,16 +185,24 @@ public final class DecisionVerdict {
 		return warnings;
 	}
 
-	/** Filters that applied cleanly. */
+	/** Requested treatments that applied cleanly. Always a subset of {@link #requested()}. */
 	public List<String> applied() {
 		return applied;
 	}
 
 	/**
-	 * Filters the crawler actually asked for, i.e. every filter whose state is not
-	 * {@code "skipped"}. Persisted because "degraded" only means something against
-	 * what was requested: a control crawler requests nothing and can therefore lose
-	 * nothing.
+	 * The configured treatments the crawler actually asked for: a filter that is
+	 * not always-on hygiene and whose state says it was applied ({@code "ok"}) or
+	 * attempted and raised ({@code "failed: ..."}).
+	 *
+	 * <p>
+	 * Persisted because "degraded" only means something against what was
+	 * requested: a control crawler requests nothing and can therefore lose
+	 * nothing. Every other state -- {@code "skipped"}, {@code "not_implemented"},
+	 * blank, or anything a later decision function invents -- says nothing about
+	 * whether the filter was asked for, and unknown is never a request. See
+	 * {@link LambdaSelectJobResult#requestedFilters()}: inflating this list is how
+	 * a healthy control job comes to read as a lost treatment.
 	 */
 	public List<String> requested() {
 		return requested;

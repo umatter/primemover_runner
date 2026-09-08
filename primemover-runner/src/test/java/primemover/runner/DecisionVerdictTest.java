@@ -39,9 +39,15 @@ class DecisionVerdictTest {
 	@Test
 	@DisplayName("a degraded payload becomes a verdict naming what failed and what was requested")
 	void degradedPayloadIsMappedInFull() throws Exception {
+		// already_watched carries the state the DEPLOYED decision function really
+		// writes for it on every invocation, control or treated: "not_implemented".
+		// An earlier version of this test used "ok" -- a state that function never
+		// emits -- and so certified a derivation that counted the always-on hygiene
+		// filter as a requested treatment.
 		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"xpath\": \"//a\", \"degraded\": true,"
 				+ " \"treatment_lost\": false, \"selection_mode\": \"llm\","
-				+ " \"filters\": {\"already_watched\": \"ok\","
+				+ " \"filters\": {\"already_watched\": \"not_implemented\","
+				+ " \"mainstream_media\": \"ok\","
 				+ " \"similar\": \"failed: RateLimitError: Rate limit reached\","
 				+ " \"political\": \"skipped\"},"
 				+ " \"llm\": {\"available\": false, \"error_type\": \"rate_limit\", \"error\": \"Rate limit\"},"
@@ -51,14 +57,94 @@ class DecisionVerdictTest {
 		assertThat(verdict.isDegraded()).isTrue();
 		assertThat(verdict.isTreatmentLost()).isFalse();
 		assertThat(verdict.getSelectionMode()).isEqualTo("llm");
-		assertThat(verdict.applied()).containsExactly("already_watched");
+		assertThat(verdict.applied()).containsExactly("mainstream_media");
 		// "skipped" means NOT REQUESTED: political was never asked for, so it is
-		// neither applied nor requested, and above all not a casualty
-		assertThat(verdict.requested()).containsExactlyInAnyOrder("already_watched", "similar");
-		assertThat(verdict.requested()).doesNotContain("political");
+		// neither applied nor requested, and above all not a casualty. Neither is
+		// "not_implemented": already_watched is hygiene the function applies to every
+		// invocation, and its own request set excludes it.
+		assertThat(verdict.requested()).containsExactlyInAnyOrder("mainstream_media", "similar");
+		assertThat(verdict.requested()).doesNotContain("political", "already_watched");
+		assertThat(verdict.applied()).doesNotContain("already_watched");
+		// ... while the filter report itself still carries every state verbatim
 		assertThat(verdict.filters()).containsEntry("political", "skipped");
+		assertThat(verdict.filters()).containsEntry("already_watched", "not_implemented");
 		assertThat(verdict.llm()).containsEntry("available", false).containsEntry("error_type", "rate_limit");
 		assertThat(verdict.warnings()).containsExactly("similar filter skipped");
+	}
+
+	@Test
+	@DisplayName("a healthy control job requests nothing, whatever already_watched reports")
+	void controlJobRequestsNothingWhateverTheHygieneFilterSays() throws Exception {
+		// The literal body the deployed decision function returns for a control
+		// crawler (pi=psi=kappa=tau=0) -- ~82% of the lambdaselect jobs on this box.
+		// Deriving "requested" from "the state is not skipped" put
+		// requested=["already_watched"], applied=[] on every one of them, which reads
+		// -- in the GUI and in any `requested - applied` query -- as a treatment that
+		// was asked for and did not apply. A FALSE treatment_lost is as damaging as a
+		// missed one: it declares good sessions scientifically void.
+		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"xpath\": \"//a\", \"degraded\": false,"
+				+ " \"treatment_lost\": false, \"selection_mode\": \"random\","
+				+ " \"filters\": {\"already_watched\": \"not_implemented\", \"mainstream_media\": \"skipped\","
+				+ " \"children_entertainment\": \"skipped\", \"similar\": \"skipped\","
+				+ " \"political\": \"skipped\", \"fringe\": \"skipped\"}}"));
+
+		assertThat(verdict).isNotNull();
+		assertThat(verdict.isTreatmentLost()).isFalse();
+		assertThat(verdict.requested()).isEmpty();
+		assertThat(verdict.applied()).isEmpty();
+		assertThat(verdict.reportJson().getJSONArray("requested").length()).isZero();
+	}
+
+	@Test
+	@DisplayName("a treated crawler whose treatment applied does not look half-lost")
+	void anAppliedTreatmentIsNotHalfLost() throws Exception {
+		// pi=1: one treatment requested, and it applied. requested must be exactly
+		// [mainstream_media] -- adding the hygiene filter to it made a fully
+		// successful treatment read for ever as "one of two requested treatments
+		// applied".
+		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"xpath\": \"//a\", \"degraded\": false,"
+				+ " \"treatment_lost\": false, \"selection_mode\": \"random\","
+				+ " \"filters\": {\"already_watched\": \"not_implemented\", \"mainstream_media\": \"ok\","
+				+ " \"children_entertainment\": \"skipped\", \"similar\": \"skipped\","
+				+ " \"political\": \"skipped\", \"fringe\": \"skipped\"}}"));
+
+		assertThat(verdict).isNotNull();
+		assertThat(verdict.requested()).containsExactly("mainstream_media");
+		assertThat(verdict.applied()).containsExactly("mainstream_media");
+	}
+
+	@Test
+	@DisplayName("a failing hygiene filter degrades the decision but loses no treatment")
+	void aFailingHygieneFilterIsNotARequestedTreatment() throws Exception {
+		// The function's other already_watched state: it raised. That degrades the
+		// decision (a human should look) and the filter report says so -- but nothing
+		// was REQUESTED, so nothing was lost, and requested stays empty.
+		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"degraded\": true, \"treatment_lost\": false,"
+				+ " \"selection_mode\": \"random\","
+				+ " \"filters\": {\"already_watched\": \"failed: KeyError: 'id'\","
+				+ " \"mainstream_media\": \"skipped\"}}"));
+
+		assertThat(verdict).isNotNull();
+		assertThat(verdict.isDegraded()).isTrue();
+		assertThat(verdict.isTreatmentLost()).isFalse();
+		assertThat(verdict.requested()).isEmpty();
+		assertThat(verdict.applied()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("an unrecognised filter state is unknown, and unknown is not a request")
+	void anUnrecognisedStateIsNotARequest() throws Exception {
+		// A state a later decision function invents says nothing about whether the
+		// crawler asked for the filter, so it must not manufacture a casualty out of
+		// a vocabulary change. A filter NAME added to the contract, carrying a state
+		// that does mean "requested", is still counted.
+		DecisionVerdict verdict = DecisionVerdict.of(parse("{\"degraded\": false, \"treatment_lost\": false,"
+				+ " \"filters\": {\"similar\": \"deferred\", \"political\": \"\","
+				+ " \"a_filter_invented_next_year\": \"ok\"}}"));
+
+		assertThat(verdict).isNotNull();
+		assertThat(verdict.requested()).containsExactly("a_filter_invented_next_year");
+		assertThat(verdict.applied()).containsExactly("a_filter_invented_next_year");
 	}
 
 	@Test
