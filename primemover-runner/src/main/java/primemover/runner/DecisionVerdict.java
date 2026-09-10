@@ -108,7 +108,26 @@ public final class DecisionVerdict {
 
 	private final boolean degraded;
 	private final boolean treatmentLost;
+	/**
+	 * jobs.decision_selected_id is varchar(64); a YouTube id is 11.
+	 */
+	private static final int MAX_SELECTED_ID_CHARS = 64;
+
 	private final @Nullable String selectionMode;
+
+	/**
+	 * The video this decision chose, or null when the payload named none.
+	 *
+	 * Carried on the same PUT as the verdict so a bot's history is current the
+	 * moment a job ends. It used to reach the database only via a backfill out
+	 * of MinIO, which meant the already_watched filter could not see a choice
+	 * the same session had just made -- a bot could re-watch, minutes later, a
+	 * video it had picked itself.
+	 *
+	 * Null is unknown, never "chose nothing"; a decision that genuinely
+	 * selected nothing is already reported by degraded with an empty xpath.
+	 */
+	private final @Nullable String selectedId;
 	private final Map<String, String> filters;
 	private final Map<String, Object> llm;
 	private final List<String> warnings;
@@ -116,11 +135,13 @@ public final class DecisionVerdict {
 	private final List<String> requested;
 
 	private DecisionVerdict(boolean degraded, boolean treatmentLost, @Nullable String selectionMode,
+			@Nullable String selectedId,
 			Map<String, String> filters, Map<String, Object> llm, List<String> warnings, List<String> applied,
 			List<String> requested) {
 		this.degraded = degraded;
 		this.treatmentLost = treatmentLost;
 		this.selectionMode = selectionMode;
+		this.selectedId = selectedId;
 		this.filters = Collections.unmodifiableMap(filters);
 		this.llm = Collections.unmodifiableMap(llm);
 		this.warnings = Collections.unmodifiableList(warnings);
@@ -143,7 +164,8 @@ public final class DecisionVerdict {
 		}
 
 		return new DecisionVerdict(parsed.isDegraded(), parsed.isTreatmentLost(),
-				shorten(parsed.getSelectionMode(), MAX_SELECTION_MODE_CHARS), boundedFilters(parsed.filtersSnapshot()),
+				shorten(parsed.getSelectionMode(), MAX_SELECTION_MODE_CHARS), selectedIdOf(parsed),
+				boundedFilters(parsed.filtersSnapshot()),
 				boundedLlm(parsed), boundedWarnings(parsed.getWarnings()),
 				boundedNames(parsed.appliedFilters()), boundedNames(parsed.requestedFilters()));
 	}
@@ -168,6 +190,28 @@ public final class DecisionVerdict {
 	@Nullable
 	public String getSelectionMode() {
 		return selectionMode;
+	}
+
+	public @Nullable String getSelectedId() {
+		return selectedId;
+	}
+
+	/**
+	 * The chosen video's id, bounded to what the column holds, or null.
+	 *
+	 * Blank is null: an empty string in a history would match nothing and read
+	 * as a real answer, which is worse than admitting we do not know.
+	 */
+	private static @Nullable String selectedIdOf(LambdaSelectJobResult parsed) {
+		LambdaSelectJobResult.Selected selected = parsed.getSelected();
+
+		if (selected == null || selected.getId() == null) {
+			return null;
+		}
+
+		String id = selected.getId().trim();
+
+		return id.isEmpty() ? null : shorten(id, MAX_SELECTED_ID_CHARS);
 	}
 
 	/** Bounded per-filter report, {@code name -> "ok" | "skipped" | "failed: ..."}. */

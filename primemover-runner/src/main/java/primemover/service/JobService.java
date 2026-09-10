@@ -465,6 +465,15 @@ public class JobService implements IJobService {
 
 		withVerdict.put("decision_report", decision.reportJson());
 
+		// Which video was chosen, on the same PUT, so a bot's history is current
+		// the moment the job ends. It previously reached the database only via a
+		// backfill out of MinIO, so the already_watched filter could not see a
+		// choice the same session had just made. Explicit JSON null when the
+		// payload named none: the report exists and simply did not say, which is
+		// a different statement from having no report.
+		String selectedId = decision.getSelectedId();
+		withVerdict.put("decision_selected_id", selectedId == null ? JSONObject.NULL : selectedId);
+
 		return withVerdict;
 	}
 
