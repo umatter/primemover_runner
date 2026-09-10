@@ -98,4 +98,17 @@ public class MockCrawlerService implements ICrawlerService {
 	public Boolean writeS3JobData(Long jobId, String filename, String path, String description) {
 		return writeResult;
 	}
+
+	/**
+	 * No history, and NULL rather than an empty list.
+	 *
+	 * Empty would claim the mock bot has watched nothing, and the decision
+	 * function would report already_watched as applied. Null is "unknown",
+	 * which is the honest answer from a mock and keeps its behaviour identical
+	 * to a runner that cannot reach the API.
+	 */
+	@Override
+	public List<String> getWatchedVideoIds(Long crawlerId) {
+		return null;
+	}
 }

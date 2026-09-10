@@ -29,6 +29,7 @@ import primemover.runner.JobDiagnostics;
 import primemover.util.WatchPageAnchor;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
+import primemover.service.ICrawlerService;
 import primemover.service.IStorageService;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
@@ -90,6 +91,14 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 	@Autowired
 	private LambdaCallerFactory callerFac;
+
+	/**
+	 * Only for the bot's watch history. Optional on purpose: a context without
+	 * this bean (a unit test, a stripped profile) must still run the job and
+	 * simply send no history, which the decision function reads as unknown.
+	 */
+	@Autowired(required = false)
+	private ICrawlerService crawlerService;
 
 	private LambdaCaller caller = null;
 
@@ -413,6 +422,14 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			// prepare input JSON
 			LambdaSelectJobParam param = new LambdaSelectJobParam(typedJob, context.getCrawler(),
 					driver.getPageSource(), context.getCrawler().getRawConfiguration());
+
+			// The bot's own history, so the decision function can drop videos it
+			// has already watched. Null when we could not read it -- never an
+			// empty list, which would tell the decision function this bot has
+			// watched nothing and let it report a filter it never applied.
+			if (crawlerService != null) {
+				param.setAlreadyWatched(crawlerService.getWatchedVideoIds(context.getCrawler().getId()));
+			}
 
 			data.setInputJson(mapper.writeValueAsString(param));
 

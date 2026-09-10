@@ -22,6 +22,7 @@ import primemover.api.converter.PrimemoverApiConverter;
 import primemover.api.model.CrawlerResult;
 import primemover.config.StartupMode;
 import primemover.model.*;
+import primemover.api.model.WatchedResult;
 import primemover.model.jobs.*;
 
 import java.time.ZonedDateTime;
@@ -139,6 +140,40 @@ public class CrawlerService implements ICrawlerService {
 	 * 
 	 * @see primemover.service.ICrawlerService#getCurrentTasks()
 	 */
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see primemover.service.ICrawlerService#getWatchedVideoIds(Long)
+	 */
+	@Override
+	public List<String> getWatchedVideoIds(Long crawlerId) {
+		if (crawlerId == null) {
+			return null;
+		}
+
+		String url = endpointPathAll + "/" + crawlerId + "/watched";
+
+		try {
+			WatchedResult res = restTemplate.getForObject(url, WatchedResult.class);
+
+			if (res == null || res.getData() == null) {
+				logger.warn("watch history for crawler {} came back empty-bodied; treating as unknown", crawlerId);
+				return null;
+			}
+
+			logger.debug("crawler {} has watched {} videos", crawlerId, res.getData().size());
+			return res.getData();
+		} catch (Exception e) {
+			// NOT an empty list. Unknown has to stay unknown, or the decision
+			// function reports a filter it never applied. Deliberately NOT
+			// @Retryable either: a lambdaselect job should not be held up over
+			// history, and filtering nothing is the safe degradation.
+			logger.warn("could not read watch history for crawler {} ({}); already_watched will be reported "
+					+ "as not_implemented for this job", crawlerId, e.getMessage());
+			return null;
+		}
+	}
+
 	@Retryable
 	@Override
 	public List<Pair<Crawler, Joblist>> getCurrentTasks() {
