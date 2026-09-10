@@ -123,6 +123,31 @@ Backend API → CrawlerService → TaskManager → TaskExecutor → JobListRunne
 | `HandleAlertJob` | `HandleAlertJobHandler` | Accept/dismiss dialog |
 | `LambdaSelectJob` | `LambdaSelectJobHandler` | Lambda-based selection |
 
+### The bot's watch history (`already_watched`)
+
+`LambdaSelectJobHandler` fetches `GET /crawlers/{id}/watched` and puts the result
+in the lambda payload as `already_watched`, so the decision function can drop
+videos this bot has already chosen. Afterwards it reports the video that WAS
+chosen back on the status PUT as `decision_selected_id`, which is what keeps the
+history current: before that step existed the ids reached the database only via a
+backfill out of MinIO, so the filter could not see a choice the same session had
+just made.
+
+**`null` and an empty list are different answers, and this is the layer that most
+easily gets it wrong.** `CrawlerService.getWatchedVideoIds()` returns **null** on
+every failure path — unreachable API, the 409 the API answers when the column is
+missing, an empty body — and the field is then omitted entirely. The decision
+function reads that as *unknown*, reports `already_watched: not_implemented` and
+filters nothing, which is exactly what an un-redeployed runner produces. An empty
+**list** is the positive claim "this bot has watched nothing" and counts as the
+filter applying. Returning `[]` on failure would report a filter as applied while
+filtering nothing.
+
+It is deliberately **not** `@Retryable`: a lambdaselect job should not be held up
+over history, and filtering nothing is the safe degradation. The injection is
+`@Autowired(required = false)` and the call site null-checks, so a context
+without the bean still runs the job.
+
 ### Consent dialogs (cookie / GDPR)
 
 `primemover.util.consent` answers consent dialogs — the YouTube/Google consent
