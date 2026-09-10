@@ -1,7 +1,11 @@
 package primemover.runner.job.handler;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import primemover.model.Crawler;
 import primemover.model.jobs.LambdaSelectJob;
+
+import java.util.List;
 
 public class LambdaSelectJobParam {
 
@@ -9,6 +13,19 @@ public class LambdaSelectJobParam {
 	private Crawler crawler;
 	private String pagesource;
 	private primemover.api.model.Configuration rawConfiguration;
+
+	/**
+	 * Video ids this bot has already chosen, or null when we could not tell.
+	 *
+	 * Serialised as already_watched because that is what the decision function
+	 * reads. NULL and an empty list are different answers there: null means the
+	 * history is unknown and the filter reports not_implemented, filtering
+	 * nothing, exactly as it did before this field existed; an empty list is
+	 * the positive answer "watched nothing" and counts as the filter applying.
+	 * So a failure upstream must leave this null rather than set it to [].
+	 */
+	@JsonProperty("already_watched")
+	private List<String> alreadyWatched;
 
 	public LambdaSelectJobParam(LambdaSelectJob job, Crawler crawler, String pagesource) {
 		super();
@@ -47,6 +64,16 @@ public class LambdaSelectJobParam {
 
 	public void setPagesource(String pagesource) {
 		this.pagesource = pagesource;
+	}
+
+	@JsonProperty("already_watched")
+	public List<String> getAlreadyWatched() {
+		return alreadyWatched;
+	}
+
+	@JsonProperty("already_watched")
+	public void setAlreadyWatched(List<String> alreadyWatched) {
+		this.alreadyWatched = alreadyWatched;
 	}
 
 	public primemover.api.model.Configuration getRawConfiguration() {
