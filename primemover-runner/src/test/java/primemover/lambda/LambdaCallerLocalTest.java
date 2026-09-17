@@ -236,6 +236,53 @@ class LambdaCallerLocalTest {
 	}
 
 	@Test
+	@DisplayName("the function name travels with the call, so the server can dispatch to it")
+	void functionNameIsSentAsAHeader() throws Exception {
+		startServer(200, "{\"xpath\": \"//a\"}", false);
+
+		localCaller(30).invoke("bot-decision-de", "{}");
+
+		assertThat(lastRequestHeaders.get().getFirst("X-Function-Name")).isEqualTo("bot-decision-de");
+	}
+
+	@Test
+	@DisplayName("a blank function name sends no header, so an old or unconfigured server sees today's behaviour")
+	void blankFunctionNameMeansNoHeader() throws Exception {
+		startServer(200, "{\"xpath\": \"//a\"}", false);
+
+		localCaller(30).invoke("  ", "{}");
+
+		assertThat(lastRequestHeaders.get().getFirst("X-Function-Name")).isNull();
+	}
+
+	@Test
+	@DisplayName("a null function name sends no header either")
+	void nullFunctionNameMeansNoHeader() throws Exception {
+		startServer(200, "{\"xpath\": \"//a\"}", false);
+
+		localCaller(30).invoke(null, "{}");
+
+		assertThat(lastRequestHeaders.get().getFirst("X-Function-Name")).isNull();
+	}
+
+	@Test
+	@DisplayName("the function name header travels alongside the correlation header, not instead of it")
+	void functionNameAndCorrelationIdTravelTogether() throws Exception {
+		startServer(200, "{\"xpath\": \"//a\"}", false);
+
+		MDC.put("correlationId", "cr-14|q-4711|j-3828");
+		try {
+			localCaller(30).invoke("bot-decision-yt", "{}");
+		} finally {
+			MDC.remove("correlationId");
+		}
+
+		Headers headers = lastRequestHeaders.get();
+		assertThat(headers.getFirst("X-Function-Name")).isEqualTo("bot-decision-yt");
+		assertThat(headers.getFirst("X-Correlation-Id")).isEqualTo("cr-14|q-4711|j-3828");
+	}
+
+	@Test
 	@DisplayName("a correlation id is never blank or malformed on the wire")
 	void correlationIdIsSingleLineAndUnpunctuated() {
 		MDC.clear();
