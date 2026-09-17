@@ -92,6 +92,13 @@ public class LambdaCaller implements AutoCloseable {
 	// else, so a decision cannot be tied back to the job that asked for it.
 	private static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
 
+	// Header the local decision server reads to pick which registered function to
+	// dispatch to (orchestrator/lambda_service/server.py). A null/blank name omits
+	// the header entirely, so the server falls back to its own registry default --
+	// which is exactly today's single-function behaviour, and what an un-rebuilt
+	// runner already gets for free.
+	private static final String FUNCTION_NAME_HEADER = "X-Function-Name";
+
 	// MDC keys the id is assembled from. correlationId is put there by
 	// JobListRunner and extended with |j-<id> by TaskOperator for the duration of
 	// each job, so on the production path it is already the canonical value; the
@@ -192,7 +199,7 @@ public class LambdaCaller implements AutoCloseable {
 	 */
 	public LambdaInvokeResult invoke(String functionName, String param) throws LambdaException {
 		if ("local".equalsIgnoreCase(lambdaMode)) {
-			return invokeLocal(param);
+			return invokeLocal(functionName, param);
 		}
 		if ("aws".equalsIgnoreCase(lambdaMode)) {
 			return invokeAws(functionName, param);
@@ -280,9 +287,11 @@ public class LambdaCaller implements AutoCloseable {
 
 	/**
 	 * Invoke the Lambda function via local HTTP server.
-	 * The local server mirrors the AWS Lambda interface.
+	 * The local server mirrors the AWS Lambda interface, dispatching to the
+	 * named function (see {@link #FUNCTION_NAME_HEADER}) when the registry
+	 * behind it serves more than one.
 	 */
-	private LambdaInvokeResult invokeLocal(String param) throws LambdaException {
+	private LambdaInvokeResult invokeLocal(String functionName, String param) throws LambdaException {
 		this.initLocalClient();
 
 		try {
@@ -300,9 +309,16 @@ public class LambdaCaller implements AutoCloseable {
 				headers.set(CORRELATION_ID_HEADER, correlationId);
 			}
 
+			// A null/blank name sends no header at all, so an old server (or a new one
+			// with no registry configured) sees exactly what it always has.
+			if (functionName != null && !functionName.isBlank()) {
+				headers.set(FUNCTION_NAME_HEADER, functionName);
+			}
+
 			HttpEntity<String> request = new HttpEntity<>(param, headers);
 
-			logger.debug("invoking local function with correlationId={}", correlationId);
+			logger.debug("invoking local function with correlationId={}, functionName={}", correlationId,
+					functionName);
 			// A non-2xx never arrives here: RestTemplate's DefaultResponseErrorHandler
 			// raises HttpStatusCodeException first. The status check that used to stand
 			// on this spot was therefore dead code, and the lambda server's
