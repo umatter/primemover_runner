@@ -3,8 +3,10 @@ package primemover.multilogin.mlx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import primemover.multilogin.mlx.api.LauncherApi;
 import primemover.multilogin.mlx.api.ProfileAccessManagementApi;
 import primemover.multilogin.mlx.api.ProfileManagementApi;
@@ -16,12 +18,39 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Every bean the Multilogin X path needs.
+ *
+ * Two things about how this configuration is switched on, both of which exist
+ * so that a developer with no Multilogin account can still boot the runner:
+ *
+ * <ul>
+ * <li><b>{@code multilogin.enabled=false} removes the beans entirely.</b> Nothing
+ * here is created, no sign-in is ever attempted, and a crawler whose agent is
+ * MULTILOGIN fails its own run with
+ * {@link primemover.runner.TaskOperator#MULTILOGIN_DISABLED_MESSAGE} rather than
+ * taking the JVM down. Default is {@code true}: production is unaffected.</li>
+ * <li><b>The beans are {@code @Lazy}.</b> {@link #authTokenProvider()} signs in to
+ * Multilogin's cloud inside the factory method, so while these beans were eager a
+ * blank {@code multilogin.apiPassword} (or an unreachable account) failed Spring's
+ * context refresh and killed the process at boot -- whatever browser the crawlers
+ * on that box actually used. Lazily, the sign-in happens on the first MLX profile
+ * request instead, so the failure lands on the run that needs Multilogin.</li>
+ * </ul>
+ *
+ * Pinned by {@code MlxConfigurationBootTest}.
+ */
 @Configuration
+@Lazy
+@ConditionalOnProperty(name = "multilogin.enabled", havingValue = "true", matchIfMissing = true)
 public class MlxConfiguration {
 	
-	@Value("${multilogin.apiUser}")
+	// Defaulted so that a context without the runner's full property set (a test,
+	// or a box that never configured Multilogin) can still read this class. The
+	// credentials are only ever USED by the lazy authTokenProvider bean.
+	@Value("${multilogin.apiUser:}")
 	private String apiUser;
-	@Value("${multilogin.apiPassword}")
+	@Value("${multilogin.apiPassword:}")
 	private String apiPassword;
 	
 	private static String API_BASEPATH_SERVER = "https://api.multilogin.com";	

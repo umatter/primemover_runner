@@ -42,6 +42,7 @@ import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,17 @@ public class TaskOperator implements ITaskOperator {
 
 	/** MDC key holding the hierarchical correlation id; set by JobListRunner. */
 	private static final String MDC_CORRELATION_ID = "correlationId";
+
+	/**
+	 * Why a MULTILOGIN crawler cannot start on a runner with
+	 * {@code multilogin.enabled=false}.
+	 *
+	 * The point of the flag is that a box with no Multilogin account still boots,
+	 * so the refusal has to cost this crawler its run and nothing else: no beans
+	 * exist to call, but the JVM keeps serving every chrome crawler behind it.
+	 */
+	static final String MULTILOGIN_DISABLED_MESSAGE =
+			"Multilogin is disabled on this runner (multilogin.enabled=false); use a chrome agent or enable it";
 
 	/**
 	 * Delay between startup retries for an ordinary failure. Short: a transient
@@ -110,6 +122,17 @@ public class TaskOperator implements ITaskOperator {
 	@Value("${runner.skipIpRecording:false}")
 	private boolean skipIpRecording = false;
 
+	// Whether this runner may drive Multilogin at all. False removes the whole
+	// MlxConfiguration (see its javadoc), so there is no MLX context builder to
+	// call and a MULTILOGIN crawler has to be refused rather than started.
+	@Value("${multilogin.enabled:true}")
+	private boolean multiloginEnabled = true;
+
+	// Developer convenience only: run plain Chrome with no X display. Production
+	// runs Multilogin on a real display and leaves this false.
+	@Value("${runner.chromeHeadless:false}")
+	private boolean chromeHeadless = false;
+
 	private ContextBase<?> context = null;
 
 	@Autowired
@@ -139,8 +162,12 @@ public class TaskOperator implements ITaskOperator {
 	@Autowired
 	CaptchaSolverFactory captchaSolverFac;
 
-	@Autowired
-	Map<String, IContextBuilder> contextBuilders;
+	// required=false: with multilogin.enabled=false there are NO IContextBuilder
+	// beans, and Spring fails a Map injection that matches nothing. That would
+	// break TaskOperatorFactory.getInstance() for every crawler, chrome ones
+	// included -- the exact opposite of what disabling Multilogin is for.
+	@Autowired(required = false)
+	Map<String, IContextBuilder> contextBuilders = Collections.emptyMap();
 
 	@Autowired
 	private HarRecordingFilter harRecordingFilter;
@@ -173,15 +200,17 @@ public class TaskOperator implements ITaskOperator {
 		return ffContext;
 	}
 
-	private ContextBase<?> startupChrome(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
-			ICaptchaSolver captchaSolver) {
-
-		WebDriverManager.chromedriver().setup();
-
-		ChromeContext chContext = new ChromeContext();
-		chContext.setCrawler(crawler);
-		chContext.setRecordingProxy(recorder);
-
+	/**
+	 * The ChromeOptions a plain-Chrome crawler is started with.
+	 *
+	 * Package-private and static so the option set can be asserted without a
+	 * browser, a Spring context or a display. With {@code headless} false the
+	 * result is exactly what this method produced before the flag existed --
+	 * production runs Multilogin, not this path, and must not shift.
+	 *
+	 * @param headless value of {@code runner.chromeHeadless}
+	 */
+	static ChromeOptions buildChromeOptions(DesiredCapabilities capabilities, boolean headless) {
 		ChromeOptions chromeOptions = new ChromeOptions();
 		chromeOptions = chromeOptions.merge(capabilities); // Bound to changes in the versions for application of
 															// desired capabilities...
@@ -192,6 +221,33 @@ public class TaskOperator implements ITaskOperator {
 		chromeOptions.addArguments("--disable-blink-features");
 		chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
 		chromeOptions.setAcceptInsecureCerts(true);
+
+		if (headless) {
+			// Chrome's current headless implementation ("new"), not the old
+			// --headless, which is a different browser build and behaves
+			// differently around media.
+			chromeOptions.addArguments("--headless=new");
+			// Deliberately short: these three are what a display-less container
+			// or CI runner needs, nothing more. --start-maximized above is a
+			// no-op without a window manager, so give the window a real size.
+			chromeOptions.addArguments("--disable-gpu");
+			chromeOptions.addArguments("--no-sandbox");
+			chromeOptions.addArguments("--window-size=1920,1080");
+		}
+
+		return chromeOptions;
+	}
+
+	private ContextBase<?> startupChrome(Crawler crawler, DesiredCapabilities capabilities, RecordingProxy recorder,
+			ICaptchaSolver captchaSolver) {
+
+		WebDriverManager.chromedriver().setup();
+
+		ChromeContext chContext = new ChromeContext();
+		chContext.setCrawler(crawler);
+		chContext.setRecordingProxy(recorder);
+
+		ChromeOptions chromeOptions = buildChromeOptions(capabilities, chromeHeadless);
 
 		logger.debug("chrome options", chromeOptions);
 
@@ -780,8 +836,32 @@ public class TaskOperator implements ITaskOperator {
 		return outcome;
 	}
 
+	/**
+	 * Why this agent cannot be started on this runner, or null if it can.
+	 *
+	 * Package-private and static: the decision is pure, so it is asserted
+	 * directly rather than through a browser startup.
+	 */
+	static String startupRefusalReason(AgentType type, boolean multiloginEnabled) {
+		if (type == AgentType.MULTILOGIN && !multiloginEnabled) {
+			return MULTILOGIN_DISABLED_MESSAGE;
+		}
+
+		return null;
+	}
+
 	@Override
 	public Boolean prepareExeuction(Crawler crawler) {
+
+		// Checked before the retry loop: no amount of retrying creates beans that
+		// a condition removed, and three rounds of backoff would only delay the
+		// same answer.
+		String refusal = startupRefusalReason(crawler.getAgent().getType(), multiloginEnabled);
+		if (refusal != null) {
+			logger.error("cannot start crawler {} (agent {}): {}", crawler.getId(), crawler.getAgent().getId(),
+					refusal);
+			return false;
+		}
 
 		boolean done = false;
 		Integer curRetry = 0;
