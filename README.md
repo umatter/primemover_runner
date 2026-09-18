@@ -18,7 +18,7 @@ Think of PrimeMover as a sophisticated "robot browser" that can:
 - Java 25 (production runtime; CI also builds against 17)
 - Maven 3.6+
 - Chrome or Firefox browser installed
-- Multilogin X
+- Multilogin X (production; not needed with the `chrome-dev` profile below)
 
 ### Building and Running
 ```bash
@@ -34,6 +34,28 @@ mvn spring-boot:run
 #### Run the local version for development
 
 `mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--spring.config.location=config/"`
+
+#### Run without a Multilogin account: the `chrome-dev` profile
+
+`config/application-chrome-dev.properties` boots the runner on a machine that has
+no Multilogin account, no residential proxy and no S3 credentials, and drives
+bots through a plain local Chrome:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=local,chrome-dev
+```
+
+It sets `multilogin.enabled=false` (no MLX beans and no cloud sign-in — a crawler
+whose agent is `MULTILOGIN` fails *its own run* with a clear message instead of
+the process dying), `runner.chromeHeadless=true`, `recorder.enabled=false`
+(no MITM CA cert needed) and `storage.local.enabled=true` writing to `out/`.
+
+The one secret still required is `backend.password` — the runner has to log in to
+the API to be given any work. Every other key in
+`config/secrets.properties.template` is annotated with whether `chrome-dev` needs
+it. Use crawlers with agent type `CHROME`.
+
+`multilogin.enabled` defaults to `true`, so nothing above affects production.
 
 ### ⚠️ Important: API Endpoint Configuration
 
