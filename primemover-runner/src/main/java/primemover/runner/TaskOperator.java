@@ -19,6 +19,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import primemover.anticaptcha.CaptchaSolverFactory;
+import primemover.anticaptcha.ChallengePageDetector;
 import primemover.anticaptcha.ICaptchaSolver;
 import primemover.capture.HarRecordingFilter;
 import primemover.capture.RecordingProxy;
@@ -46,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -513,6 +515,28 @@ public class TaskOperator implements ITaskOperator {
 				}
 			}
 
+			// Challenge-page verification. Deliberately independent of the
+			// `anticaptcha.check.enabled` flag above and of the job's own
+			// captchaMode: a job that ENDS ON a block page is degraded whatever
+			// those say, and switching off the naive substring check must not
+			// switch off the one signal that means something.
+			String currentUrl = null;
+			try {
+				currentUrl = context.getDriver().getCurrentUrl();
+			} catch (Exception ex) {
+				// same tolerance as the page-source read above: an unreadable URL
+				// costs us the URL signature, not the job
+				logger.debug("Could not read current URL for challenge-page check. jobid {}", job.getId(), ex);
+			}
+
+			Optional<String> challenge = challengeWarning(currentUrl, pageSource, captchaSolvedFor(dataRecorder));
+			if (challenge.isPresent()) {
+				// a challenge page IS a captcha, so say so on the same field the API
+				// already stores -- without touching the substring rule that sets it
+				captchaFound = true;
+				JobDiagnostics.addWarning(challenge.get());
+			}
+
 			reportJobState(job, JobState.STORINGDATA, null, captchaFound, null, null, null);
 
 			// save capturing screenshot
@@ -684,6 +708,66 @@ public class TaskOperator implements ITaskOperator {
 		}
 
 		return runJobResult;
+	}
+
+	/**
+	 * The warning a job earns for ending on a known challenge page, or empty.
+	 *
+	 * <p>
+	 * A bot that finishes its job looking at "our systems have detected unusual
+	 * traffic ... not a robot" did not do what the experiment asked, and nothing
+	 * else in the pipeline notices: the handler completed, the data was written,
+	 * and the job was therefore reported {@code SUCCESS}. Experiment 185 on
+	 * 2026-09-20 is the measurement -- 22 of 22 bots that reached their first
+	 * Google search landed on {@code /sorry/index}, the solver was disabled, and
+	 * all 22 jobs are green in the database. Routing it through
+	 * {@link JobDiagnostics#addWarning(String)} makes the existing final-state
+	 * block report {@link JobState#WARNING} with the detail in
+	 * {@code status_message}, and the queue rollup count it as warned. No new
+	 * state, no API change.
+	 *
+	 * <p>
+	 * A challenge the solver got through is not a degradation: the session
+	 * continued to the page it wanted, so {@code solved} suppresses the warning.
+	 *
+	 * @param currentUrl the browser's current URL, or {@code null} if unreadable
+	 * @param pageSource the page source, or {@code null} if unreadable
+	 * @param solved     whether a captcha was actually solved during this job
+	 */
+	static Optional<String> challengeWarning(String currentUrl, String pageSource, boolean solved) {
+		if (solved) {
+			return Optional.empty();
+		}
+
+		return ChallengePageDetector.detect(currentUrl, pageSource)
+				.map(label -> "challenge page: " + label + ", not solved");
+	}
+
+	/**
+	 * Whether the anti-captcha plugin actually solved a captcha during this job.
+	 *
+	 * <p>
+	 * Both solve attempts ({@code BEFORE} and {@code AFTER}) run inside the job
+	 * handler via {@code CaptchaJobHelper}, so by the time the page source is read
+	 * the recorder already holds whichever results there were. Anything we cannot
+	 * read -- no recordings yet, no solver result at all -- counts as
+	 * <b>not solved</b>, which is the honest default: the page in front of us says
+	 * "prove you are not a robot" and nothing told us otherwise.
+	 */
+	private static boolean captchaSolvedFor(IJobDataRecorder dataRecorder) {
+		try {
+			RecordedJobData recordings = dataRecorder.getRecordings();
+			CaptchaSolverResultHolder results = recordings == null ? null : recordings.getCaptchaResults();
+			if (results == null) {
+				return false;
+			}
+
+			return (results.getBeforeJob() != null && results.getBeforeJob().isCaptchaSolved())
+					|| (results.getAfterJob() != null && results.getAfterJob().isCaptchaSolved());
+		} catch (Exception ex) {
+			logger.debug("Could not read captcha solver results", ex);
+			return false;
+		}
 	}
 
 	/**

@@ -9,6 +9,15 @@ public enum JobState {
 	 * degraded -- e.g. the decision function fell back from LLM-driven to random
 	 * video selection. Reported as {@code warning}, not {@code success}: an arm
 	 * that silently became a control arm must not render as a green pill.
+	 *
+	 * <p>
+	 * Ending on a <b>challenge page</b> is the same kind of degradation and is
+	 * reported here too: when {@code ChallengePageDetector} recognises a Google
+	 * sorry page or a Cloudflare interstitial and no captcha was solved, the
+	 * session saw "prove you are not a robot" instead of the content the
+	 * experiment asked for. Note this is distinct from the {@code captcha_found}
+	 * flag, which is a naive substring match and fires on ordinary pages carrying
+	 * a captcha widget; only a recognised challenge PAGE warns.
 	 */
 	WARNING("warning", "minor error encountered"),
 	/**
