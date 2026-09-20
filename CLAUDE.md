@@ -302,3 +302,19 @@ PR #82 (`master` `1826600`, deployed 2026-09-03) carries `lambda_select` job
 behaviours into the decision payload — this underlies the newly-deployed
 strategy-marker gate in `bot-decision-yt` (the behaviours channel activates only
 when the job carries a `strategy`; legacy experiments are unaffected).
+
+## Deploying to a node (ex63, pm-vm)
+
+Node checkouts only receive; nothing is edited on a node. The laptop pushes
+into the checkout (`receive.denyCurrentBranch=updateInstead`; hub script
+`control_room/scripts/deploy.sh <node> primemover_runner`), then on the node:
+`cd primemover-runner && mvn -q -DskipTests package`, swap the jar with a
+copy kept at `/var/tmp/runner-jar-rollback.jar`, `sudo systemctl restart
+primemover-runner`. The unit runs `--spring.profiles.active=local
+--spring.config.location=config/`.
+
+**Node-local settings go in `config/application-local.properties`** (gitignored,
+loaded by the `local` profile on top of the tracked `application.properties`).
+Never edit the tracked file on a node: a dirty checkout refuses the push and
+gets merged around by pulls -- `recorder.enabled=false` on both nodes lived
+that way until 2026-09-20 and had to be "preserved" through every deploy.
