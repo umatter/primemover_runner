@@ -98,3 +98,5 @@ coverage/
 #---------------------------------------------
 
 primemover-runner/config/application-local.properties
+# Dated config backups left on nodes after hand edits
+*.bak-*
