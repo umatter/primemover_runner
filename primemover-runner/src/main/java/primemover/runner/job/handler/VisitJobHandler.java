@@ -2,6 +2,7 @@ package primemover.runner.job.handler;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
+import primemover.util.PageLoadGuard;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,9 @@ public class VisitJobHandler implements IJobHandler {
 
 		logger.debug("navigate to {} for job {}", typedJob.getUrl(), typedJob.getId());
 		NavigationHelper navHelper = new NavigationHelper(driver, 2 * 60 * 1000l); // 2 Minuten
-		driver.navigate().to(typedJob.getUrl());
+		// Bounded by runner.PageLoadTimeoutSeconds; on a timeout the load is stopped and
+		// the job fails here instead of spending minutes in every wait below.
+		PageLoadGuard.navigate(driver, typedJob.getUrl(), typedJob.getId());
 
 		// Wait for DOM-reload
 		try {

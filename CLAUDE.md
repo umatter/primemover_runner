@@ -65,7 +65,8 @@ to it, and the default runner additionally fetches unassigned ones.
 runner.MaxParallelExecution=2          # Concurrent browser threads (tuned per box: ex63=15, VM=10)
 runner.UpdateInterval=15               # Minutes between job polls
 runner.MaxRedoMinutes=45               # Max job age to execute
-runner.ProcessingTimeoutMinutes=180    # Job timeout
+runner.ProcessingTimeoutMinutes=180    # Joblist cut off after this long (worker, browser, profile)
+runner.PageLoadTimeoutSeconds=60       # One page load; on timeout: window.stop(), job fails
 
 multilogin.StartupRetryCount=3
 multilogin.StartupDelaySeconds=30

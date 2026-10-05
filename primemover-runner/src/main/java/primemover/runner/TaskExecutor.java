@@ -26,6 +26,17 @@ public class TaskExecutor {
 	JobListRunnerFactory jobListRunnerFactory;
 
 	private ExecutorService executorService;
+
+	// Runners that have been handed to the pool and not yet finished, by joblist
+	// id. This is what lets TaskManager reach a joblist it has just timed out:
+	// cancelling the CompletableFuture would not stop the thread, so the runner
+	// itself is kept.
+	private final ConcurrentHashMap<Long, IJobListRunner> running = new ConcurrentHashMap<>();
+
+	// Cutting off a joblist ends its browser, which can take a while. That must not
+	// run on the scheduler thread that noticed the timeout.
+	private final ExecutorService abortExecutor = Executors.newCachedThreadPool(
+			new BasicThreadFactory.Builder().namingPattern("abort-%d").daemon(true).build());
 	private boolean isSetup = false;
 
 	public void setup() {
@@ -49,8 +60,11 @@ public class TaskExecutor {
 	}
 
 	public CompletableFuture<Boolean> run(IJobListRunner runner) {
+		running.put(runner.getJobListId(), runner);
+
 		CompletableFuture<Boolean> execution = CompletableFuture //
 				.supplyAsync(runner, executorService)//
+				.whenComplete((result, error) -> running.remove(runner.getJobListId(), runner))//
 				.thenComposeAsync(runnerResult -> CompletableFuture.supplyAsync(() -> {
 					logger.info("execution of joblist {} finished", runner.getJobListId());
 					return runnerResult;
@@ -79,7 +93,33 @@ public class TaskExecutor {
 		return run(runner);
 	}
 
+	/**
+	 * Cuts off a joblist that is queued or running here, so its worker thread and
+	 * browser are released. Returns at once; the browser is ended in the
+	 * background.
+	 *
+	 * @return false when this executor holds no such joblist -- it finished, or
+	 *         another runner started it
+	 */
+	public boolean abort(long jobListId) {
+		IJobListRunner runner = running.get(jobListId);
+		if (runner == null) {
+			return false;
+		}
+
+		logger.warn("aborting joblist {}", jobListId);
+		abortExecutor.execute(() -> {
+			try {
+				runner.abort();
+			} catch (Exception e) {
+				logger.warn("error aborting joblist {}", jobListId, e);
+			}
+		});
+		return true;
+	}
+
 	public void shutdown() {
 		this.executorService.shutdown();
+		this.abortExecutor.shutdown();
 	}
 }

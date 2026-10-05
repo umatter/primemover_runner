@@ -146,8 +146,14 @@ public class TaskManager implements ITaskManager {
 					logger.info("Timming out processing joblist {}", jobs.getId());
 					jobService.updateJoblistState(jobs, JoblistState.DONE_PROCESSING_TIMEOUT, null, ZonedDateTime.now(),
 							Boolean.TRUE, Boolean.FALSE); // set execution time
+
+					// Recording the timeout only changes the status in the API. The worker
+					// and its browser would otherwise keep running the rest of the queue
+					// while holding one of the MaxParallelExecution slots.
+					if (taskExecutor.abort(jobs.getId())) {
+						logger.warn("cut off the running worker of timed out joblist {}", jobs.getId());
+					}
 				}
-				;
 
 				continue;
 			}
