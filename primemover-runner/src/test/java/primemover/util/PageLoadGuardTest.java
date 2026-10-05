@@ -76,6 +76,42 @@ class PageLoadGuardTest {
 	}
 
 	@Test
+	@DisplayName("a timeout on a browser that does not recover is a BrowserUnresponsiveException")
+	void deadBrowserIsDistinguished() {
+		WebDriver driver = driver();
+		WebDriver.Navigation navigation = driver.navigate();
+		doThrow(new TimeoutException("page load")).when(navigation).to("https://www.yelp.com/");
+		when(((JavascriptExecutor) driver).executeScript(anyString()))
+				.thenThrow(new org.openqa.selenium.WebDriverException("gone"));
+		doThrow(new org.openqa.selenium.WebDriverException("gone")).when(navigation).to("about:blank");
+
+		assertThatThrownBy(() -> PageLoadGuard.navigate(driver, "https://www.yelp.com/", 66251L))
+				.isInstanceOf(BrowserUnresponsiveException.class).hasMessageContaining("browser unresponsive");
+	}
+
+	@Test
+	@DisplayName("a recovered browser is a plain TimeoutException, so the session carries on")
+	void recoveredBrowserIsNotUnresponsive() {
+		WebDriver driver = driver();
+		WebDriver.Navigation navigation = driver.navigate();
+		doThrow(new TimeoutException("page load")).when(navigation).to("https://www.yelp.com/");
+
+		assertThatThrownBy(() -> PageLoadGuard.navigate(driver, "https://www.yelp.com/", 1L))
+				.isInstanceOf(TimeoutException.class).isNotInstanceOf(BrowserUnresponsiveException.class);
+	}
+
+	@Test
+	@DisplayName("the cause chain is searched, since handlers wrap what they catch")
+	void causeChainIsSearched() {
+		Exception wrapped = new RuntimeException("error executing job",
+				new BrowserUnresponsiveException("x", null));
+
+		assertThat(BrowserUnresponsiveException.isCausedBy(wrapped)).isTrue();
+		assertThat(BrowserUnresponsiveException.isCausedBy(new TimeoutException("slow"))).isFalse();
+		assertThat(BrowserUnresponsiveException.isCausedBy(null)).isFalse();
+	}
+
+	@Test
 	@DisplayName("a tab that cannot run window.stop() is sent to about:blank")
 	void wedgedTabFallsBackToBlank() {
 		WebDriver driver = driver();
