@@ -19,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Runs joblists on the specified crawler
@@ -55,6 +56,12 @@ public class JobListRunner implements IJobListRunner {
 	private JobListOutcome lastOutcome;
 	private Crawler crawler;
 	private Joblist jobs;
+
+	// Set by abort(). Once true this runner reports nothing more about its joblist:
+	// TaskManager has already recorded DONE_PROCESSING_TIMEOUT, and a late
+	// "jobs done" or "failure" from the worker would overwrite it.
+	private final AtomicBoolean aborted = new AtomicBoolean(false);
+	private volatile Thread workerThread;
 
 	@Value("${runner.MaxRedoMinutes:45}")
 	private Long redoMinutes = 45l;
@@ -198,6 +205,11 @@ public class JobListRunner implements IJobListRunner {
 	 */
 	private void reportJoblistState(JoblistState state, String detail, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
+		if (aborted.get()) {
+			logger.info("joblist {} was cut off; not reporting {}", jobs == null ? null : jobs.getId(), state);
+			return;
+		}
+
 		Boolean reported = jobService.updateJoblistState(jobs, state, detail, startTime, endTime, processed,
 				processing);
 
@@ -226,6 +238,7 @@ public class JobListRunner implements IJobListRunner {
 	 * established its own context keeps it.
 	 */
 	public Boolean run() {
+		workerThread = Thread.currentThread();
 		Map<String, String> previous = new LinkedHashMap<>();
 		for (String key : MDC_KEYS) {
 			previous.put(key, MDC.get(key));
@@ -242,6 +255,7 @@ public class JobListRunner implements IJobListRunner {
 
 			return runInContext();
 		} finally {
+			workerThread = null;
 			for (Map.Entry<String, String> entry : previous.entrySet()) {
 				if (entry.getValue() == null) {
 					MDC.remove(entry.getKey());
@@ -306,6 +320,28 @@ public class JobListRunner implements IJobListRunner {
 	@Override
 	public Boolean get() {
 		return run();
+	}
+
+	@Override
+	public void abort() {
+		if (!aborted.compareAndSet(false, true)) {
+			return;
+		}
+
+		logger.warn("cutting off joblist {} for crawler {}", jobs.getId(), crawler.getId());
+
+		// Kill the browser first: a worker blocked in a WebDriver call only comes back
+		// when that call fails, and an interrupt does not reach it.
+		try {
+			taskOperator.tearDown(true);
+		} catch (Exception e) {
+			logger.warn("error ending the browser of cut-off joblist {}", jobs.getId(), e);
+		}
+
+		Thread worker = workerThread;
+		if (worker != null) {
+			worker.interrupt();
+		}
 	}
 
 	@Override

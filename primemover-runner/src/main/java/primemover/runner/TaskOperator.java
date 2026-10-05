@@ -27,6 +27,7 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.model.*;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.VisitJob;
+import primemover.util.PageLoadGuard;
 import primemover.util.RendererRecycler;
 import primemover.util.StartupBackoff;
 import primemover.multilogin.ml6.MulitLoginBrowserProfile;
@@ -114,6 +115,16 @@ public class TaskOperator implements ITaskOperator {
 	// instead of letting it grow with queue length. 0 disables recycling.
 	@Value("${runner.RendererRecycleAfterNavigations:25}")
 	private int rendererRecycleAfterNavigations;
+
+	// Upper bound for one page load. A page that never finishes (a bot-protection
+	// page on experiment 189) used to hold a visit job for ~27 minutes. 0 keeps
+	// Selenium's own 300 s default.
+	@Value("${runner.PageLoadTimeoutSeconds:60}")
+	private int pageLoadTimeoutSeconds;
+
+	// Set when the joblist has been cut off (processing timeout). The job loop stops
+	// at the next job boundary; the one in flight fails as its browser goes away.
+	private volatile boolean aborted = false;
 
 	// The state the last finished job was reported with, so runJobList can tell a
 	// clean success from a completed-but-degraded one. Safe as a field: a
@@ -834,6 +845,14 @@ public class TaskOperator implements ITaskOperator {
 			for (int i = 0; i < jobList.size(); i++) {
 				IJob job = jobList.get(i);
 
+				if (aborted || Thread.currentThread().isInterrupted()) {
+					logger.warn("joblist {} was cut off; not starting job ({})", jobs.getId(), job.getId());
+					reportJobState(job, JobState.SKIPPED, "session cut off after the processing timeout", null,
+							null, ZonedDateTime.now(), ZonedDateTime.now());
+					outcome.countSkipped();
+					continue;
+				}
+
 				// Bounce only immediately before a job that navigates anyway, so the
 				// reload costs nothing the workflow was not already going to do. A
 				// LambdaSelectJob reads the CURRENT page to choose a recommendation,
@@ -1007,6 +1026,8 @@ public class TaskOperator implements ITaskOperator {
 				// setup driver in running browser
 				captchaSolver.setupDriver(context);
 
+				PageLoadGuard.apply(context.getDriver(), pageLoadTimeoutSeconds);
+
 				// Inject H.264 codec override via CDP so it runs before any page script.
 				// This forces YouTube to use H.264 instead of VP9/AV1, which require
 				// software decoding on headless VMs and saturate the CPU.
@@ -1085,69 +1106,110 @@ public class TaskOperator implements ITaskOperator {
 		}
 	}
 
+	/**
+	 * Releases the browser, the profile and the recorder.
+	 *
+	 * <p>
+	 * Safe to call from two threads. The cut-off path ({@code immediate}) runs on a
+	 * different thread from the worker's own teardown, so the context is claimed
+	 * under a lock and the second caller finds nothing to do.
+	 *
+	 * @param immediate the joblist was cut off: mark it aborted, kill the profile
+	 *                  first so a call the worker is blocked in fails at once, and
+	 *                  skip the 25 s wait that lets a finished profile upload
+	 */
 	@Override
 	public void tearDown(boolean immediate) {
-
-		if (context == null) {
-			return; // nothing to do
+		if (immediate) {
+			aborted = true;
 		}
 
-		logger.info("Tearing down crawler {}", context.getCrawler().getId());
+		ContextBase<?> ctx;
+		synchronized (this) {
+			ctx = context;
+			if (ctx == null) {
+				return; // nothing to do, or the other thread is already on it
+			}
+			context = null;
+		}
+
+		logger.info("Tearing down crawler {}{}", ctx.getCrawler().getId(), immediate ? " (immediate)" : "");
 
 		isSetup.set(false);
 		ipService = null;
 
+		if (immediate) {
+			stopBrowserProfile(ctx);
+		}
+
 		// close webdriver
 		try {
-			context.getDriver().quit();
+			ctx.getDriver().quit();
 		} catch (Exception e) {
-			logger.warn("Exception quitting driver for crawler {}", context.getCrawler().getId());
+			logger.warn("Exception quitting driver for crawler {}", ctx.getCrawler().getId());
 		}
 
 		// Multilogin needs a wait to finish of profile tear down and storage. Upload
 		// will run through proxy!
-		if (context instanceof MultiloginContext) {
-			MultiloginContext typedContext = (MultiloginContext) context;
-			
-			if (typedContext.getProfile() == null) {
-				contextBuilders.get("MlxContextBuilder").destroyContext(typedContext);
-			} else {
-				MulitLoginBrowserProfile bp = typedContext.getProfile();
-
-				try {
-					int round = 0;
-					int maxRounds = 10;
-					int delayMillis = 25000;
-					Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
-
-					while (round < maxRounds && bp.isActive()) {
-						logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1,
-								maxRounds);
-						Thread.sleep(delayMillis);
-						bp.stopProfile();
-						round++;
-					}
-				} catch (Exception e) {
-					logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
-							e);
-				}
-			}
+		if (!immediate) {
+			stopBrowserProfile(ctx);
 		}
 
 		// quit the Webdriver (fallback in case of MultiLogin)
 		try {
-			context.getDriver().quit();
+			ctx.getDriver().quit();
 		} catch (Exception e) {
-			logger.error("Error closing webdriver for agent {}", context.getCrawler().getAgent().getId(), e);
+			logger.error("Error closing webdriver for agent {}", ctx.getCrawler().getAgent().getId(), e);
 		}
 
 		try {
-			context.getRecordingProxy().tearDown();
+			ctx.getRecordingProxy().tearDown();
 		} catch (Exception e) {
-			logger.warn("Exception quitting recorder for crawler {}", context.getCrawler().getId());
+			logger.warn("Exception quitting recorder for crawler {}", ctx.getCrawler().getId());
+		}
+	}
+
+	/**
+	 * Stops the Multilogin profile behind a context, if it has one. The graceful
+	 * form waits for the profile to finish uploading; the immediate form (a cut-off
+	 * joblist) stops it once and moves on.
+	 */
+	private void stopBrowserProfile(ContextBase<?> ctx) {
+		if (!(ctx instanceof MultiloginContext)) {
+			return;
 		}
 
-		context = null;
+		MultiloginContext typedContext = (MultiloginContext) ctx;
+
+		if (typedContext.getProfile() == null) {
+			contextBuilders.get("MlxContextBuilder").destroyContext(typedContext);
+			return;
+		}
+
+		MulitLoginBrowserProfile bp = typedContext.getProfile();
+
+		try {
+			if (aborted) {
+				bp.stopProfile();
+				return;
+			}
+
+			int round = 0;
+			int maxRounds = 10;
+			int delayMillis = 25000;
+			Thread.sleep(delayMillis); // will need to sleep anyways. Profile is inactive while still uploading
+
+			while (round < maxRounds && bp.isActive()) {
+				logger.debug("MultiLogin Profile is still actice {}, retry {} of {}", bp.getProfileId(), round + 1,
+						maxRounds);
+				Thread.sleep(delayMillis);
+				bp.stopProfile();
+				round++;
+			}
+		} catch (Exception e) {
+			logger.error("Error closing browser profile for agent {}", typedContext.getCrawler().getAgent().getId(),
+					e);
+		}
 	}
 
 	public void tearDown() {
