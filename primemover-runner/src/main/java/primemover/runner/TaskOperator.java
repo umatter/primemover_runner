@@ -27,6 +27,7 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.model.*;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.VisitJob;
+import primemover.util.BrowserUnresponsiveException;
 import primemover.util.PageLoadGuard;
 import primemover.util.RendererRecycler;
 import primemover.util.StartupBackoff;
@@ -125,6 +126,11 @@ public class TaskOperator implements ITaskOperator {
 	// Set when the joblist has been cut off (processing timeout). The job loop stops
 	// at the next job boundary; the one in flight fails as its browser goes away.
 	private volatile boolean aborted = false;
+
+	// Set when a job found the browser frozen (BrowserUnresponsiveException). Such a
+	// browser did not come back on experiment 189, so the rest of the queue is
+	// skipped instead of spending ~4 minutes per visit failing the same way.
+	private volatile boolean browserLost = false;
 
 	// The state the last finished job was reported with, so runJobList can tell a
 	// clean success from a completed-but-degraded one. Safe as a field: a
@@ -491,6 +497,11 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("Catched exception running job {}", job.getId(), e);
 				jobFailure = e;
 				runJobResult = false;
+				if (BrowserUnresponsiveException.isCausedBy(e)) {
+					browserLost = true;
+					logger.warn("browser is unresponsive after job {}; the rest of the queue will be skipped",
+							job.getId());
+				}
 			}
 
 			// reading page-source ready to re-use
@@ -845,10 +856,11 @@ public class TaskOperator implements ITaskOperator {
 			for (int i = 0; i < jobList.size(); i++) {
 				IJob job = jobList.get(i);
 
-				if (aborted || Thread.currentThread().isInterrupted()) {
-					logger.warn("joblist {} was cut off; not starting job ({})", jobs.getId(), job.getId());
-					reportJobState(job, JobState.SKIPPED, "session cut off after the processing timeout", null,
-							null, ZonedDateTime.now(), ZonedDateTime.now());
+				String skipReason = sessionSkipReason(aborted, Thread.currentThread().isInterrupted(), browserLost);
+				if (skipReason != null) {
+					logger.warn("joblist {}: {}; not starting job ({})", jobs.getId(), skipReason, job.getId());
+					reportJobState(job, JobState.SKIPPED, skipReason, null, null, ZonedDateTime.now(),
+							ZonedDateTime.now());
 					outcome.countSkipped();
 					continue;
 				}
@@ -937,6 +949,21 @@ public class TaskOperator implements ITaskOperator {
 		}
 
 		return outcome;
+	}
+
+	/**
+	 * Why the remaining jobs of a session must not start, or null if they may.
+	 *
+	 * Package-private and static: a pure decision, asserted without a browser.
+	 */
+	static String sessionSkipReason(boolean aborted, boolean interrupted, boolean browserLost) {
+		if (aborted || interrupted) {
+			return "session cut off after the processing timeout";
+		}
+		if (browserLost) {
+			return "browser unresponsive; session ended";
+		}
+		return null;
 	}
 
 	/**
