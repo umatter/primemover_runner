@@ -15,6 +15,7 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.annotation.Retryable;
@@ -130,8 +131,17 @@ public class IpService {
 			}
 		}
 
-		HttpComponentsClientHttpRequestFactory requestFactory =
-				new HttpComponentsClientHttpRequestFactory(builder.build());
+		// Buffered, and that is load-bearing. Unbuffered, this Spring version's
+		// HttpComponentsClientHttpRequestFactory and the httpclient5 on the classpath
+		// disagree about the response stream: the body arrives as a single byte and
+		// parsing dies on "Unexpected end-of-input ... line: 1, column: 2". Measured on
+		// the node against the real endpoint -- raw HttpClient read 1465 bytes, the same
+		// client behind this factory read 1, and wrapping it here read 1476. It is not a
+		// property of our configuration: a client built with no custom connection manager
+		// or request config truncates the same way. The responses are ~1.5 KB, so holding
+		// one in memory costs nothing.
+		BufferingClientHttpRequestFactory requestFactory = new BufferingClientHttpRequestFactory(
+				new HttpComponentsClientHttpRequestFactory(builder.build()));
 		this.restTemplate = new RestTemplateBuilder().requestFactory(() -> requestFactory).build();
 
 		isInit.set(true);

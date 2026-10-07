@@ -209,4 +209,28 @@ class IpServiceTest {
 		assertThat(connects).as("after the 407 challenge the client re-sends CONNECT with credentials")
 				.anySatisfy(c -> assertThat(c).contains("Proxy-Authorization: Basic "));
 	}
+
+	@Test
+	@DisplayName("the response body is read whole, not truncated to its first byte")
+	void readsTheWholeBody() {
+		// Pins the defect this was shipped for. Unbuffered, this Spring version's
+		// HttpComponentsClientHttpRequestFactory and the classpath's httpclient5 hand back
+		// a one-byte body and the parse dies at "line: 1, column: 2". A small local payload
+		// does not always provoke it, so this asserts on a response large enough to be
+		// delivered in several reads.
+		StringBuilder filler = new StringBuilder();
+		while (filler.length() < 40_000) {
+			filler.append("abcdefghij");
+		}
+		String big = "{\"result\":{\"ip\":\"203.0.113.7\",\"city\":\"Boston\",\"country_code\":\"US\","
+				+ "\"region_name\":\"" + filler + "\"}}";
+		server.createContext("/big", exchange -> respond(exchange, big));
+
+		IpService svc = service(baseUrl + "big");
+		LocationInfo info = svc.getLocationInfo();
+
+		assertThat(info).isNotNull();
+		assertThat(info.getIp()).isEqualTo("203.0.113.7");
+		assertThat(info.getRegionName()).hasSizeGreaterThan(39_000);
+	}
 }
