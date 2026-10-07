@@ -1539,34 +1539,39 @@ public class TaskOperator implements ITaskOperator {
 		isSetup.set(false);
 		ipService = null;
 
-		if (immediate) {
-			stopBrowserProfile(ctx);
-		}
-
-		// close webdriver
+		// The recorder goes in the finally: nothing else tears it down once the
+		// context is released above, and a leaked one keeps its MITM server and
+		// keep-alive timer for the life of the runner.
 		try {
-			ctx.getDriver().quit();
-		} catch (Exception e) {
-			logger.warn("Exception quitting driver for crawler {}", ctx.getCrawler().getId());
-		}
+			if (immediate) {
+				stopBrowserProfile(ctx);
+			}
 
-		// Multilogin needs a wait to finish of profile tear down and storage. Upload
-		// will run through proxy!
-		if (!immediate) {
-			stopBrowserProfile(ctx);
-		}
+			// close webdriver
+			try {
+				ctx.getDriver().quit();
+			} catch (Exception e) {
+				logger.warn("Exception quitting driver for crawler {}", ctx.getCrawler().getId());
+			}
 
-		// quit the Webdriver (fallback in case of MultiLogin)
-		try {
-			ctx.getDriver().quit();
-		} catch (Exception e) {
-			logger.error("Error closing webdriver for agent {}", ctx.getCrawler().getAgent().getId(), e);
-		}
+			// Multilogin needs a wait to finish of profile tear down and storage. Upload
+			// will run through proxy!
+			if (!immediate) {
+				stopBrowserProfile(ctx);
+			}
 
-		try {
-			ctx.getRecordingProxy().tearDown();
-		} catch (Exception e) {
-			logger.warn("Exception quitting recorder for crawler {}", ctx.getCrawler().getId());
+			// quit the Webdriver (fallback in case of MultiLogin)
+			try {
+				ctx.getDriver().quit();
+			} catch (Exception e) {
+				logger.error("Error closing webdriver for agent {}", ctx.getCrawler().getAgent().getId(), e);
+			}
+		} finally {
+			try {
+				ctx.getRecordingProxy().tearDown();
+			} catch (Exception e) {
+				logger.warn("Exception quitting recorder for crawler {}", ctx.getCrawler().getId());
+			}
 		}
 	}
 
@@ -1574,6 +1579,12 @@ public class TaskOperator implements ITaskOperator {
 	 * Stops the Multilogin profile behind a context, if it has one. The graceful
 	 * form waits for the profile to finish uploading; the immediate form (a cut-off
 	 * joblist) stops it once and moves on.
+	 *
+	 * <p>
+	 * Never throws. A stop the launcher refuses is logged and the teardown goes
+	 * on: on 2026-10-02 a profile whose browser had died answered its stop with a
+	 * launcher 500, and a profile restart stops the frozen profile before the
+	 * session ends, so the session-end stop can find nothing running.
 	 */
 	private void stopBrowserProfile(ContextBase<?> ctx) {
 		if (!(ctx instanceof MultiloginContext)) {
@@ -1583,7 +1594,12 @@ public class TaskOperator implements ITaskOperator {
 		MultiloginContext typedContext = (MultiloginContext) ctx;
 
 		if (typedContext.getProfile() == null) {
-			contextBuilders.get("MlxContextBuilder").destroyContext(typedContext);
+			try {
+				contextBuilders.get("MlxContextBuilder").destroyContext(typedContext);
+			} catch (Exception e) {
+				logger.warn("could not stop the Multilogin X profile of crawler {}",
+						typedContext.getCrawler() == null ? null : typedContext.getCrawler().getId(), e);
+			}
 			return;
 		}
 

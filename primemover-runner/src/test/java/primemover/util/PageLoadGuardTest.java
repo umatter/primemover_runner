@@ -10,9 +10,14 @@ import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WindowType;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doAnswer;
@@ -30,6 +35,13 @@ import static org.mockito.Mockito.withSettings;
  * 189: ~27 minutes per job, and every later job in the session too.
  */
 class PageLoadGuardTest {
+
+	/** The session's page-load timeout in these tests. */
+	private static final Duration PAGE_LOAD = Duration.ofSeconds(1);
+
+	/** margin, quick, new-tab page load, fallback: scaled down from the real ones. */
+	private static final PageLoadGuard.Bounds FAST = new PageLoadGuard.Bounds(Duration.ofMillis(300),
+			Duration.ofMillis(300), Duration.ofMillis(200), Duration.ofSeconds(1));
 
 	/** A driver that is also a JavascriptExecutor, as the real Remote one is. */
 	private static WebDriver driver() {
@@ -165,6 +177,7 @@ class PageLoadGuardTest {
 				.thenThrow(new WebDriverException("Timed out receiving message from renderer: 58.5"));
 		doThrow(new WebDriverException("Timed out receiving message from renderer: 58.5")).when(navigation)
 				.to("about:blank");
+		when(driver.manage().timeouts().getPageLoadTimeout()).thenReturn(PAGE_LOAD);
 		return driver;
 	}
 
@@ -174,11 +187,14 @@ class PageLoadGuardTest {
 		WebDriver driver = frozenTab(null);
 		when(driver.getWindowHandle()).thenReturn("frozen", "fresh");
 
-		assertThat(PageLoadGuard.recover(driver, 1L, Duration.ofSeconds(5)))
+		assertThat(PageLoadGuard.recover(driver, 1L, FAST))
 				.isEqualTo(PageLoadGuard.Recovery.NEW_TAB);
 
-		InOrder order = inOrder(driver, driver.switchTo());
+		WebDriver.Timeouts timeouts = driver.manage().timeouts();
+		InOrder order = inOrder(driver, driver.switchTo(), timeouts);
+		order.verify(timeouts).pageLoadTimeout(FAST.newTabPageLoad());
 		order.verify(driver.switchTo()).newWindow(WindowType.TAB);
+		order.verify(timeouts).pageLoadTimeout(PAGE_LOAD);
 		order.verify(driver.switchTo()).window("frozen");
 		order.verify(driver).close();
 		order.verify(driver.switchTo()).window("fresh");
@@ -204,6 +220,35 @@ class PageLoadGuardTest {
 
 		assertThatThrownBy(() -> PageLoadGuard.navigate(driver, "https://www.rottentomatoes.com/", 70002L))
 				.isInstanceOf(BrowserUnresponsiveException.class).hasMessageContaining("browser unresponsive");
+
+		// the short timeout NewWindow ran under does not outlive it
+		WebDriver.Timeouts timeouts = driver.manage().timeouts();
+		InOrder order = inOrder(timeouts, driver.switchTo());
+		order.verify(timeouts).pageLoadTimeout(PageLoadGuard.BOUNDS.newTabPageLoad());
+		order.verify(driver.switchTo()).newWindow(WindowType.TAB);
+		order.verify(timeouts).pageLoadTimeout(PAGE_LOAD);
+	}
+
+	@Test
+	@DisplayName("a page-load timeout that cannot be set back after the new tab leaves the browser unused")
+	void unrestoredTimeoutIsNoRecovery() {
+		WebDriver driver = frozenTab(null);
+		when(driver.getWindowHandle()).thenReturn("frozen", "fresh");
+		when(driver.manage().timeouts().pageLoadTimeout(PAGE_LOAD)).thenThrow(new WebDriverException("no answer"));
+
+		assertThat(PageLoadGuard.recover(driver, 1L, FAST)).isEqualTo(PageLoadGuard.Recovery.UNRESPONSIVE);
+	}
+
+	@Test
+	@DisplayName("without the driver's page-load timeout no new tab is tried, since its own could not be set back")
+	void unknownTimeoutMeansNoNewTab() {
+		WebDriver driver = frozenTab(null);
+		when(driver.manage().timeouts().getPageLoadTimeout()).thenThrow(new WebDriverException("unsupported"));
+
+		assertThat(PageLoadGuard.recover(driver, 1L, FAST)).isEqualTo(PageLoadGuard.Recovery.UNRESPONSIVE);
+
+		verify(driver.switchTo(), never()).newWindow(WindowType.TAB);
+		verify(driver.manage().timeouts(), never()).pageLoadTimeout(any(Duration.class));
 	}
 
 	@Test
@@ -213,7 +258,7 @@ class PageLoadGuardTest {
 		when(((JavascriptExecutor) driver).executeScript("return 1;"))
 				.thenThrow(new WebDriverException("no answer"));
 
-		assertThat(PageLoadGuard.recover(driver, 1L, Duration.ofSeconds(5)))
+		assertThat(PageLoadGuard.recover(driver, 1L, FAST))
 				.isEqualTo(PageLoadGuard.Recovery.UNRESPONSIVE);
 	}
 
@@ -224,34 +269,148 @@ class PageLoadGuardTest {
 		when(driver.getWindowHandle()).thenReturn("frozen", "fresh");
 		doThrow(new WebDriverException("no answer")).when(driver).close();
 
-		assertThat(PageLoadGuard.recover(driver, 1L, Duration.ofSeconds(5)))
+		assertThat(PageLoadGuard.recover(driver, 1L, FAST))
 				.isEqualTo(PageLoadGuard.Recovery.NEW_TAB);
 
 		verify(driver.switchTo()).window("fresh");
 	}
 
 	@Test
-	@DisplayName("each step is bounded: a browser that holds every command is given up on in steps, not minutes")
-	void hangingCallsAreBounded() {
+	@DisplayName("a command the driver does not answer is the last one sent, and is given up on after its bound")
+	void unansweredCommandIsTheLastOne() {
 		WebDriver driver = driver();
+		when(driver.manage().timeouts().getPageLoadTimeout()).thenReturn(Duration.ofMillis(200));
 		WebDriver.Navigation navigation = driver.navigate();
-		org.mockito.stubbing.Answer<Object> hang = invocation -> {
+		doAnswer(invocation -> {
 			Thread.sleep(30_000);
 			return null;
-		};
-		doAnswer(hang).when((JavascriptExecutor) driver).executeScript(anyString());
-		doAnswer(hang).when(navigation).to("about:blank");
-		WebDriver.TargetLocator locator = driver.switchTo();
-		doAnswer(hang).when(locator).newWindow(WindowType.TAB);
+		}).when((JavascriptExecutor) driver).executeScript(anyString());
 
 		long started = System.nanoTime();
-		PageLoadGuard.Recovery recovery = PageLoadGuard.recover(driver, 1L, Duration.ofMillis(200));
+		PageLoadGuard.Recovery recovery = PageLoadGuard.recover(driver, 1L, FAST);
 		Duration took = Duration.ofNanos(System.nanoTime() - started);
 
 		assertThat(recovery).isEqualTo(PageLoadGuard.Recovery.UNRESPONSIVE);
-		// window.stop(), about:blank, the frozen tab's handle and the new tab:
-		// four bounded steps, nowhere near one 30 s call
-		assertThat(took).isLessThan(Duration.ofSeconds(5));
+		// page-load timeout plus margin, nowhere near the 30 s the call holds
+		assertThat(took).isLessThan(Duration.ofSeconds(3));
+		// anything sent now would only queue behind the held command
+		verify(navigation, never()).to("about:blank");
+		verify(driver.switchTo(), never()).newWindow(WindowType.TAB);
+	}
+
+	/**
+	 * ChromeDriver's handling of one session, as measured on 2026-10-07 with
+	 * ChromeDriver 144 and Chrome 154: commands run one at a time; a command to
+	 * the tab waits for its renderer at most the session's page-load timeout and
+	 * then fails with the renderer timeout; giving up on a command client-side
+	 * does not withdraw it. Session commands (handles, timeouts) are answered at
+	 * once. NewWindow waits on the current tab like any other tab command.
+	 */
+	private static final class ChromeDriverSession {
+		private final Object session = new Object();
+		private final long rendererFreeAt;
+		private volatile Duration pageLoad;
+		final List<String> executed = Collections.synchronizedList(new ArrayList<>());
+
+		/** @param rendererBusyFor how long the renderer stays busy; null for a frozen one */
+		ChromeDriverSession(Duration pageLoad, Duration rendererBusyFor) {
+			this.pageLoad = pageLoad;
+			this.rendererFreeAt = rendererBusyFor == null ? Long.MAX_VALUE : System.nanoTime() + rendererBusyFor.toNanos();
+		}
+
+		Object tab(String command, Object result) {
+			synchronized (session) {
+				long giveUp = System.nanoTime() + pageLoad.toNanos();
+				if (rendererFreeAt <= giveUp) {
+					sleepUntil(rendererFreeAt);
+					executed.add(command);
+					return result;
+				}
+				sleepUntil(giveUp);
+				executed.add(command + " failed");
+				throw new TimeoutException("timeout: Timed out receiving message from renderer: "
+						+ pageLoad.toMillis() / 1000.0);
+			}
+		}
+
+		Object session(String command, Object result) {
+			synchronized (session) {
+				executed.add(command);
+				return result;
+			}
+		}
+
+		/** Ignores interrupts: a command ChromeDriver is running is not withdrawn. */
+		private static void sleepUntil(long nanos) {
+			for (long left = nanos - System.nanoTime(); left > 0; left = nanos - System.nanoTime()) {
+				LockSupport.parkNanos(left);
+			}
+		}
+
+		WebDriver driver() {
+			WebDriver driver = PageLoadGuardTest.driver();
+			WebDriver.Timeouts timeouts = driver.manage().timeouts();
+			when(timeouts.getPageLoadTimeout()).thenAnswer(invocation -> session("getTimeouts", pageLoad));
+			when(timeouts.pageLoadTimeout(any(Duration.class))).thenAnswer(invocation -> {
+				Duration to = invocation.getArgument(0);
+				session("setTimeouts " + to.toMillis(), null);
+				pageLoad = to;
+				return timeouts;
+			});
+			when(((JavascriptExecutor) driver).executeScript(anyString()))
+					.thenAnswer(invocation -> tab("script " + invocation.getArgument(0), null));
+			WebDriver.Navigation navigation = driver.navigate();
+			doAnswer(invocation -> tab("navigate " + invocation.getArgument(0), null)).when(navigation)
+					.to(anyString());
+			when(driver.getWindowHandle()).thenAnswer(invocation -> session("getWindowHandle", "frozen"));
+			when(driver.switchTo().newWindow(WindowType.TAB)).thenAnswer(invocation -> tab("newWindow", driver));
+			return driver;
+		}
+	}
+
+	@Test
+	@DisplayName("a renderer that answers window.stop() late, inside the driver's own wait, is recovered without escalating")
+	void lateWindowStopIsRecovered() {
+		// scaled from the busy-renderer run: page load 60 s, window.stop() answered
+		// 45 s after the timeout, which 10 s steps had reported unresponsive
+		ChromeDriverSession chrome = new ChromeDriverSession(PAGE_LOAD, Duration.ofMillis(750));
+
+		assertThat(PageLoadGuard.recover(chrome.driver(), 1L, FAST)).isEqualTo(PageLoadGuard.Recovery.STOPPED);
+
+		assertThat(chrome.executed).containsExactly("getTimeouts", "script window.stop();");
+	}
+
+	@Test
+	@DisplayName("a renderer busy into a second page-load timeout is recovered by about:blank, as before the new tab")
+	void busyRendererIsRecoveredByBlank() {
+		ChromeDriverSession chrome = new ChromeDriverSession(PAGE_LOAD, Duration.ofMillis(1500));
+
+		assertThat(PageLoadGuard.recover(chrome.driver(), 1L, FAST)).isEqualTo(PageLoadGuard.Recovery.BLANK);
+
+		assertThat(chrome.executed).containsExactly("getTimeouts", "script window.stop(); failed",
+				"navigate about:blank");
+	}
+
+	@Test
+	@DisplayName("a frozen renderer: each rung waits for the driver's answer, the new tab costs a short timeout, nothing is left queued")
+	void frozenRendererIsGivenUpOnInOrder() {
+		ChromeDriverSession chrome = new ChromeDriverSession(PAGE_LOAD, null);
+		WebDriver driver = chrome.driver();
+
+		long started = System.nanoTime();
+		PageLoadGuard.Recovery recovery = PageLoadGuard.recover(driver, 1L, FAST);
+		Duration took = Duration.ofNanos(System.nanoTime() - started);
+
+		assertThat(recovery).isEqualTo(PageLoadGuard.Recovery.UNRESPONSIVE);
+		// two page-load timeouts and the new tab's short one, not a third full one
+		assertThat(took).isGreaterThanOrEqualTo(Duration.ofMillis(2200)).isLessThan(Duration.ofMillis(2900));
+		List<String> sent = List.copyOf(chrome.executed);
+		assertThat(sent).containsExactly("getTimeouts", "script window.stop(); failed", "navigate about:blank failed",
+				"getWindowHandle", "setTimeouts 200", "newWindow failed", "setTimeouts 1000");
+
+		// every command was answered before recover() returned
+		LockSupport.parkNanos(Duration.ofMillis(300).toNanos());
+		assertThat(chrome.executed).isEqualTo(sent);
 	}
 
 	@Test
@@ -260,7 +419,7 @@ class PageLoadGuardTest {
 		WebDriver driver = driver();
 		Thread.currentThread().interrupt();
 		try {
-			assertThat(PageLoadGuard.recover(driver, 1L, Duration.ofSeconds(5)))
+			assertThat(PageLoadGuard.recover(driver, 1L, FAST))
 					.isEqualTo(PageLoadGuard.Recovery.UNRESPONSIVE);
 			assertThat(Thread.currentThread().isInterrupted()).as("interrupt flag kept for the session loop")
 					.isTrue();
@@ -268,6 +427,7 @@ class PageLoadGuardTest {
 			Thread.interrupted();
 		}
 
+		verify((JavascriptExecutor) driver, never()).executeScript(anyString());
 		verify(driver.navigate(), never()).to("about:blank");
 		verify(driver.switchTo(), never()).newWindow(WindowType.TAB);
 	}

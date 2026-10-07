@@ -32,8 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -340,6 +343,77 @@ class TaskOperatorBrowserRestartTest {
 
 		assertThat(operator.restartFrozenBrowser(7L)).isZero();
 		assertThat(context()).isSameAs(frozen);
+	}
+
+	// ---- the session's end after a restart ----------------------------------
+
+	/**
+	 * The launcher stops the frozen profile once, during the restart, and refuses
+	 * every later stop of it, as it answered a stop with a 500 on 2026-10-02 for a
+	 * profile whose browser was gone.
+	 */
+	private void secondStopOfTheFrozenProfileIsRefused() {
+		AtomicInteger stops = new AtomicInteger();
+		doAnswer(invocation -> {
+			if (stops.incrementAndGet() > 1) {
+				throw new IllegalStateException("500 Internal Server Error: profile not running");
+			}
+			return null;
+		}).when(builder).destroyContext(frozen);
+	}
+
+	@Test
+	@DisplayName("after a failed restart, a refused stop at the session's end neither throws nor leaks the recorder")
+	void refusedStopAfterFailedRestart() {
+		secondStopOfTheFrozenProfileIsRefused();
+		when(builder.buildContext(any(), any(), any(), any())).thenThrow(new RuntimeException("failed to start profile"));
+
+		assertThat(operator.restartFrozenBrowser(7L)).isZero();
+		assertThat(context()).isSameAs(frozen);
+
+		// JobListRunner reports the queue only after this returns: a throw here
+		// turned DONE_JOBSWARNING into DONE_FAILURE and lost the job counts
+		assertThatCode(() -> operator.tearDown(false)).doesNotThrowAnyException();
+
+		verify(builder, times(2)).destroyContext(frozen);
+		verify(recorder).tearDown();
+		assertThat(context()).isNull();
+	}
+
+	@Test
+	@DisplayName("an abort mid-restart whose stop is refused still tears the recorder down")
+	void refusedStopOnAbortMidRestart() {
+		secondStopOfTheFrozenProfileIsRefused();
+		AtomicReference<Throwable> abortFailure = new AtomicReference<>();
+		when(builder.buildContext(any(), any(), any(), any())).thenAnswer(invocation -> {
+			// the processing timeout fires while the profile is starting
+			try {
+				operator.tearDown(true);
+			} catch (Throwable t) {
+				abortFailure.set(t);
+			}
+			MultiloginContext ctx = context(crawler);
+			started.add(ctx);
+			return ctx;
+		});
+
+		assertThat(operator.restartFrozenBrowser(7L)).isZero();
+
+		assertThat(abortFailure.get()).isNull();
+		verify(recorder).tearDown();
+		// and the browser that came up anyway is released
+		verify(builder).destroyContext(started.get(0));
+	}
+
+	@Test
+	@DisplayName("a stop the launcher refuses at a plain session end does not skip the driver quit or the recorder")
+	void refusedStopAtSessionEnd() {
+		doThrow(new IllegalStateException("500 Internal Server Error")).when(builder).destroyContext(frozen);
+
+		assertThatCode(() -> operator.tearDown(false)).doesNotThrowAnyException();
+
+		verify(frozen.getDriver(), times(2)).quit();
+		verify(recorder).tearDown();
 	}
 
 	// ---- in the job loop ---------------------------------------------------
