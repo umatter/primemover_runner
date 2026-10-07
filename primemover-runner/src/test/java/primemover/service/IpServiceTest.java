@@ -150,4 +150,63 @@ class IpServiceTest {
 		assertThatCode(() -> IpService.toLocationInfo(null)).doesNotThrowAnyException();
 		assertThat(IpService.toLocationInfo(null).getIp()).isNull();
 	}
+
+	@Test
+	@DisplayName("proxy credentials authenticate the CONNECT tunnel, not just the inner request")
+	void authenticatesTheTunnel() throws Exception {
+		// The regression: Proxy-Authorization set as a RestTemplate default header rides on
+		// the inner request, which a proxy never sees for an https:// origin, so the tunnel
+		// came back "407 Proxy Authentication Required".
+		//
+		// The first CONNECT carrying no credentials is correct: the client is challenged,
+		// then re-sends with them. What this asserts is that the re-send happens at all --
+		// the JDK client never got that far, because nothing it had was applied to CONNECT.
+		java.util.List<String> connects = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+		java.net.ServerSocket listener = new java.net.ServerSocket(0);
+		Thread server = new Thread(() -> {
+			while (!listener.isClosed()) {
+				try (java.net.Socket client = listener.accept()) {
+					java.io.BufferedReader in = new java.io.BufferedReader(
+							new java.io.InputStreamReader(client.getInputStream(), StandardCharsets.US_ASCII));
+					StringBuilder head = new StringBuilder();
+					for (String line = in.readLine(); line != null && !line.isEmpty(); line = in.readLine()) {
+						head.append(line).append('\n');
+					}
+					if (head.length() > 0) {
+						connects.add(head.toString());
+					}
+					// Always challenge, so the client's authenticated retry is observable
+					// without this stub having to carry out a real TLS handshake.
+					client.getOutputStream().write(("HTTP/1.1 407 Proxy Authentication Required\r\n"
+							+ "Proxy-Authenticate: Basic realm=\"oxylabs\"\r\n"
+							+ "Content-Length: 0\r\nConnection: close\r\n\r\n")
+									.getBytes(StandardCharsets.US_ASCII));
+					client.getOutputStream().flush();
+				} catch (Exception stop) {
+					return;
+				}
+			}
+		});
+		server.setDaemon(true);
+		server.start();
+
+		try {
+			IpService svc = new IpService();
+			svc.setProxy(new Proxy(Proxy.Type.HTTP,
+					new java.net.InetSocketAddress("127.0.0.1", listener.getLocalPort())),
+					Optional.of(new primemover.capture.BasicAuthorization("acct", "secret")));
+			ReflectionTestUtils.setField(svc, "ipCheckSource", "oxylabs");
+			ReflectionTestUtils.setField(svc, "oxylabsCheckUrl", "https://ip.oxylabs.io/location");
+
+			assertThat(svc.getLocationInfo()).as("a proxy that only ever 407s yields no location").isNull();
+		} finally {
+			listener.close();
+			server.join(5_000);
+		}
+
+		assertThat(connects).as("the proxy was asked to tunnel").isNotEmpty();
+		assertThat(connects.get(0)).startsWith("CONNECT ip.oxylabs.io:443");
+		assertThat(connects).as("after the 407 challenge the client re-sends CONNECT with credentials")
+				.anySatisfy(c -> assertThat(c).contains("Proxy-Authorization: Basic "));
+	}
 }

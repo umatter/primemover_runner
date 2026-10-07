@@ -4,9 +4,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetrySynchronizationManager;
@@ -19,9 +28,8 @@ import primemover.model.LocationInfo;
 import primemover.model.ipcheck.OxylabsIpCheck;
 import primemover.service.token.TokenRequestInterceptor;
 
+import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,6 +55,8 @@ public class IpService {
 	private static Logger logger = LoggerFactory.getLogger(IpService.class);
 
 	private static final String OXYLABS_SOURCE = "oxylabs";
+
+	private static final int TIMEOUT_MILLIS = 15_000;
 	private RestTemplate restTemplate;
 	private AtomicBoolean isInit = new AtomicBoolean(false);
 
@@ -70,19 +80,59 @@ public class IpService {
 	public IpService() {
 	}
 
+	/**
+	 * Point this service at a proxy.
+	 *
+	 * <p>
+	 * Apache HttpClient rather than {@link org.springframework.http.client.SimpleClientHttpRequestFactory},
+	 * because the check target is an {@code https://} URL and the JDK client cannot
+	 * authenticate the tunnel to it. Reaching an HTTPS origin through an HTTP proxy
+	 * starts with a {@code CONNECT}, and a {@code Proxy-Authorization} header set as a
+	 * RestTemplate default header rides on the <em>inner</em> request, which the proxy
+	 * never sees -- so the tunnel is refused with
+	 * {@code HTTP/1.1 407 Proxy Authentication Required}. This went unnoticed while the
+	 * endpoint was plain {@code http://}, where there is no tunnel and the header works.
+	 * HttpClient authenticates the CONNECT itself from the credentials provider.
+	 *
+	 * <p>
+	 * The JDK's own tunnel authentication is not an option: it reads a process-wide
+	 * {@link java.net.Authenticator}, which cannot express one credential per crawler in
+	 * a runner driving several at once, and it disables Basic over a tunnel by default.
+	 */
 	public void setProxy(Proxy proxy, Optional<BasicAuthorization> basicAuth) {
-		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-		requestFactory.setProxy(proxy);
-		RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder().requestFactory(() -> requestFactory);
+		Timeout timeout = Timeout.ofMilliseconds(TIMEOUT_MILLIS);
+		HttpClientBuilder builder = HttpClients.custom()
+				// This runs before the first and after the last job of every session, so a
+				// hung proxy must not stall the session; the exit address is not worth that.
+				.setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
+						.setDefaultConnectionConfig(ConnectionConfig.custom()
+								.setConnectTimeout(timeout)
+								.setSocketTimeout(timeout)
+								.build())
+						.build())
+				.setDefaultRequestConfig(RequestConfig.custom()
+						.setConnectionRequestTimeout(timeout)
+						.setResponseTimeout(timeout)
+						.build());
 
-		if (basicAuth.isPresent()) {
-			restTemplateBuilder.defaultHeader(HttpHeaders.PROXY_AUTHORIZATION,
-					"Basic " + Base64.getEncoder()
-							.encodeToString((basicAuth.get().getUsername() + ':' + basicAuth.get().getPassword())
-									.getBytes(StandardCharsets.UTF_8)));
+		if (proxy != null && proxy.type() != Proxy.Type.DIRECT
+				&& proxy.address() instanceof InetSocketAddress) {
+			InetSocketAddress address = (InetSocketAddress) proxy.address();
+			HttpHost proxyHost = new HttpHost(address.getHostString(), address.getPort());
+			builder.setProxy(proxyHost);
+
+			if (basicAuth.isPresent()) {
+				BasicCredentialsProvider credentials = new BasicCredentialsProvider();
+				credentials.setCredentials(new AuthScope(proxyHost),
+						new UsernamePasswordCredentials(basicAuth.get().getUsername(),
+								basicAuth.get().getPassword().toCharArray()));
+				builder.setDefaultCredentialsProvider(credentials);
+			}
 		}
 
-		this.restTemplate = restTemplateBuilder.build();
+		HttpComponentsClientHttpRequestFactory requestFactory =
+				new HttpComponentsClientHttpRequestFactory(builder.build());
+		this.restTemplate = new RestTemplateBuilder().requestFactory(() -> requestFactory).build();
 
 		isInit.set(true);
 	}
