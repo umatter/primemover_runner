@@ -100,3 +100,15 @@ coverage/
 primemover-runner/config/application-local.properties
 # Dated config backups left on nodes after hand edits
 *.bak-*
+
+#---------------------------------------------
+# Runtime artefacts generated on nodes
+#---------------------------------------------
+
+# LittleProxy auto-generates its MITM CA in the working directory the first time
+# the BrowserUp recorder starts, so any node with recorder.enabled=true grows these
+# two files and its checkout goes dirty -- which makes deploy.sh refuse to push.
+# They are generated material, never source, and must not be deleted on a node:
+# regenerating the CA invalidates the certificate the running browser profiles trust.
+primemover-runner/littleproxy_cert
+primemover-runner/littleproxy_keystore.jks
