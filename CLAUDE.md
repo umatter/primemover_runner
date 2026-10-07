@@ -66,7 +66,9 @@ runner.MaxParallelExecution=2          # Concurrent browser threads (tuned per b
 runner.UpdateInterval=15               # Minutes between job polls
 runner.MaxRedoMinutes=45               # Max job age to execute
 runner.ProcessingTimeoutMinutes=180    # Joblist cut off after this long (worker, browser, profile)
-runner.PageLoadTimeoutSeconds=60       # One page load; on timeout: window.stop(), job fails
+runner.PageLoadTimeoutSeconds=60       # One page load; on timeout: window.stop(), about:blank, new tab; job fails
+runner.MaxBrowserRestartsPerSession=2  # Frozen MLX browser: profile stopped + restarted, session goes on
+runner.BrowserRestartStartSeconds=120  # Bound for that restart's start (quit + stop before it: 30 s)
 
 multilogin.StartupRetryCount=3
 multilogin.StartupDelaySeconds=30

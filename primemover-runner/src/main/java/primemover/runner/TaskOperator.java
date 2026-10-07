@@ -5,6 +5,8 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -27,6 +29,7 @@ import primemover.capture.RecordingProxyFactory;
 import primemover.model.*;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.VisitJob;
+import primemover.util.BoundedCall;
 import primemover.util.BrowserUnresponsiveException;
 import primemover.util.PageLoadGuard;
 import primemover.util.RendererRecycler;
@@ -51,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -127,10 +131,45 @@ public class TaskOperator implements ITaskOperator {
 	// at the next job boundary; the one in flight fails as its browser goes away.
 	private volatile boolean aborted = false;
 
-	// Set when a job found the browser frozen (BrowserUnresponsiveException). Such a
-	// browser did not come back on experiment 189, so the rest of the queue is
-	// skipped instead of spending ~4 minutes per visit failing the same way.
+	// Set when a job found the browser frozen (BrowserUnresponsiveException) and it
+	// could not be restarted. Such a browser did not come back on experiment 189, so
+	// the rest of the queue is skipped instead of spending ~4 minutes per visit
+	// failing the same way.
 	private volatile boolean browserLost = false;
+
+	// A frozen Multilogin X browser is restarted (profile stopped and started again)
+	// at most this often per session; the next freeze ends the session as before.
+	// On experiment 189 (2026-10-07) 38 of 40 measurement sessions lost jobs, 29% of
+	// their jobs skipped, mostly after one frozen page load. Bounded because a page
+	// that freezes every browser it is given would otherwise cost a restart per
+	// visit. 0 disables the restart.
+	@Value("${runner.MaxBrowserRestartsPerSession:2}")
+	private int maxBrowserRestarts = 2;
+
+	// Wall-time bound for starting the profile again, set-up included. The quit and
+	// the stop before it have their own bounds below, so a whole restart is over in
+	// at most this plus 30 s, even when every call hangs.
+	@Value("${runner.BrowserRestartStartSeconds:120}")
+	private int browserRestartStartSeconds = 120;
+
+	// Quitting the driver of a frozen browser can hang like any other command to
+	// it; stopping the profile goes to the Multilogin launcher, not the browser.
+	private static final Duration RESTART_QUIT_BOUND = Duration.ofSeconds(10);
+	private static final Duration RESTART_STOP_BOUND = Duration.ofSeconds(20);
+
+	// Pause before starting a profile again that Multilogin still reports running.
+	private static final long PROFILE_RUNNING_RETRY_MILLIS = 5000;
+
+	// Profile restarts this session has made. Per session because a TaskOperator is
+	// created per joblist (see lastJobState).
+	private int browserRestarts = 0;
+
+	// A restart's start that ran over its bound and may still bring a browser up on
+	// its own thread, which then releases it. tearDown waits for that (at most
+	// LATE_RESTART_WAIT): once this session has ended, the crawler's next joblist
+	// may start the same profile, and a release after that would stop its browser.
+	private volatile CompletableFuture<?> lateRestart;
+	private static final Duration LATE_RESTART_WAIT = Duration.ofSeconds(60);
 
 	// The state the last finished job was reported with, so runJobList can tell a
 	// clean success from a completed-but-degraded one. Safe as a field: a
@@ -469,7 +508,19 @@ public class TaskOperator implements ITaskOperator {
 		// the API instead of being reduced to a boolean and thrown away
 		Exception jobFailure = null;
 
+		// replaces the description of jobFailure when the job's frozen browser was
+		// restarted, so its status message says so
+		String failureDetail = null;
+
+		// this job's HAR; null when its type records none
+		String har = null;
+
 		try {
+			// The browser this job runs in. Everything read back after the handler
+			// comes from it, not from the context: a profile restart puts a new
+			// browser there, and that one's blank page is not what this job saw.
+			WebDriver driver = context.getDriver();
+
 			reportJobState(job, JobState.RUNNING, null, null, null, ZonedDateTime.now(), null); // setting
 
 			// IP-Checking
@@ -501,23 +552,40 @@ public class TaskOperator implements ITaskOperator {
 				jobFailure = e;
 				runJobResult = false;
 				if (BrowserUnresponsiveException.isCausedBy(e)) {
-					browserLost = true;
-					logger.warn("browser is unresponsive after job {}; the rest of the queue will be skipped",
-							job.getId());
+					// This job's traffic ends here: a restart starts the new browser
+					// through the same recorder, and its start-up requests are not
+					// this job's.
+					if (shouldRecordHar) {
+						shouldRecordHar = false;
+						try {
+							har = context.getRecordingProxy().stopCapturing();
+						} catch (Exception harFailure) {
+							logger.warn("could not stop the HAR capture of job {}", job.getId(), harFailure);
+						}
+					}
+
+					int restart = restartFrozenBrowser(job.getId());
+					if (restart > 0) {
+						failureDetail = restartedDetail(e, restart);
+					} else {
+						browserLost = true;
+						logger.warn("browser is unresponsive after job {}; the rest of the queue will be skipped",
+								job.getId());
+					}
 				}
 			}
 
 			// reading page-source ready to re-use
 			String pageSource = null;
 			try {
-				pageSource = primemover.util.Page.getBodyeFromJavascript(context.getDriver());
+				pageSource = primemover.util.Page.getBodyeFromJavascript(driver);
 			} catch (Exception ex) {
 				logger.debug(
 						"Could not read page source for job via Javascript. Falling back to direct driver read. jobid {}",
 						job.getId(), ex);
 
 				try {
-					pageSource = context.getDriver().getPageSource();
+					pageSource = driver.getPageSource();
 				} catch (Exception e) {
 					logger.warn("Could not read page source from driver. No more Fallback possible. jobid {}",
 							job.getId(), ex);
@@ -547,7 +615,7 @@ public class TaskOperator implements ITaskOperator {
 			// switch off the one signal that means something.
 			String currentUrl = null;
 			try {
-				currentUrl = context.getDriver().getCurrentUrl();
+				currentUrl = driver.getCurrentUrl();
 			} catch (Exception ex) {
 				// same tolerance as the page-source read above: an unreadable URL
 				// costs us the URL signature, not the job
@@ -566,9 +634,9 @@ public class TaskOperator implements ITaskOperator {
 
 			// save capturing screenshot
 			try {
-				if (context.getDriver() instanceof TakesScreenshot) {
+				if (driver instanceof TakesScreenshot) {
 
-					TakesScreenshot camera = (TakesScreenshot) context.getDriver();
+					TakesScreenshot camera = (TakesScreenshot) driver;
 					byte[] screenshot = camera.getScreenshotAs(OutputType.BYTES);
 
 					dataRecorder.setScreenshot(screenshot);
@@ -577,14 +645,12 @@ public class TaskOperator implements ITaskOperator {
 				// noting to do
 			}
 
-			// capture trafic data (conditionally based on job type)
+			// capture trafic data (conditionally based on job type; already
+			// stopped if the browser froze)
 			if (shouldRecordHar) {
-				String har = context.getRecordingProxy().stopCapturing();
-				dataRecorder.setHar(har);
-			} else {
-				// No HAR recording for this job type
-				dataRecorder.setHar(null);
+				har = context.getRecordingProxy().stopCapturing();
 			}
+			dataRecorder.setHar(har);
 
 			// capture page data
 			if (StringUtils.isEmpty(pageSource)) {
@@ -596,21 +662,21 @@ public class TaskOperator implements ITaskOperator {
 
 			// capture cookies, localstorage, etc.
 			try {
-				dataRecorder.setCookies(context.getDriver().manage().getCookies());
+				dataRecorder.setCookies(driver.manage().getCookies());
 			} catch (Exception ex) {
 				logger.warn("Could not read cookies for job {}", job.getId(), ex);
 				dataRecorder.setCookies(null);
 			}
 
 			try {
-				dataRecorder.setLocalStorage(primemover.util.LocalStorage.getItems(context.getDriver()));
+				dataRecorder.setLocalStorage(primemover.util.LocalStorage.getItems(driver));
 			} catch (Exception ex) {
 				logger.warn("Could not read local storage for job {}", job.getId(), ex);
 				dataRecorder.setLocalStorage(null);
 			}
 
 			try {
-				dataRecorder.setSessionStorage(primemover.util.SessionStorage.getItems(context.getDriver()));
+				dataRecorder.setSessionStorage(primemover.util.SessionStorage.getItems(driver));
 			} catch (Exception ex) {
 				logger.warn("Could not read session storage for job {}", job.getId(), ex);
 				dataRecorder.setSessionStorage(null);
@@ -633,7 +699,7 @@ public class TaskOperator implements ITaskOperator {
 			// because the write genuinely succeeded. Absence of every browser-derived
 			// field is the honest signal, and it routes through the existing warning
 			// branch below without needing a new JobState.
-			if (context.getDriver() != null) {
+			if (driver != null) {
 				RecordedJobData captured = dataRecorder.getRecordings();
 				if (captured != null && captured.getPageSource() == null && captured.getScreenshot() == null
 						&& captured.getLocalStorage() == null && captured.getSessionStorage() == null) {
@@ -701,7 +767,8 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("Done running job with failure {}", job.getId());
 				// the real cause, not just "error during execution"
 				lastJobState = JobState.FAILURE;
-				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure), null, null, null,
+				reportJobState(job, JobState.FAILURE,
+						failureDetail != null ? failureDetail : JobDiagnostics.describe(jobFailure), null, null, null,
 						ZonedDateTime.now(), decision); // setting endtime
 			} else if (!writeRes) {
 				logger.warn("Done running job with warning (job data not written) {}", job.getId());
@@ -723,7 +790,9 @@ public class TaskOperator implements ITaskOperator {
 			try {
 				// read here rather than reusing the local above: this catch also covers
 				// the path that threw before that local was assigned
-				reportJobState(job, JobState.FAILURE, JobDiagnostics.describe(jobFailure == null ? ex : jobFailure),
+				reportJobState(job, JobState.FAILURE,
+						failureDetail != null ? failureDetail
+								: JobDiagnostics.describe(jobFailure == null ? ex : jobFailure),
 						null, null, null, ZonedDateTime.now(), JobDiagnostics.decisionVerdict()); // setting endtime
 			} catch (Exception e) {
 				// log the failure to WRITE the state (e), not the exception that got
@@ -973,6 +1042,283 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	/**
+	 * Why a frozen browser must not be restarted, or null if it may.
+	 *
+	 * Package-private and static: a pure decision, asserted without a browser. A
+	 * cut-off session wins over everything else: the abort is ending this
+	 * browser, and a restart would start what the abort is there to stop.
+	 */
+	static String browserRestartRefusal(boolean aborted, boolean interrupted, boolean multiloginX,
+			int restartsSoFar, int maxRestarts) {
+		if (aborted || interrupted) {
+			return "session cut off after the processing timeout";
+		}
+		if (!multiloginX) {
+			return "only a Multilogin X browser is restarted";
+		}
+		if (restartsSoFar >= maxRestarts) {
+			return "profile already restarted " + restartsSoFar + " time(s), the limit per session";
+		}
+		return null;
+	}
+
+	/** The words a page-load timeout uses for a browser that did not come back. */
+	private static final String UNRESPONSIVE_WORDS = "browser " + PageLoadGuard.Recovery.UNRESPONSIVE.label();
+
+	/**
+	 * The status message of a job whose browser froze and was then restarted.
+	 *
+	 * <p>
+	 * Described as the page-load timeout it was, with "browser unresponsive" --
+	 * which reads as "session ended" -- replaced by what happened instead, in the
+	 * place the other outcomes put theirs ("browser recovered", "browser
+	 * recovered (new tab)"), so the study can count each kind. Package-private
+	 * and static so the wording is asserted directly.
+	 */
+	static String restartedDetail(Throwable failure, int restart) {
+		String restarted = "browser restarted (profile restart " + restart + ")";
+		Throwable t = failure;
+		for (int depth = 0; t != null && depth < 20; depth++, t = t.getCause()) {
+			if (t instanceof BrowserUnresponsiveException) {
+				String message = ((BrowserUnresponsiveException) t).getRawMessage();
+				if (message == null) {
+					message = restarted;
+				} else if (message.contains(UNRESPONSIVE_WORDS)) {
+					message = message.replace(UNRESPONSIVE_WORDS, restarted);
+				} else {
+					message = message + "; " + restarted;
+				}
+				return JobDiagnostics.describe(new TimeoutException(message, t.getCause()));
+			}
+		}
+		return JobDiagnostics.describe(failure) + "; " + restarted;
+	}
+
+	/**
+	 * True when a start failed because Multilogin still counts the profile as
+	 * running (HTTP 400 PROFILE_ALREADY_RUNNING, "browser process is running"),
+	 * which clears once the stop before it has gone through.
+	 */
+	static boolean isProfileAlreadyRunning(Throwable failure) {
+		Throwable t = failure;
+		for (int depth = 0; t != null && depth < 20; depth++, t = t.getCause()) {
+			if (t.getMessage() != null && t.getMessage().contains("PROFILE_ALREADY_RUNNING")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** True for a session driving a Multilogin X profile, the only kind a restart can start again. */
+	private static boolean isMultiloginX(ContextBase<?> ctx) {
+		if (!(ctx instanceof MultiloginContext) || ctx.getCrawler() == null
+				|| !(ctx.getCrawler().getAgent() instanceof MultiLoginAgent)) {
+			return false;
+		}
+		return ((MultiLoginAgent) ctx.getCrawler().getAgent()).getVersion() == MultiLoginVersion.MLX;
+	}
+
+	/**
+	 * Gives a session whose browser froze a new browser, if it may have one.
+	 *
+	 * <p>
+	 * Why this exists. On experiment 189 (2026-10-07, 09:00-12:00) 38 of 40
+	 * measurement sessions lost jobs and 29% of their jobs were skipped. The
+	 * dominant cause was one page load that froze the renderer (rottentomatoes.com
+	 * in 13 sessions, bing.com as the very first job in 3): it answered neither
+	 * {@code window.stop()} nor {@code about:blank}, and the session ended with
+	 * every remaining job skipped. The freeze belongs to that browser process,
+	 * not to the profile, so stopping the profile and starting it again gives the
+	 * session a browser that answers, with the same profile and the same
+	 * recorder. {@link PageLoadGuard} has already tried a new tab by then.
+	 *
+	 * @return the number of this restart (1, 2, ...) when a new browser is in
+	 *         place for the next job; 0 when the session has to end
+	 */
+	int restartFrozenBrowser(long jobId) {
+		String refusal = browserRestartRefusal(aborted, Thread.currentThread().isInterrupted(),
+				isMultiloginX(context), browserRestarts, maxBrowserRestarts);
+		if (refusal != null) {
+			logger.warn("browser unresponsive after job {}; no profile restart: {}", jobId, refusal);
+			return 0;
+		}
+
+		int restart = ++browserRestarts;
+		logger.warn("browser unresponsive after job {}; restarting its Multilogin X profile (restart {} of {})",
+				jobId, restart, maxBrowserRestarts);
+
+		if (!replaceMultiloginXBrowser(jobId)) {
+			logger.warn("profile restart {} after job {} failed", restart, jobId);
+			return 0;
+		}
+
+		logger.warn("browser restarted after job {} (profile restart {} of {})", jobId, restart, maxBrowserRestarts);
+		return restart;
+	}
+
+	/**
+	 * Replaces the session's frozen Multilogin X browser by a new one of the same
+	 * profile, started and set up the way the session start does it.
+	 *
+	 * <p>
+	 * The old profile is stopped before the new start: Multilogin refuses to
+	 * start a profile that is still running (HTTP 400 PROFILE_ALREADY_RUNNING),
+	 * and the stop also ends a browser whose driver no longer answers a quit. The
+	 * session's recorder is kept rather than replaced. It is a local proxy, not
+	 * part of the frozen browser; it holds the failed job's HAR; and keeping it
+	 * leaves no second recorder to leak. Throughout, the context still holds the
+	 * old browser, so a processing-timeout abort arriving mid-restart finds and
+	 * stops it as usual; the new browser goes in only if no abort came, and is
+	 * released otherwise.
+	 *
+	 * @return true when the new browser is the session's context
+	 */
+	private boolean replaceMultiloginXBrowser(long jobId) {
+		MultiloginContext frozen;
+		synchronized (this) {
+			if (aborted || !(context instanceof MultiloginContext)) {
+				return false;
+			}
+			frozen = (MultiloginContext) context;
+		}
+		IContextBuilder builder = contextBuilders.get("MlxContextBuilder");
+
+		try {
+			BoundedCall.call(() -> {
+				frozen.getDriver().quit();
+				return null;
+			}, RESTART_QUIT_BOUND);
+		} catch (Exception e) {
+			logger.warn("could not quit the frozen browser's driver after job {}; stopping its profile anyway", jobId,
+					e);
+		}
+
+		try {
+			BoundedCall.call(() -> {
+				builder.destroyContext(frozen);
+				return null;
+			}, RESTART_STOP_BOUND);
+		} catch (Exception e) {
+			// Not a reason to give up: a profile the quit already ended may refuse a
+			// stop, and one still running makes the start below wait and retry.
+			logger.warn("could not stop the frozen Multilogin X profile after job {}", jobId, e);
+		}
+
+		if (aborted || Thread.currentThread().isInterrupted()) {
+			return false;
+		}
+
+		Duration startBound = Duration.ofSeconds(browserRestartStartSeconds);
+		long deadline = System.nanoTime() + startBound.toNanos();
+		CompletableFuture<MultiloginContext> start = BoundedCall
+				.start(() -> startMultiloginXAgain(frozen.getCrawler(), frozen.getRecordingProxy(), deadline));
+		MultiloginContext fresh;
+		try {
+			fresh = BoundedCall.await(start, startBound);
+		} catch (Exception e) {
+			// A browser that still comes up is released, not leaked: at once if it
+			// came up just now, otherwise when it does.
+			lateRestart = start.thenAccept(this::releaseBrowser);
+			logger.warn("could not start the Multilogin X profile again after job {}", jobId, e);
+			return false;
+		}
+
+		synchronized (this) {
+			if (!aborted && context == frozen) {
+				context = fresh;
+				return true;
+			}
+		}
+
+		logger.warn("session cut off while its browser was restarted after job {}; releasing the new browser", jobId);
+		releaseBrowser(fresh);
+		return false;
+	}
+
+	/**
+	 * Starts the crawler's Multilogin X profile through the session-start path
+	 * ({@link #startupMultiloginX} with {@link #sessionCapabilities}, a new captcha
+	 * solver, then {@link #prepareBrowser}), but on the session's existing
+	 * recorder. A profile Multilogin still reports running is tried again until
+	 * the deadline.
+	 */
+	private MultiloginContext startMultiloginXAgain(Crawler crawler, RecordingProxy recorder, long deadlineNanos)
+			throws InterruptedException {
+		while (true) {
+			ICaptchaSolver captchaSolver = captchaSolverFac.getCaptchaSolver();
+			MultiloginContext started;
+			try {
+				started = startupMultiloginX(crawler, sessionCapabilities(recorder), recorder, captchaSolver);
+			} catch (RuntimeException e) {
+				if (aborted || !isProfileAlreadyRunning(e)
+						|| System.nanoTime() + PROFILE_RUNNING_RETRY_MILLIS * 1_000_000L > deadlineNanos) {
+					throw e;
+				}
+				logger.warn("Multilogin still reports the profile running; starting it again in {} ms",
+						PROFILE_RUNNING_RETRY_MILLIS);
+				Thread.sleep(PROFILE_RUNNING_RETRY_MILLIS);
+				continue;
+			}
+
+			try {
+				prepareBrowser(started, captchaSolver);
+			} catch (RuntimeException e) {
+				releaseBrowser(started);
+				throw e;
+			}
+			return started;
+		}
+	}
+
+	/**
+	 * Quits a browser this session started but does not use, and stops its
+	 * profile. Never its recorder: that belongs to the session.
+	 */
+	private void releaseBrowser(MultiloginContext unused) {
+		if (unused == null) {
+			return;
+		}
+
+		try {
+			unused.getDriver().quit();
+		} catch (Exception e) {
+			logger.warn("could not quit a restarted browser the session does not use", e);
+		}
+
+		try {
+			contextBuilders.get("MlxContextBuilder").destroyContext(unused);
+		} catch (Exception e) {
+			logger.warn("could not stop the Multilogin X profile of a restarted browser the session does not use", e);
+		}
+	}
+
+	/**
+	 * Waits, bounded, for a restart's start that ran over its bound to finish
+	 * and release what it started. Waits even on an interrupted (cut-off) worker:
+	 * the point is that nothing of this session stops a profile after the next
+	 * joblist of the crawler has started it.
+	 */
+	private void awaitLateRestart() {
+		CompletableFuture<?> late = lateRestart;
+		if (late == null || late.isDone()) {
+			return;
+		}
+
+		boolean interrupted = Thread.interrupted();
+		try {
+			logger.info("waiting up to {} s for a late profile restart to settle", LATE_RESTART_WAIT.toSeconds());
+			late.get(LATE_RESTART_WAIT.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			// settled with a failure (nothing started) or still pending; either way
+			// the teardown below stops the profile
+		} finally {
+			if (interrupted) {
+				Thread.currentThread().interrupt();
+			}
+		}
+	}
+
+	/**
 	 * Why this agent cannot be started on this runner, or null if it can.
 	 *
 	 * Package-private and static: the decision is pure, so it is asserted
@@ -1009,13 +1355,6 @@ public class TaskOperator implements ITaskOperator {
 			// create driver
 			try {
 				logger.info("starting up crawler {}, round {} of {}", crawler.getId(), curRetry, maxRetryCountInit);
-				// Default capabilities for ssl handling
-				DesiredCapabilities capabilities = new DesiredCapabilities();
-
-				// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
-				// capabilities.setCapability(CapabilityType., true);
-				capabilities.setAcceptInsecureCerts(true);
-				// capabilities.setCapability("webSocketUrl", true);
 
 				// stop recorder if in retry
 				RecordingProxy recorder = null;
@@ -1028,7 +1367,7 @@ public class TaskOperator implements ITaskOperator {
 
 				// start new recorder
 				recorder = setupRecorder(crawler);
-				recorder.applyProxy(capabilities);
+				DesiredCapabilities capabilities = sessionCapabilities(recorder);
 
 				// setup IpService
 				setupIpService(recorder);
@@ -1053,18 +1392,7 @@ public class TaskOperator implements ITaskOperator {
 					throw new UnsupportedOperationException("type not supported: " + crawler.getAgent().getType());
 				}
 
-				// apply captcha solver to context
-				context.setCaptchaSolver(captchaSolver);
-
-				// setup driver in running browser
-				captchaSolver.setupDriver(context);
-
-				PageLoadGuard.apply(context.getDriver(), pageLoadTimeoutSeconds);
-
-				// Inject H.264 codec override via CDP so it runs before any page script.
-				// This forces YouTube to use H.264 instead of VP9/AV1, which require
-				// software decoding on headless VMs and saturate the CPU.
-				injectCodecOverrideViaCdp(context.getDriver());
+				prepareBrowser(context, captchaSolver);
 
 				logger.debug("finished starting up crawler {}, success: {}", crawler.getId(), true);
 
@@ -1099,6 +1427,44 @@ public class TaskOperator implements ITaskOperator {
 
 		// Verify result and return
 		return done && context.isValid();
+	}
+
+	/**
+	 * The capabilities every browser of a session starts with: the recording
+	 * MITM's certificates accepted, traffic through the recorder. Shared by the
+	 * session start and the profile restart.
+	 */
+	private static DesiredCapabilities sessionCapabilities(RecordingProxy recorder) {
+		// Default capabilities for ssl handling
+		DesiredCapabilities capabilities = new DesiredCapabilities();
+
+		// siehe https://www.guru99.com/ssl-certificate-error-handling-selenium.html
+		// capabilities.setCapability(CapabilityType., true);
+		capabilities.setAcceptInsecureCerts(true);
+		// capabilities.setCapability("webSocketUrl", true);
+
+		recorder.applyProxy(capabilities);
+		return capabilities;
+	}
+
+	/**
+	 * What every started browser gets before its first job. Shared by the session
+	 * start and the profile restart, so a restarted browser is set up exactly like
+	 * the first one, and a step added here reaches both.
+	 */
+	private void prepareBrowser(ContextBase<?> started, ICaptchaSolver captchaSolver) {
+		// apply captcha solver to context
+		started.setCaptchaSolver(captchaSolver);
+
+		// setup driver in running browser
+		captchaSolver.setupDriver(started);
+
+		PageLoadGuard.apply(started.getDriver(), pageLoadTimeoutSeconds);
+
+		// Inject H.264 codec override via CDP so it runs before any page script.
+		// This forces YouTube to use H.264 instead of VP9/AV1, which require
+		// software decoding on headless VMs and saturate the CPU.
+		injectCodecOverrideViaCdp(started.getDriver());
 	}
 
 	/**
@@ -1155,6 +1521,8 @@ public class TaskOperator implements ITaskOperator {
 	public void tearDown(boolean immediate) {
 		if (immediate) {
 			aborted = true;
+		} else {
+			awaitLateRestart();
 		}
 
 		ContextBase<?> ctx;

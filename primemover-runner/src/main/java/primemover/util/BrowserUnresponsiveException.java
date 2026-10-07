@@ -4,14 +4,14 @@ import org.openqa.selenium.TimeoutException;
 
 /**
  * A page load timed out and the browser then answered neither
- * {@code window.stop()} nor a navigation to {@code about:blank}.
+ * {@code window.stop()}, a navigation to {@code about:blank}, nor a new tab.
  *
  * <p>
  * On experiment 189 such a browser never came back: of 116 cases only 3 saw a
  * later job succeed, and every later visit cost ~4 minutes of its own timeout
  * before failing the same way. Distinct from a plain {@link TimeoutException}
- * (the page was slow, the browser is fine) so the job loop can end the session
- * instead of feeding it more jobs.
+ * (the page was slow, the browser is fine) so the job loop can restart the
+ * browser, or end the session, instead of feeding it more jobs.
  */
 public class BrowserUnresponsiveException extends TimeoutException {
 
