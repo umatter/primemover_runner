@@ -24,6 +24,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 public class WireMockRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(WireMockRecorderProxy.class);
 
+	/** The chained upstream session; see {@link primemover.capture.IRecorderProxy#getUpstreamSession()}. */
+	private SessionDecorator chainedSession;
+
 	@Value("${recorder.enabled:true")
 	private boolean recordingEnabled;
 
@@ -50,6 +53,7 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 	@Override
 	public boolean initProxy(IProxy targetProxy) {
 		SessionDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
+		this.chainedSession = decoratedProxy;
 		log.debug("generated session-id: {}", decoratedProxy.getSessionId());
 
 		WireMockConfiguration options = options() //
@@ -166,4 +170,8 @@ public class WireMockRecorderProxy implements IRecorderProxy {
 		return true;
 	}
 
+	@Override
+	public java.util.Optional<SessionDecorator> getUpstreamSession() {
+		return java.util.Optional.ofNullable(chainedSession);
+	}
 }

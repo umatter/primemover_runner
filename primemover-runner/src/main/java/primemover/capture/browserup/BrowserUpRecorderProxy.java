@@ -40,6 +40,9 @@ import java.util.concurrent.TimeUnit;
 public class BrowserUpRecorderProxy implements IRecorderProxy {
 	private static final Logger log = LoggerFactory.getLogger(BrowserUpRecorderProxy.class);
 
+	/** The chained upstream session; see {@link IRecorderProxy#getUpstreamSession()}. */
+	private SessionDecorator chainedSession;
+
 	@Value("${recorder.enabled:true}")
 	private Boolean recordingEnabled;
 
@@ -170,6 +173,10 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 			log.debug("using chained proxy {}:{}", targetProxy.getUrl(), targetProxy.getPort());
 
 			final SessionDecorator decoratedProxy = sessionDecoratorFactory.decorateProxy(targetProxy);
+			// Kept so out-of-band requests can reach the internet through the very same
+			// session -- and therefore the same exit address -- without going through this
+			// recorder's man-in-the-middle. See IRecorderProxy#getUpstreamSession.
+			this.chainedSession = decoratedProxy;
 			log.debug("generated session-id: {}", decoratedProxy.getSessionId());
 
 			// Whitelisting check -> Username and Password not set
@@ -219,6 +226,11 @@ public class BrowserUpRecorderProxy implements IRecorderProxy {
 	@Override
 	public InetAddress getAddress() {
 		return proxy.getClientBindAddress();
+	}
+
+	@Override
+	public Optional<SessionDecorator> getUpstreamSession() {
+		return Optional.ofNullable(chainedSession);
 	}
 
 	@Override

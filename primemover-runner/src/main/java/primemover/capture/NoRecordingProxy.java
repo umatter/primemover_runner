@@ -58,6 +58,13 @@ public class NoRecordingProxy implements IRecorderProxy {
 	}
 
 	@Override
+	public Optional<SessionDecorator> getUpstreamSession() {
+		// Nothing is interposed here, so the address the browser uses is already the
+		// upstream one. Returned all the same, so callers need not special-case it.
+		return Optional.ofNullable(proxy);
+	}
+
+	@Override
 	public void closeProxy(boolean immediate) {
 		// nothing to do
 	}

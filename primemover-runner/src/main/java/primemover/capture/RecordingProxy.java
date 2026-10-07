@@ -162,10 +162,48 @@ public class RecordingProxy {
 		return new java.net.Proxy(Type.HTTP, socket);
 	}
 
+	/**
+	 * Point an {@link IpService} at the exit the browser is using.
+	 *
+	 * <p>
+	 * Deliberately <em>not</em> {@link #getProxy()}. That is the address the browser
+	 * talks to, which under a man-in-the-middle recorder is the recorder's own
+	 * listener: a plain HTTP client sent there fails TLS verification with
+	 * {@code PKIX path building failed}, because the recorder presents a generated CA
+	 * that only the browser is launched to trust. The exit-IP check needs the same
+	 * exit address, not the recording, so it goes to the chained upstream directly --
+	 * which also keeps the check out of the recorded traffic.
+	 *
+	 * <p>
+	 * Falls back to the recorder's own address when no separate upstream is reported,
+	 * which is what a non-intercepting implementation does.
+	 */
 	public void applyProxy(IpService ipService) {
-		java.net.Proxy javaProxy = getProxy();
+		Optional<SessionDecorator> upstream = this.recorderProxy.getUpstreamSession();
+		if (upstream.isEmpty()) {
+			ipService.setProxy(getProxy(), this.recorderProxy.getAuthorization());
+			return;
+		}
 
-		ipService.setProxy(javaProxy, this.recorderProxy.getAuthorization());
+		SessionDecorator session = upstream.get();
+		String host = session.getUrl();
+		if (host == null || host.trim().isEmpty()) {
+			// Under a recorder the browser's own address is the local listener, which is
+			// always valid, so routing out-of-band traffic upstream must not become a new
+			// way to fail for a proxy that reports no host. Fall back to the old path.
+			LOGGER.warn("upstream session reports no host; sending the IP check through the recorder instead");
+			ipService.setProxy(getProxy(), this.recorderProxy.getAuthorization());
+			return;
+		}
+
+		ipService.setProxy(upstreamProxy(session),
+				Optional.of(new BasicAuthorization(session.getUsername(), session.getPassword())));
+	}
+
+	/** The chained upstream as a {@link java.net.Proxy}, resolved the same way {@link #getProxy()} resolves. */
+	static java.net.Proxy upstreamProxy(SessionDecorator session) {
+		SocketAddress socket = new InetSocketAddress(session.getUrl(), session.getPort());
+		return new java.net.Proxy(Type.HTTP, socket);
 	}
 
 	public DesiredCapabilities applyProxy(DesiredCapabilities cap) {
