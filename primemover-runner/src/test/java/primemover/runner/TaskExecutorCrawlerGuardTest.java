@@ -4,7 +4,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
+import primemover.model.Crawler;
+import primemover.model.Joblist;
 import primemover.runner.joblist.IJobListRunner;
+import primemover.runner.joblist.JobListRunnerFactory;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -328,6 +331,87 @@ class TaskExecutorCrawlerGuardTest {
 		assertThat(runningAgain.runs.get()).isZero();
 		assertThat(waitingAgain.runs.get()).isZero();
 		assertThat(lanes()).isEmpty();
+	}
+
+	@Test
+	@DisplayName("run(Crawler, Joblist), the call TaskManager makes, goes through the crawler's lane")
+	void taskManagerEntryPointUsesTheLane() throws Exception {
+		// Every other test here calls run(Long, IJobListRunner). Production reaches
+		// the lane only because run(Crawler, Joblist) forwards the crawler's id; if
+		// it called run(IJobListRunner) instead, PROFILE_ALREADY_RUNNING would be back
+		// with the rest of this class still green.
+		TaskExecutor executor = executor(4);
+		GatedRunner first = new GatedRunner(1L);
+		GatedRunner second = new GatedRunner(2L);
+		Map<Long, IJobListRunner> runners = Map.of(1L, first, 2L, second);
+		ReflectionTestUtils.setField(executor, "jobListRunnerFactory", new JobListRunnerFactory() {
+			@Override
+			public IJobListRunner createJobListRunner(Crawler crawler, Joblist jobs) {
+				return runners.get(jobs.getId());
+			}
+		});
+		Crawler crawler = new Crawler();
+		crawler.setId(7L);
+
+		CompletableFuture<Boolean> firstDone = executor.run(crawler, joblist(1L));
+		assertThat(first.hasStarted()).isTrue();
+		CompletableFuture<Boolean> secondDone = executor.run(crawler, joblist(2L));
+
+		// threads are free, yet the crawler's browser is still open
+		assertThat(second.staysWaiting()).isTrue();
+		assertThat(lanes()).containsOnlyKeys(7L);
+
+		first.release.countDown();
+		assertThat(firstDone.get(WAIT, TimeUnit.SECONDS)).isTrue();
+		assertThat(second.hasStarted()).isTrue();
+		assertThat(second.startedAt).isGreaterThan(first.finishedAt);
+
+		second.release.countDown();
+		assertThat(secondDone.get(WAIT, TimeUnit.SECONDS)).isTrue();
+		assertThat(lanes()).isEmpty();
+	}
+
+	private static Joblist joblist(long id) {
+		Joblist joblist = new Joblist();
+		joblist.setId(id);
+		return joblist;
+	}
+
+	@Test
+	@DisplayName("a joblist that waited for its crawler and then started can still be cut off")
+	void abortPromotedJoblist() throws Exception {
+		// A waiting joblist becomes reachable for abort() only when release() puts it
+		// into `running` as it hands it to the pool. TaskManager's
+		// DONE_PROCESSING_TIMEOUT cut-off depends on that for every joblist that
+		// waited behind its crawler.
+		TaskExecutor executor = executor(2);
+		GatedRunner first = new GatedRunner(1L);
+		GatedRunner promoted = new GatedRunner(2L);
+		GatedRunner last = new GatedRunner(3L);
+
+		CompletableFuture<Boolean> firstDone = executor.run(7L, first);
+		assertThat(first.hasStarted()).isTrue();
+		CompletableFuture<Boolean> promotedDone = executor.run(7L, promoted);
+		CompletableFuture<Boolean> lastDone = executor.run(7L, last);
+		assertThat(promoted.staysWaiting()).isTrue();
+
+		first.release.countDown();
+		assertThat(firstDone.get(WAIT, TimeUnit.SECONDS)).isTrue();
+		assertThat(promoted.hasStarted()).isTrue();
+		assertThat(last.staysWaiting()).isTrue();
+
+		assertThat(executor.abort(2L)).isTrue();
+		assertThat(promotedDone.get(WAIT, TimeUnit.SECONDS)).isTrue();
+		assertThat(promoted.aborts.get()).isEqualTo(1);
+		assertThat(promoted.runs.get()).isEqualTo(1);
+
+		// the crawler is free again: its last joblist starts and the lane empties
+		assertThat(last.hasStarted()).isTrue();
+		assertThat(last.startedAt).isGreaterThan(promoted.finishedAt);
+		last.release.countDown();
+		assertThat(lastDone.get(WAIT, TimeUnit.SECONDS)).isTrue();
+		assertThat(lanes()).isEmpty();
+		assertThat(running()).isEmpty();
 	}
 
 	@Test
