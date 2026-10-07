@@ -309,9 +309,24 @@ when the job carries a `strategy`; legacy experiments are unaffected).
 Node checkouts only receive; nothing is edited on a node. The laptop pushes
 into the checkout (`receive.denyCurrentBranch=updateInstead`; hub script
 `control_room/scripts/deploy.sh <node> primemover_runner`), then on the node:
-`cd primemover-runner && mvn -q -DskipTests package`, swap the jar with a
-copy kept at `/var/tmp/runner-jar-rollback.jar`, `sudo systemctl restart
-primemover-runner`. The unit runs `--spring.profiles.active=local
+`mvn -q -DskipTests -pl primemover-runner -am package` **from the repo root**,
+keep a rollback copy at `/var/tmp/runner-jar-rollback.jar` first, then `sudo
+systemctl restart primemover-runner`.
+
+`-am` is load-bearing. `cd primemover-runner && mvn package` builds that module
+alone and resolves `primemover:primemover-generated:jar` from the repositories,
+where it does not exist -- it is a sibling module of this very reactor. A node
+whose `~/.m2` happens to hold a previously installed copy builds fine and hides
+this; one that does not fails with `Could not find artifact
+primemover:primemover-generated:jar:2.2.1 in repsy`, and leaves `.lastUpdated`
+failure markers behind that make the next attempt look the same. Building from
+the root with `-am` builds the sibling from source and never consults a
+repository for it.
+
+The jar is not swapped: the unit runs `target/primemover-runner-*.jar` out of the
+build directory, so `package` replaces it in place. Rolling back means copying
+`/var/tmp/runner-jar-rollback.jar` over it -- which is why the copy is taken
+*before* the build, not after. The unit runs `--spring.profiles.active=local
 --spring.config.location=config/`.
 
 **Node-local settings go in `config/application-local.properties`** (gitignored,
