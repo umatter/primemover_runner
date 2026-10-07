@@ -63,7 +63,9 @@ public final class PageLoadGuard {
 	 * Navigates, and on a page-load timeout stops the load before rethrowing, so
 	 * the caller fails the job at once and the next job finds a usable browser.
 	 *
-	 * @throws TimeoutException when the page did not finish loading in time
+	 * @throws TimeoutException when the page did not finish loading in time; the
+	 *                          subclass {@link BrowserUnresponsiveException} when the
+	 *                          browser also stopped answering
 	 */
 	public static void navigate(WebDriver driver, String url, long jobId) {
 		try {
@@ -72,8 +74,9 @@ public final class PageLoadGuard {
 			boolean usable = recoverAfterTimeout(driver, jobId);
 			logger.warn("page load timed out for {} (job {}); browser {}", url, jobId,
 					usable ? "recovered" : "unresponsive");
-			throw new TimeoutException("Page load timed out for " + url + " (job " + jobId + "); browser "
-					+ (usable ? "recovered" : "unresponsive"), e);
+			String message = "Page load timed out for " + url + " (job " + jobId + "); browser "
+					+ (usable ? "recovered" : "unresponsive");
+			throw usable ? new TimeoutException(message, e) : new BrowserUnresponsiveException(message, e);
 		}
 	}
 
