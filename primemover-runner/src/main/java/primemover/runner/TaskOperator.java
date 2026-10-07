@@ -470,7 +470,10 @@ public class TaskOperator implements ITaskOperator {
 			try {
 				checkIpRecording(jobContext, ipRecording, IpRecordingTiming.BEFORE_JOB);
 			} catch (Exception e) {
-				logger.warn("IP-Checking (before job) was unsuccessfull for job {}", job.getId());
+				// The exception is logged: without it this failed silently on every session
+				// for weeks, leaving job archives with no location entry and every job
+				// still reported successful.
+				logger.warn("IP-Checking (before job) was unsuccessfull for job {}", job.getId(), e);
 			}
 
 			// start MITM
@@ -606,7 +609,10 @@ public class TaskOperator implements ITaskOperator {
 			try {
 				checkIpRecording(jobContext, ipRecording, IpRecordingTiming.AFTER_JOB);
 			} catch (Exception e) {
-				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId());
+				// The exception is logged: without it this failed silently on every session
+				// for weeks, leaving job archives with no location entry and every job
+				// still reported successful.
+				logger.warn("IP-Checking (after job) was unsuccessfull for job {}", job.getId(), e);
 			}
 
 			// A dead renderer does not fail the write -- it produces a successful,
