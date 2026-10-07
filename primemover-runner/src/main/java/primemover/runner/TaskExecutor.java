@@ -11,6 +11,13 @@ import primemover.runner.joblist.IJobListRunner;
 import primemover.runner.joblist.JobListRunnerFactory;
 import primemover.util.threading.MdcAwareThreadPoolExecutor;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class TaskExecutor {
@@ -32,6 +39,25 @@ public class TaskExecutor {
 	// cancelling the CompletableFuture would not stop the thread, so the runner
 	// itself is kept.
 	private final ConcurrentHashMap<Long, IJobListRunner> running = new ConcurrentHashMap<>();
+
+	// One crawler is one Multilogin profile, and a profile runs one browser at a
+	// time: a second joblist of a crawler whose browser is still open fails its
+	// setup with PROFILE_ALREADY_RUNNING (about 110 joblists of experiment 189 on
+	// 2026-10-05). So every crawler gets a lane. Its first entry is the joblist
+	// handed to the pool; the others wait behind it in arrival order without
+	// holding a pool thread, and the next is handed over when the first finishes.
+	// A crawler with nothing running or waiting has no lane. Guarded by itself.
+	private final Map<Long, Deque<Turn>> lanes = new HashMap<>();
+
+	/** A joblist in its crawler's lane, and the future its caller was given. */
+	private static final class Turn {
+		final IJobListRunner runner;
+		final CompletableFuture<Boolean> result = new CompletableFuture<>();
+
+		Turn(IJobListRunner runner) {
+			this.runner = runner;
+		}
+	}
 
 	// Cutting off a joblist ends its browser, which can take a while. That must not
 	// run on the scheduler thread that noticed the timeout.
@@ -59,12 +85,112 @@ public class TaskExecutor {
 		// nothing to do
 	}
 
+	/**
+	 * Runs a joblist without regard to its crawler. Only for runners that have no
+	 * crawler; {@link #run(Crawler, Joblist)} goes through the crawler's lane.
+	 */
 	public CompletableFuture<Boolean> run(IJobListRunner runner) {
 		running.put(runner.getJobListId(), runner);
+		return submit(runner, () -> {
+		});
+	}
 
+	/**
+	 * Runs a joblist once no other joblist of the same crawler is running here.
+	 * Until then it waits in the crawler's lane and holds no pool thread; when it
+	 * does start, {@code JobListRunner.setup()} skips it as usual if it is by then
+	 * more than MaxRedoMinutes late.
+	 *
+	 * <p>
+	 * A joblist that is already in its crawler's lane is not taken a second time.
+	 * TaskManager hands over every due, not-yet-processing joblist on each poll
+	 * (once a minute on ex63), so one that waits gets handed over again until it
+	 * starts; a second copy would run the session again after the first.
+	 */
+	public CompletableFuture<Boolean> run(Long crawlerId, IJobListRunner runner) {
+		if (crawlerId == null) {
+			return run(runner);
+		}
+
+		long jobListId = runner.getJobListId();
+		Turn turn = new Turn(runner);
+		Turn ahead;
+		synchronized (lanes) {
+			Deque<Turn> lane = lanes.computeIfAbsent(crawlerId, id -> new ArrayDeque<>());
+			for (Turn held : lane) {
+				if (held.runner.getJobListId() == jobListId) {
+					logger.info("joblist {} of crawler {} is already running or waiting here; not taking it again",
+							jobListId, crawlerId);
+					return held.result;
+				}
+			}
+
+			ahead = lane.peekFirst();
+			lane.addLast(turn);
+			if (ahead == null) {
+				running.put(jobListId, runner);
+			}
+		}
+
+		if (ahead == null) {
+			start(crawlerId, turn);
+		} else {
+			logger.info("crawler {} is busy: joblist {} waits until joblist {} of the same crawler has finished",
+					crawlerId, jobListId, ahead.runner.getJobListId());
+		}
+
+		return turn.result;
+	}
+
+	public CompletableFuture<Boolean> run(Crawler crawler, Joblist jobs) {
+		// run and remove from hash
+		logger.info("Init execution of joblist {}", jobs.getId());
+		IJobListRunner runner = jobListRunnerFactory.createJobListRunner(crawler, jobs);
+
+		return run(crawler.getId(), runner);
+	}
+
+	private void start(Long crawlerId, Turn turn) {
+		submit(turn.runner, () -> release(crawlerId, turn)).whenComplete((result, error) -> {
+			if (error != null) {
+				turn.result.completeExceptionally(error);
+			} else {
+				turn.result.complete(result);
+			}
+		});
+	}
+
+	/**
+	 * The crawler's running joblist has finished: hand its next waiting joblist to
+	 * the pool, or forget the crawler when none is waiting.
+	 */
+	private void release(Long crawlerId, Turn finished) {
+		Turn next;
+		synchronized (lanes) {
+			Deque<Turn> lane = lanes.get(crawlerId);
+			lane.remove(finished);
+			next = lane.peekFirst();
+			if (next == null) {
+				lanes.remove(crawlerId);
+			} else {
+				// under the lock, so abort() finds it either waiting or running
+				running.put(next.runner.getJobListId(), next.runner);
+			}
+		}
+
+		if (next != null) {
+			logger.info("crawler {} is free: starting its waiting joblist {}", crawlerId, next.runner.getJobListId());
+			start(crawlerId, next);
+		}
+	}
+
+	private CompletableFuture<Boolean> submit(IJobListRunner runner, Runnable whenFinished) {
 		CompletableFuture<Boolean> execution = CompletableFuture //
 				.supplyAsync(runner, executorService)//
-				.whenComplete((result, error) -> running.remove(runner.getJobListId(), runner))//
+				.whenComplete((result, error) -> {
+					running.remove(runner.getJobListId(), runner);
+					whenFinished.run();
+				})//
 				.thenComposeAsync(runnerResult -> CompletableFuture.supplyAsync(() -> {
 					logger.info("execution of joblist {} finished", runner.getJobListId());
 					return runnerResult;
@@ -85,26 +211,39 @@ public class TaskExecutor {
 		return execution;
 	}
 
-	public CompletableFuture<Boolean> run(Crawler crawler, Joblist jobs) {
-		// run and remove from hash
-		logger.info("Init execution of joblist {}", jobs.getId());
-		IJobListRunner runner = jobListRunnerFactory.createJobListRunner(crawler, jobs);
-
-		return run(runner);
-	}
-
 	/**
 	 * Cuts off a joblist that is queued or running here, so its worker thread and
 	 * browser are released. Returns at once; the browser is ended in the
-	 * background.
+	 * background. A joblist still waiting for its crawler is dropped instead and
+	 * never starts.
 	 *
 	 * @return false when this executor holds no such joblist -- it finished, or
 	 *         another runner started it
 	 */
 	public boolean abort(long jobListId) {
+		List<Turn> dropped = new ArrayList<>();
+		synchronized (lanes) {
+			for (Deque<Turn> lane : lanes.values()) {
+				Iterator<Turn> turns = lane.iterator();
+				turns.next(); // the first is in the pool; it is cut off below
+				while (turns.hasNext()) {
+					Turn turn = turns.next();
+					if (turn.runner.getJobListId() == jobListId) {
+						turns.remove();
+						dropped.add(turn);
+					}
+				}
+			}
+		}
+
+		for (Turn turn : dropped) {
+			logger.warn("aborting joblist {}, which was waiting for its crawler; it will not start", jobListId);
+			turn.result.complete(false);
+		}
+
 		IJobListRunner runner = running.get(jobListId);
 		if (runner == null) {
-			return false;
+			return !dropped.isEmpty();
 		}
 
 		logger.warn("aborting joblist {}", jobListId);
