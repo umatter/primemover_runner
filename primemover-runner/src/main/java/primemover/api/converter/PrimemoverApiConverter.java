@@ -20,7 +20,6 @@ import primemover.model.proxy.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Map;
 
 public class PrimemoverApiConverter {
@@ -512,11 +511,7 @@ public class PrimemoverApiConverter {
 	 */
 	private static IJob convertApiClearStorageJob(Long id, String name, String description,
 			Map<String, String> behaviors) {
-		String raw = behaviors.get("origins");
-		List<String> origins = raw == null || raw.trim().isEmpty() ? List.of()
-				: Arrays.stream(raw.split(",")).map(String::trim).filter(o -> !o.isEmpty()).toList();
-		return new ClearStorageJob(id, name, description,
-				ClearStorageScope.parse(behaviors.get("scope")), origins);
+		return new ClearStorageJob(id, name, description, ClearStorageScope.parse(behaviors.get("scope")));
 	}
 
 	/**

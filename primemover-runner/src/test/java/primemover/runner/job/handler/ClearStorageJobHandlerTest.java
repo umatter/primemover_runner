@@ -4,49 +4,42 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chromium.HasCdp;
 import primemover.model.jobs.ClearStorageJob;
 import primemover.model.jobs.ClearStorageScope;
 import primemover.runner.context.IJobAwareRunnerContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ClearStorageJobHandlerTest {
 
-	/** A driver that speaks both JS and CDP, recording what it is asked to do. */
-	private interface CdpDriver extends WebDriver, JavascriptExecutor, HasCdp {
+	private interface ScriptingDriver extends WebDriver, JavascriptExecutor {
 	}
 
 	private final List<String> scripts = new ArrayList<>();
-	private final List<String> cdpCalls = new ArrayList<>();
+	private WebDriver.Options options;
 
-	private IJobAwareRunnerContext<?> context(ClearStorageScope scope, List<String> origins, boolean cdp) {
-		WebDriver driver;
-		if (cdp) {
-			CdpDriver d = mock(CdpDriver.class);
-			when(d.executeScript(anyString(), any(Object[].class))).thenAnswer(i -> {
-				scripts.add(i.getArgument(0));
-				return 2L;
-			});
-			when(d.executeCdpCommand(anyString(), any())).thenAnswer(i -> {
-				Map<String, Object> args = i.getArgument(1);
-				cdpCalls.add(i.getArgument(0) + " " + args);
-				return Map.of();
-			});
-			driver = d;
-		} else {
-			driver = mock(WebDriver.class);
-		}
-		ClearStorageJob job = new ClearStorageJob(1L, "Clear", "", scope, origins);
+	private IJobAwareRunnerContext<?> context(ClearStorageScope scope) {
+		ScriptingDriver driver = mock(ScriptingDriver.class);
+		options = mock(WebDriver.Options.class);
+		when(driver.manage()).thenReturn(options);
+		when(options.getCookies()).thenReturn(Set.of());
+		when(driver.getCurrentUrl()).thenReturn("https://www.bing.com/");
+		when(driver.executeScript(anyString(), any(Object[].class))).thenAnswer(i -> {
+			scripts.add(i.getArgument(0));
+			return 2L;
+		});
+		ClearStorageJob job = new ClearStorageJob(1L, "Clear", "", scope);
 		IJobAwareRunnerContext<?> ctx = mock(IJobAwareRunnerContext.class);
 		when(ctx.getDriver()).thenReturn(driver);
 		when(ctx.getJob()).thenAnswer(i -> job);
@@ -54,64 +47,48 @@ class ClearStorageJobHandlerTest {
 	}
 
 	@Test
-	@DisplayName("scope all clears cookies and cache browser-wide, with no page loaded")
-	void allClearsCookiesAndCache() {
-		// The job runs at the head of a session, on about:blank. A JavaScript clear there
-		// would address nothing, so the whole scope goes through CDP, whose cookie and cache
-		// commands take no origin and need no page.
-		new ClearStorageJobHandler().handle(context(ClearStorageScope.ALL, List.of(), true));
+	@DisplayName("scope all clears the origin's cookies and both web stores")
+	void allClearsCookiesAndWebStorage() {
+		// Standard WebDriver throughout: Multilogin's driver does not implement CDP, so a
+		// browser-wide clear is not available and this acts on the current origin.
+		new ClearStorageJobHandler().handle(context(ClearStorageScope.ALL));
 
-		assertThat(cdpCalls).anySatisfy(c -> assertThat(c).startsWith("Network.clearBrowserCookies"));
-		assertThat(cdpCalls).anySatisfy(c -> assertThat(c).startsWith("Network.clearBrowserCache"));
-		assertThat(scripts).as("no JavaScript, which would hit about:blank").isEmpty();
+		verify(options).deleteAllCookies();
+		assertThat(scripts).hasSize(2);
+		assertThat(scripts.get(0)).contains("window.localStorage").contains(".clear()");
+		assertThat(scripts.get(1)).contains("window.sessionStorage").contains(".clear()");
 	}
 
 	@Test
-	@DisplayName("scope all clears every storage bucket of each named origin")
-	void allClearsSiteDataPerOrigin() {
-		new ClearStorageJobHandler().handle(context(ClearStorageScope.ALL,
-				List.of("https://www.bing.com", "https://search.yahoo.com"), true));
-
-		List<String> siteData = cdpCalls.stream().filter(c -> c.startsWith("Storage.clearDataForOrigin")).toList();
-		assertThat(siteData).hasSize(2);
-		assertThat(siteData.get(0)).contains("https://www.bing.com").contains("storageTypes=all");
-		assertThat(siteData.get(1)).contains("https://search.yahoo.com");
-	}
-
-	@Test
-	@DisplayName("scope none does nothing at all, so a control bot is untouched")
+	@DisplayName("scope none touches neither cookies nor storage, so a control bot is untouched")
 	void noneIsARealNoOp() {
-		// The control arm runs this job so both arms have the same job count and timing. It
-		// must execute nothing -- a control that cleared "just the cache" is a treatment.
-		new ClearStorageJobHandler().handle(context(ClearStorageScope.NONE, List.of(), true));
-		assertThat(cdpCalls).isEmpty();
+		// The control arm runs this job, and the same preceding visits, so the arms differ in
+		// what is cleared and never in where the bot went. It must therefore clear nothing --
+		// a control that dropped "just the cookies" would itself be a treatment.
+		new ClearStorageJobHandler().handle(context(ClearStorageScope.NONE));
+
+		verify(options, never()).deleteAllCookies();
 		assertThat(scripts).isEmpty();
 	}
 
 	@Test
-	@DisplayName("the narrow scopes still use JavaScript on the current origin")
-	void narrowScopesUseJavascript() {
-		new ClearStorageJobHandler().handle(context(ClearStorageScope.LOCAL, List.of(), true));
+	@DisplayName("the narrow scopes touch one store and leave cookies alone")
+	void narrowScopesLeaveCookies() {
+		new ClearStorageJobHandler().handle(context(ClearStorageScope.LOCAL));
+		verify(options, never()).deleteAllCookies();
 		assertThat(scripts).hasSize(1);
-		assertThat(scripts.get(0)).contains("window.localStorage").contains(".clear()");
-		assertThat(cdpCalls).isEmpty();
-	}
+		assertThat(scripts.get(0)).contains("window.localStorage");
 
-	@Test
-	@DisplayName("a driver that cannot speak CDP fails the job instead of leaving a bot untreated")
-	void noCdpFailsLoudly() {
-		// Silently skipping would record a bot as treated while it kept every cookie -- the
-		// untreated-but-recorded-as-treated failure the whole privacy factor guards against.
-		assertThatThrownBy(() -> new ClearStorageJobHandler()
-				.handle(context(ClearStorageScope.ALL, List.of(), false)))
-				.isInstanceOf(IllegalStateException.class)
-				.hasMessageContaining("CDP");
+		scripts.clear();
+		new ClearStorageJobHandler().handle(context(ClearStorageScope.SESSION));
+		assertThat(scripts).hasSize(1);
+		assertThat(scripts.get(0)).contains("window.sessionStorage");
 	}
 
 	@Test
 	@DisplayName("a job with no scope fails loudly")
 	void missingScopeFails() {
-		assertThatThrownBy(() -> new ClearStorageJobHandler().handle(context(null, List.of(), true)))
+		assertThatThrownBy(() -> new ClearStorageJobHandler().handle(context(null)))
 				.isInstanceOf(IllegalStateException.class)
 				.hasMessageContaining("no scope");
 	}

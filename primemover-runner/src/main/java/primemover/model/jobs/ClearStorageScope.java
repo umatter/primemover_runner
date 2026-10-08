@@ -20,10 +20,15 @@ public enum ClearStorageScope {
 	/** The current origin's sessionStorage, via JavaScript. Needs a loaded page of that origin. */
 	SESSION,
 	/**
-	 * Everything a privacy-conscious user clears: all cookies and the cache, browser-wide,
-	 * plus every storage bucket of each origin the job names. Uses CDP, so unlike
-	 * {@link #LOCAL} and {@link #SESSION} it works with no page loaded -- which is where
-	 * this job runs, at the head of a session.
+	 * Everything this bot's current origin has stored about it: its cookies, its
+	 * localStorage and its sessionStorage.
+	 *
+	 * <p>
+	 * Current origin, not browser-wide. WebDriver's {@code deleteAllCookies} removes the
+	 * cookies of the current document's domain, and web storage is reachable only from a
+	 * loaded page of that origin. Clearing browser-wide in one call would need the Chrome
+	 * DevTools Protocol, which Multilogin's driver does not implement. The workflow
+	 * therefore visits each origin before clearing it.
 	 */
 	ALL;
 

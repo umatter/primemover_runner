@@ -7,23 +7,29 @@ import primemover.model.jobs.ClearStorageJob;
 import primemover.model.jobs.ClearStorageScope;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
-import primemover.util.BrowsingData;
 import primemover.util.WebStorage;
 
 /**
- * Clear browsing data.
+ * Clear the browsing data a site has stored about this bot: its cookies and its web storage.
  *
  * <p>
- * {@link ClearStorageScope#ALL} is the privacy-conscious user: all cookies and the cache,
- * browser-wide, plus every storage bucket of each named origin. It goes through CDP rather
- * than JavaScript because this job runs at the head of a session, before any page has
- * loaded -- a {@code window.localStorage} call there would address {@code about:blank} and
- * clear nothing at all, which is the trap this scope exists to avoid.
+ * Everything here is standard WebDriver, deliberately. The Chrome DevTools Protocol would
+ * clear cookies browser-wide in one call, but Multilogin's driver does not implement it --
+ * the runner's own H.264 override has been falling back to script injection since it was
+ * written, with {@code unknown command: .../ms/cdp/execute} in the log. A privacy arm built
+ * on CDP would fail on every bot, every session.
  *
  * <p>
- * {@link ClearStorageScope#NONE} is a deliberate no-op, so an experiment's control arm can
- * run the same workflow, with the same job count and timing, as the arm whose data is
- * cleared. It still logs, so the record shows the job ran and chose to clear nothing.
+ * The consequence is that this acts on the <em>current origin</em>:
+ * {@code deleteAllCookies} removes the cookies of the current document's domain, not the
+ * whole browser, and {@code window.localStorage} is reachable only from a loaded page. So
+ * the job has to run on a page of the origin being cleared, and the workflow is responsible
+ * for navigating there first. That is why the design emits a visit before each clear, for
+ * every arm alike: the arms then differ in what the job clears, never in where the bot went.
+ *
+ * <p>
+ * {@link ClearStorageScope#NONE} is a deliberate no-op, so the control arm runs the same
+ * workflow, with the same visits and the same job count, as the arm whose data is cleared.
  */
 public class ClearStorageJobHandler implements IJobHandler {
 
@@ -41,7 +47,7 @@ public class ClearStorageJobHandler implements IJobHandler {
 
 		switch (scope) {
 		case NONE:
-			logger.debug("clear_storage: scope none, leaving browsing data untouched");
+			logger.debug("clear_storage: scope none, leaving this origin's data untouched");
 			return;
 		case LOCAL:
 			logger.debug("clear_storage: localStorage, removed {}", WebStorage.clearLocal(driver));
@@ -50,12 +56,15 @@ public class ClearStorageJobHandler implements IJobHandler {
 			logger.debug("clear_storage: sessionStorage, removed {}", WebStorage.clearSession(driver));
 			return;
 		case ALL:
-			BrowsingData.clearCookiesAndCache(driver);
-			for (String origin : job.getOrigins()) {
-				BrowsingData.clearSiteData(driver, origin);
-			}
-			logger.debug("clear_storage: cookies and cache cleared, site data cleared for {}",
-					job.getOrigins());
+			int cookies = driver.manage().getCookies().size();
+			driver.manage().deleteAllCookies();
+			long local = WebStorage.clearLocal(driver);
+			long session = WebStorage.clearSession(driver);
+			// The counts are logged because "cleared" with no number cannot be told apart
+			// from a job that ran against a page with nothing on it -- which is exactly how
+			// the first version of this handler looked correct while clearing about:blank.
+			logger.debug("clear_storage: {} cookies, localStorage={} sessionStorage={} at {}",
+					cookies, local, session, driver.getCurrentUrl());
 			return;
 		default:
 			throw new IllegalStateException("unhandled clear_storage scope " + scope);
