@@ -160,6 +160,11 @@ public class TaskOperator implements ITaskOperator {
 	// Pause before starting a profile again that Multilogin still reports running.
 	private static final long PROFILE_RUNNING_RETRY_MILLIS = 5000;
 
+	// Bound for stopping the recorder of a failed startup round (discardRecorder).
+	// The stop is immediate -- no browser traffic to wait for -- and normally takes
+	// milliseconds; the bound keeps one that hangs from holding up the next round.
+	private Duration recorderStopBound = Duration.ofSeconds(10);
+
 	// Profile restarts this session has made. Per session because a TaskOperator is
 	// created per joblist (see lastJobState).
 	private int browserRestarts = 0;
@@ -1352,6 +1357,11 @@ public class TaskOperator implements ITaskOperator {
 
 			curRetry++;
 
+			// This round's recorder while no context holds it. A round that fails with
+			// it still here stops it (discardRecorder); once a context holds it, the
+			// next round's start or tearDown stops it along with that context.
+			RecordingProxy roundRecorder = null;
+
 			// create driver
 			try {
 				logger.info("starting up crawler {}, round {} of {}", crawler.getId(), curRetry, maxRetryCountInit);
@@ -1367,6 +1377,7 @@ public class TaskOperator implements ITaskOperator {
 
 				// start new recorder
 				recorder = setupRecorder(crawler);
+				roundRecorder = recorder;
 				DesiredCapabilities capabilities = sessionCapabilities(recorder);
 
 				// setup IpService
@@ -1391,6 +1402,7 @@ public class TaskOperator implements ITaskOperator {
 							crawler.getAgent().getId());
 					throw new UnsupportedOperationException("type not supported: " + crawler.getAgent().getType());
 				}
+				roundRecorder = null; // the context holds it now
 
 				prepareBrowser(context, captchaSolver);
 
@@ -1400,6 +1412,8 @@ public class TaskOperator implements ITaskOperator {
 				done = true;
 			} catch (Exception ex) {
 				logger.error("error during setup for crawler {}", crawler.getId(), ex);
+
+				discardRecorder(crawler, roundRecorder);
 
 				// Wait before going round again. This loop used to retry with no
 				// delay at all, which made the retries worthless against the one
@@ -1427,6 +1441,52 @@ public class TaskOperator implements ITaskOperator {
 
 		// Verify result and return
 		return done && context.isValid();
+	}
+
+	/**
+	 * Stops the recorder of a startup round that failed before a context held it.
+	 *
+	 * <p>
+	 * Why this exists. Every round of {@link #prepareExeuction} creates a recorder
+	 * -- a BrowserUp/LittleProxy listener on an ephemeral port, with its own Netty
+	 * threads -- and then starts the browser. When the start threw (a Multilogin
+	 * launcher 400 GET_PROXY_CONNECTION_IP_ERROR or PROFILE_ALREADY_RUNNING), no
+	 * context held the recorder, so nothing stopped it: not the next round, which
+	 * stops only the context's recorder, not the failed return, and not
+	 * {@link #tearDown(boolean)}, which reaches a recorder only through the
+	 * context. On ex63 on 2026-10-08, after about 440 failed setups of three rounds
+	 * each overnight, the runner JVM held 4,329 threads and 1,399 listening sockets
+	 * with about 22 browsers running; the VM, same code and few failures, 291
+	 * threads and 218 sockets.
+	 *
+	 * <p>
+	 * Stopped at once ({@code tearDown(true)}): no browser ever sent traffic
+	 * through it worth waiting for. Best effort and bounded: a stop that fails is
+	 * logged and the startup goes on, one that hangs is left to finish on its own
+	 * thread after {@link #recorderStopBound}. It runs even on a cut-off
+	 * (interrupted) worker, whose interrupt is put back for the backoff that
+	 * follows, which then ends the retries as before. A no-op for the
+	 * {@code recorder.enabled=false} recorder, which has nothing to stop.
+	 */
+	private void discardRecorder(Crawler crawler, RecordingProxy unused) {
+		if (unused == null) {
+			return;
+		}
+
+		boolean interrupted = Thread.interrupted();
+		try {
+			BoundedCall.await(BoundedCall.start(() -> {
+				unused.tearDown(true);
+				return null;
+			}), recorderStopBound);
+		} catch (Exception e) {
+			logger.warn("could not stop the recorder of a failed setup of crawler {} (bound {} ms); "
+					+ "its listener may stay open", crawler.getId(), recorderStopBound.toMillis(), e);
+		} finally {
+			if (interrupted) {
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 
 	/**
