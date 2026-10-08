@@ -13,9 +13,18 @@ import java.util.Locale;
  * the job and clears nothing.
  */
 public enum ClearStorageScope {
+	/** Clear nothing. The control arm's value; see the class javadoc. */
 	NONE,
+	/** The current origin's localStorage, via JavaScript. Needs a loaded page of that origin. */
 	LOCAL,
+	/** The current origin's sessionStorage, via JavaScript. Needs a loaded page of that origin. */
 	SESSION,
+	/**
+	 * Everything a privacy-conscious user clears: all cookies and the cache, browser-wide,
+	 * plus every storage bucket of each origin the job names. Uses CDP, so unlike
+	 * {@link #LOCAL} and {@link #SESSION} it works with no page loaded -- which is where
+	 * this job runs, at the head of a session.
+	 */
 	ALL;
 
 	/** Parse a behaviour value; null, blank or unrecognised is a hard failure, never a silent NONE. */

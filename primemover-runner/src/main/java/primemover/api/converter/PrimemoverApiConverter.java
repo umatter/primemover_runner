@@ -20,6 +20,7 @@ import primemover.model.proxy.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 
 public class PrimemoverApiConverter {
@@ -504,14 +505,18 @@ public class PrimemoverApiConverter {
 	}
 
 	/**
-	 * Clear web storage for the current origin. The {@code scope} behaviour is required and
+	 * Clear browsing data. The {@code scope} behaviour is required and
 	 * is validated by {@link ClearStorageScope#parse}: an absent or misspelt scope fails the
 	 * job rather than defaulting, because a job that quietly clears nothing while the
 	 * experiment record says it cleared is a silent second control arm.
 	 */
 	private static IJob convertApiClearStorageJob(Long id, String name, String description,
 			Map<String, String> behaviors) {
-		return new ClearStorageJob(id, name, description, ClearStorageScope.parse(behaviors.get("scope")));
+		String raw = behaviors.get("origins");
+		List<String> origins = raw == null || raw.trim().isEmpty() ? List.of()
+				: Arrays.stream(raw.split(",")).map(String::trim).filter(o -> !o.isEmpty()).toList();
+		return new ClearStorageJob(id, name, description,
+				ClearStorageScope.parse(behaviors.get("scope")), origins);
 	}
 
 	/**
