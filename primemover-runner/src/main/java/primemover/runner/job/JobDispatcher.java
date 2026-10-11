@@ -136,6 +136,11 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		tmp = new AssertProxyByOxylabsJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(AssertProxyByOxylabsJob.class, tmp);
+
+		logger.trace("creating ClearStorage-Handler");
+		tmp = new ClearStorageJobHandler();
+		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
+		addHandler(ClearStorageJob.class, tmp);
 	}
 
 	// constructor

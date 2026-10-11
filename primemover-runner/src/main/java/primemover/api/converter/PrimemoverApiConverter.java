@@ -489,6 +489,9 @@ public class PrimemoverApiConverter {
 			res = convertApiLambdaSelectJob(job.getId(), job.getName(), job.getDescription(), captchaSolving,
 					behaviors);
 			break;
+		case "clearstoragejob":
+			res = convertApiClearStorageJob(job.getId(), job.getName(), job.getDescription(), behaviors);
+			break;
 		case "assertproxyjob": // provider-neutral name from the spec DSL
 		case "assertproxybyoxylabsjob":
 			res = convertApiAssertProxyJob(job.getId(), job.getName(), job.getDescription(), behaviors);
@@ -498,6 +501,17 @@ public class PrimemoverApiConverter {
 		}
 
 		return res;
+	}
+
+	/**
+	 * Clear browsing data. The {@code scope} behaviour is required and
+	 * is validated by {@link ClearStorageScope#parse}: an absent or misspelt scope fails the
+	 * job rather than defaulting, because a job that quietly clears nothing while the
+	 * experiment record says it cleared is a silent second control arm.
+	 */
+	private static IJob convertApiClearStorageJob(Long id, String name, String description,
+			Map<String, String> behaviors) {
+		return new ClearStorageJob(id, name, description, ClearStorageScope.parse(behaviors.get("scope")));
 	}
 
 	/**
