@@ -105,6 +105,13 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(LambdaSelectJob.class, tmp);
 
+		// A job a study uploads belongs above the early return below: in PRODUCTION nothing
+		// after it is registered, and an unregistered type fails as "not yet supported".
+		logger.trace("creating ClearStorage-Handler");
+		tmp = new ClearStorageJobHandler();
+		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
+		addHandler(ClearStorageJob.class, tmp);
+
 		// ---------------------------------------------------------------
 		// add assert-jobs only for develop and integration
 		// ---------------------------------------------------------------
@@ -136,11 +143,6 @@ public class JobDispatcher implements IJobDispatcher, ApplicationContextAware {
 		tmp = new AssertProxyByOxylabsJobHandler();
 		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
 		addHandler(AssertProxyByOxylabsJob.class, tmp);
-
-		logger.trace("creating ClearStorage-Handler");
-		tmp = new ClearStorageJobHandler();
-		ctx.getAutowireCapableBeanFactory().autowireBean(tmp);
-		addHandler(ClearStorageJob.class, tmp);
 	}
 
 	// constructor
