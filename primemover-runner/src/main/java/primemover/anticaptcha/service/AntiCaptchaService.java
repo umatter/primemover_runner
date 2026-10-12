@@ -8,10 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import primemover.anticaptcha.TurnstileTokenSource;
 
 import java.util.Optional;
 
-public class AntiCaptchaService {
+public class AntiCaptchaService implements TurnstileTokenSource {
 
 	public AntiCaptchaService() {
 	}
@@ -129,6 +130,7 @@ public class AntiCaptchaService {
 	 * as empty, never thrown: a challenge we could not pay our way through is a
 	 * degraded job, not a crashed one. The API key is never logged.
 	 */
+	@Override
 	public Optional<String> solveTurnstileProxyless(String websiteUrl, String websiteKey, String action,
 			String cData) {
 		AntiCaptchaTask task = new AntiCaptchaTask();

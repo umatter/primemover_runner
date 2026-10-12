@@ -30,17 +30,21 @@ public final class BingTurnstileChallenge {
 
 	private static final String DEFAULT_ACTION = "NA";
 	private static final String DEFAULT_CDATA = "00000000-0000-0000-0000-000000000000";
+	private static final String DEFAULT_PARTNER = "0";
 
 	private final String siteKey;
 	private final String verifyEndpoint;
 	private final String action;
 	private final String cData;
+	private final String partner;
 
-	private BingTurnstileChallenge(String siteKey, String verifyEndpoint, String action, String cData) {
+	private BingTurnstileChallenge(String siteKey, String verifyEndpoint, String action, String cData,
+			String partner) {
 		this.siteKey = siteKey;
 		this.verifyEndpoint = verifyEndpoint;
 		this.action = action;
 		this.cData = cData;
+		this.partner = partner;
 	}
 
 	/**
@@ -72,9 +76,11 @@ public final class BingTurnstileChallenge {
 
 		String action = config.optString("ruleId", "");
 		String cData = config.optString("impressionGuid", "");
+		String partner = config.optString("partner", "");
 
 		return Optional.of(new BingTurnstileChallenge(siteKey, verifyEndpoint,
-				action.isBlank() ? DEFAULT_ACTION : action, cData.isBlank() ? DEFAULT_CDATA : cData));
+				action.isBlank() ? DEFAULT_ACTION : action, cData.isBlank() ? DEFAULT_CDATA : cData,
+				partner.isBlank() ? DEFAULT_PARTNER : partner));
 	}
 
 	public String getSiteKey() {
@@ -93,6 +99,11 @@ public final class BingTurnstileChallenge {
 	/** Bing's {@code impressionGuid}: the widget's {@code cData}. */
 	public String getCData() {
 		return cData;
+	}
+
+	/** Bing's {@code partner}: what its callback reports the outcome under. */
+	public String getPartner() {
+		return partner;
 	}
 
 	@Override

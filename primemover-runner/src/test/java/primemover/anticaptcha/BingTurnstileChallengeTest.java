@@ -36,6 +36,7 @@ class BingTurnstileChallengeTest {
 		assertThat(challenge.getVerifyEndpoint()).isEqualTo("https://www.bing.com/challenge/verify?partner=7&token=");
 		assertThat(challenge.getAction()).isEqualTo("CC7527");
 		assertThat(challenge.getCData()).isEqualTo("AEE96B5FD39F4A399BEB7847BE9FD66C");
+		assertThat(challenge.getPartner()).isEqualTo("7");
 	}
 
 	@Test
@@ -63,6 +64,7 @@ class BingTurnstileChallengeTest {
 
 		assertThat(challenge.getAction()).isEqualTo("NA");
 		assertThat(challenge.getCData()).isEqualTo("00000000-0000-0000-0000-000000000000");
+		assertThat(challenge.getPartner()).isEqualTo("0");
 	}
 
 	@Test
