@@ -1,5 +1,8 @@
 package primemover.anticaptcha;
 
+import primemover.anticaptcha.service.TaskProxy;
+
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -13,6 +16,11 @@ public interface TurnstileTokenSource {
 
 	/**
 	 * A token for this widget, or empty when none could be had. Never throws.
+	 *
+	 * @param proxy the proxy the worker solves through (the bot's own upstream, so
+	 *              the token comes from the bot's exit address), or {@code null} to
+	 *              let the worker solve from its own address
 	 */
-	Optional<String> solveTurnstileProxyless(String websiteUrl, String websiteKey, String action, String cData);
+	Optional<String> solveTurnstile(String websiteUrl, String websiteKey, String action, String cData,
+			@Nullable TaskProxy proxy);
 }

@@ -35,6 +35,20 @@ class CaptchaSolverFactoryTest {
 	}
 
 	@Test
+	@DisplayName("an unknown proxy mode stops the runner at startup; none and bot are accepted")
+	void unknownProxyModeIsRefused() {
+		CaptchaSolverFactory factory = factory("api");
+		ReflectionTestUtils.setField(factory, "proxyMode", "residential");
+		assertThatThrownBy(factory::validate).isInstanceOf(IllegalStateException.class)
+				.hasMessageContaining("residential");
+
+		ReflectionTestUtils.setField(factory, "proxyMode", "bot");
+		factory.validate();
+		ReflectionTestUtils.setField(factory, "proxyMode", " None ");
+		factory.validate();
+	}
+
+	@Test
 	@DisplayName("an unknown solver name stops the runner at startup")
 	void unknownSolverIsRefused() {
 		assertThatThrownBy(() -> factory("extension").validate()).isInstanceOf(IllegalStateException.class)

@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import primemover.anticaptcha.TurnstileTokenSource;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class AntiCaptchaService implements TurnstileTokenSource {
@@ -119,8 +120,9 @@ public class AntiCaptchaService implements TurnstileTokenSource {
 	}
 
 	/**
-	 * A Cloudflare Turnstile token for this widget, solved by Anti-Captcha's
-	 * workers from their own address (no proxy).
+	 * A Cloudflare Turnstile token for this widget: a {@code TurnstileTask} solved
+	 * through {@code proxy} when one is given, so the token comes from the bot's own
+	 * exit address, else a {@code TurnstileTaskProxyless} solved from the worker's.
 	 *
 	 * <p>
 	 * {@code action} and {@code cData} must be the values the page rendered the
@@ -128,17 +130,21 @@ public class AntiCaptchaService implements TurnstileTokenSource {
 	 * can check them. Every failure -- a createTask error such as a zero balance, an
 	 * unsolvable task, a timeout, an unreachable service -- is logged and returned
 	 * as empty, never thrown: a challenge we could not pay our way through is a
-	 * degraded job, not a crashed one. The API key is never logged.
+	 * degraded job, not a crashed one. Neither the API key nor the proxy password
+	 * is ever logged.
 	 */
 	@Override
-	public Optional<String> solveTurnstileProxyless(String websiteUrl, String websiteKey, String action,
-			String cData) {
+	public Optional<String> solveTurnstile(String websiteUrl, String websiteKey, String action, String cData,
+			@Nullable TaskProxy proxy) {
 		AntiCaptchaTask task = new AntiCaptchaTask();
-		task.setType("TurnstileTaskProxyless");
+		task.setType(proxy == null ? "TurnstileTaskProxyless" : "TurnstileTask");
 		task.setWebsiteUrl(websiteUrl);
 		task.setWebsiteKey(websiteKey);
 		task.setAction(action);
 		task.setCData(cData);
+		if (proxy != null) {
+			task.setProxy(proxy);
+		}
 
 		CreateTaskRequest request = new CreateTaskRequest();
 		request.setClientKey(apiKey);
@@ -154,7 +160,8 @@ public class AntiCaptchaService implements TurnstileTokenSource {
 				return Optional.empty();
 			}
 
-			logger.debug("Turnstile task {} created for site key {}", created.getTaskId(), websiteKey);
+			logger.debug("Turnstile task {} created for site key {} via {}", created.getTaskId(), websiteKey,
+					proxy == null ? "the worker's own address" : proxy);
 			ResponseEntity<SolvingResponse> result = pollForResult(created.getTaskId());
 			SolvingResponse body = result == null ? null : result.getBody();
 			String token = body == null || body.getSolution() == null ? null : body.getSolution().getToken();

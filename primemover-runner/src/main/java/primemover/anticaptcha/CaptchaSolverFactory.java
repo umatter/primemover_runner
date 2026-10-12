@@ -15,13 +15,18 @@ import org.springframework.context.ApplicationContextAware;
  * Anti-Captcha's HTTP API and works on any browser, Multilogin X included;
  * {@code plugin} installs the Anti-Captcha browser extension, which works only
  * on plain Chrome/Firefox and Multilogin 6 -- on an MLX profile it installs
- * nothing and solves nothing. Any other value stops the runner at startup.
+ * nothing and solves nothing. Any other value stops the runner at startup, as
+ * does an {@code anticaptcha.api.proxy} other than {@code none} or {@code bot}
+ * ({@link TurnstileProxyMode}), which every API solver reads.
  */
 public class CaptchaSolverFactory implements ApplicationContextAware {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CaptchaSolverFactory.class);
 
 	@Value("${anticaptcha.solver:api}")
 	private String solver = "api";
+
+	@Value("${anticaptcha.api.proxy:none}")
+	private String proxyMode = "none";
 
 	private ApplicationContext ctx;
 	private boolean isInit = false;
@@ -30,17 +35,18 @@ public class CaptchaSolverFactory implements ApplicationContextAware {
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		LOGGER.debug("setting application context");
 		validate();
-		LOGGER.info("captcha solver: {}", solver.strip());
+		LOGGER.info("captcha solver: {} (api proxy: {})", solver.strip(), proxyMode.strip());
 		this.ctx = applicationContext;
 
 		isInit = true;
 	}
 
-	/** Refuse a solver name that is neither {@code api} nor {@code plugin}. */
+	/** Refuse a solver name or a proxy mode the runner does not know. */
 	void validate() {
 		if (!isApi() && !"plugin".equalsIgnoreCase(solver.strip())) {
 			throw new IllegalStateException("anticaptcha.solver must be 'api' or 'plugin', not '" + solver + "'");
 		}
+		TurnstileProxyMode.parse(proxyMode);
 	}
 
 	private boolean isApi() {

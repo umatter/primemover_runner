@@ -6,7 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.ScriptTimeoutException;
 import org.openqa.selenium.WebDriver;
+import primemover.anticaptcha.service.HostResolver;
+import primemover.anticaptcha.service.TaskProxy;
 import primemover.model.IJob;
+import primemover.model.proxy.HttpProxy;
+import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
 
 import java.io.IOException;
@@ -57,12 +61,14 @@ class ApiCaptchaSolverTest {
 	private static final class FakeTokenSource implements TurnstileTokenSource {
 		final List<List<String>> calls = new ArrayList<>();
 		final Deque<Optional<String>> answers = new ArrayDeque<>();
+		final List<TaskProxy> proxies = new ArrayList<>();
 		Optional<String> fallback = Optional.empty();
 
 		@Override
-		public Optional<String> solveTurnstileProxyless(String websiteUrl, String websiteKey, String action,
-				String cData) {
+		public Optional<String> solveTurnstile(String websiteUrl, String websiteKey, String action, String cData,
+				TaskProxy proxy) {
 			calls.add(List.of(websiteUrl, websiteKey, action, cData));
+			proxies.add(proxy);
 			return answers.isEmpty() ? fallback : answers.poll();
 		}
 	}
@@ -126,8 +132,58 @@ class ApiCaptchaSolverTest {
 		assertThat(result.getCaptchaType()).isEqualTo(ChallengePageDetector.BING_TURNSTILE_LABEL);
 		assertThat(service.calls).containsExactly(
 				List.of(WEBSITE_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "AEE96B5FD39F4A399BEB7847BE9FD66C"));
+		assertThat(service.proxies).containsExactly((TaskProxy) null);
 		verifyScriptCall("0.token", "CC7527");
 		verify(navigation).refresh();
+	}
+
+	private ApiCaptchaSolver botProxySolver(Optional<IProxy> upstream) {
+		return new ApiCaptchaSolver(service, true, TurnstileProxyMode.BOT, ctx -> upstream, HostResolver.SYSTEM);
+	}
+
+	@Test
+	@DisplayName("proxy mode bot: the token is solved through the session's own upstream proxy")
+	void botModeSolvesThroughTheUpstream() {
+		when(driver.getPageSource()).thenReturn(challengePage, ordinaryPage);
+		service.fallback = Optional.of("0.token");
+		when(((JavascriptExecutor) driver).executeAsyncScript(anyString(), any(), any(), any(), any()))
+				.thenReturn(Map.of("status", 200L, "success", true));
+
+		CaptchaSolverResult result = botProxySolver(
+				Optional.of(new HttpProxy("185.91.116.40", 8080, "user-sess-1", "pw"))).solve(context, job, true);
+
+		assertThat(result.isCaptchaSolved()).isTrue();
+		assertThat(service.proxies).hasSize(1);
+		TaskProxy proxy = service.proxies.get(0);
+		assertThat(proxy.getAddress()).isEqualTo("185.91.116.40");
+		assertThat(proxy.getPort()).isEqualTo(8080);
+		assertThat(proxy.getLogin()).isEqualTo("user-sess-1");
+	}
+
+	@Test
+	@DisplayName("proxy mode bot without an upstream proxy: nothing is bought, never a silent proxyless solve")
+	void botModeWithoutUpstreamBuysNothing() {
+		when(driver.getPageSource()).thenReturn(challengePage);
+
+		CaptchaSolverResult result = botProxySolver(Optional.empty()).solve(context, job, true);
+
+		assertThat(result.isCaptchaDetected()).isTrue();
+		assertThat(result.isCaptchaSolved()).isFalse();
+		assertThat(result.hasError()).isTrue();
+		assertThat(service.calls).isEmpty();
+	}
+
+	@Test
+	@DisplayName("proxy mode bot with a local upstream (one Anti-Captcha cannot reach): nothing is bought")
+	void botModeWithLocalUpstreamBuysNothing() {
+		when(driver.getPageSource()).thenReturn(challengePage);
+
+		CaptchaSolverResult result = botProxySolver(Optional.of(new HttpProxy("127.0.0.1", 8888, "u", "p")))
+				.solve(context, job, true);
+
+		assertThat(result.isCaptchaSolved()).isFalse();
+		assertThat(result.hasError()).isTrue();
+		assertThat(service.calls).isEmpty();
 	}
 
 	@Test

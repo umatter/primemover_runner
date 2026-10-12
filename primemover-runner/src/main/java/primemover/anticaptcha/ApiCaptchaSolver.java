@@ -9,9 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import primemover.anticaptcha.service.HostResolver;
+import primemover.anticaptcha.service.TaskProxy;
 import primemover.capture.RecordingProxy;
 import primemover.model.Crawler;
 import primemover.model.IJob;
+import primemover.model.proxy.IProxy;
 import primemover.runner.context.IRunnerContext;
 
 import javax.annotation.Nullable;
@@ -49,6 +52,15 @@ import java.util.concurrent.TimeUnit;
  * query.
  *
  * <p>
+ * {@code anticaptcha.api.proxy} ({@link TurnstileProxyMode}) decides where the
+ * widget is solved from: {@code none}, the worker's own address; {@code bot}, the
+ * bot's exit, through the session's own upstream proxy -- the same decorated
+ * session the browser egresses through, so the same sticky exit. In {@code bot}
+ * mode a session with no upstream Anti-Captcha can reach (none at all, or a local
+ * one) buys nothing and reports why: it never falls back to a proxyless solve,
+ * so the mode configured is the mode that ran.
+ *
+ * <p>
  * {@code solve} never throws: a challenge it could not get through is a result,
  * and {@code TaskOperator} turns a job that ends on one into a warning.
  */
@@ -78,6 +90,17 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 	@Value("${anticaptcha.enabled:true}")
 	private Boolean enabled;
 
+	@Value("${anticaptcha.api.proxy:none}")
+	private String proxyMode = "none";
+
+	/** The session's upstream proxy; the recorder's chained session in production. */
+	interface Upstream {
+		Optional<? extends IProxy> of(IRunnerContext<?> context);
+	}
+
+	private Upstream upstream = ApiCaptchaSolver::recorderUpstream;
+	private HostResolver resolver = HostResolver.SYSTEM;
+
 	public ApiCaptchaSolver() {
 		// wired by CaptchaSolverFactory
 	}
@@ -85,6 +108,19 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 	ApiCaptchaSolver(TurnstileTokenSource service, boolean enabled) {
 		this.service = service;
 		this.enabled = enabled;
+	}
+
+	ApiCaptchaSolver(TurnstileTokenSource service, boolean enabled, TurnstileProxyMode mode, Upstream upstream,
+			HostResolver resolver) {
+		this(service, enabled);
+		this.proxyMode = mode.name();
+		this.upstream = upstream;
+		this.resolver = resolver;
+	}
+
+	private static Optional<? extends IProxy> recorderUpstream(IRunnerContext<?> context) {
+		RecordingProxy recorder = context.getRecordingProxy();
+		return recorder == null ? Optional.empty() : recorder.getUpstreamSession();
 	}
 
 	private static String loadScript() {
@@ -106,7 +142,8 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 			return false;
 		}
 
-		LOGGER.info("Anticaptcha enabled (API solver: Bing Turnstile)");
+		LOGGER.info("Anticaptcha enabled (API solver: Bing Turnstile, proxy {})",
+				TurnstileProxyMode.parse(proxyMode).name().toLowerCase());
 		return true;
 	}
 
@@ -140,6 +177,23 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 			return CaptchaSolverResult.of(true, true, true, false, 0, false, false, label);
 		}
 
+		TaskProxy proxy = null;
+		if (TurnstileProxyMode.parse(proxyMode) == TurnstileProxyMode.BOT) {
+			try {
+				Optional<? extends IProxy> session = upstream.of(context);
+				if (session.isEmpty()) {
+					throw new IllegalArgumentException("the session has no upstream proxy");
+				}
+				proxy = TaskProxy.resolve(session.get(), resolver);
+			} catch (RuntimeException e) {
+				// IllegalArgumentException from resolve, or an incomplete proxy record
+				// throwing from its own getters: either way, nothing to solve through
+				LOGGER.warn("job {}: {}, but cannot solve from the bot's address: {}", job.getId(), label,
+						e.getMessage());
+				return CaptchaSolverResult.of(true, true, true, false, 0, false, true, label);
+			}
+		}
+
 		StopWatch timing = StopWatch.createStarted();
 		boolean machineryFailed = false;
 
@@ -157,10 +211,10 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 				break;
 			}
 
-			LOGGER.info("job {}: {} (attempt {}/{}), asking Anti-Captcha for {}", job.getId(), label, attempt,
-					MAX_ATTEMPTS, challenge.get());
-			Optional<String> token = service.solveTurnstileProxyless(withoutQuery(url), challenge.get().getSiteKey(),
-					challenge.get().getAction(), challenge.get().getCData());
+			LOGGER.info("job {}: {} (attempt {}/{}), asking Anti-Captcha for {} via {}", job.getId(), label, attempt,
+					MAX_ATTEMPTS, challenge.get(), proxy == null ? "its own address" : proxy);
+			Optional<String> token = service.solveTurnstile(withoutQuery(url), challenge.get().getSiteKey(),
+					challenge.get().getAction(), challenge.get().getCData(), proxy);
 			if (token.isEmpty()) {
 				LOGGER.warn("job {}: no Turnstile token from Anti-Captcha", job.getId());
 				machineryFailed = true;
