@@ -57,6 +57,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
+
 /**
  * Entry point for a task run. The operator will first setup the running context
  * (browser, proxy, anti-captcha) and run some checks. Then the containing
@@ -627,15 +629,21 @@ public class TaskOperator implements ITaskOperator {
 				logger.debug("Could not read current URL for challenge-page check. jobid {}", job.getId(), ex);
 			}
 
-			Optional<String> challenge = challengeWarning(currentUrl, pageSource, captchaSolvedFor(dataRecorder));
+			CaptchaSolverResultHolder captchaResults = captchaResultsFor(dataRecorder);
+			Optional<String> challenge = challengeWarning(currentUrl, pageSource, solvedOnFinalPage(captchaResults));
 			if (challenge.isPresent()) {
 				// a challenge page IS a captcha, so say so on the same field the API
 				// already stores -- without touching the substring rule that sets it
 				captchaFound = true;
 				JobDiagnostics.addWarning(challenge.get());
 			}
+			if (captchaResults != null && captchaResults.isAnyCaptchaDetected()) {
+				// so is one the solver met and got past before the page was read
+				captchaFound = true;
+			}
 
-			reportJobState(job, JobState.STORINGDATA, null, captchaFound, null, null, null);
+			reportJobState(job, JobState.STORINGDATA, null, captchaFound, captchaSolvedReport(captchaResults), null,
+					null);
 
 			// save capturing screenshot
 			try {
@@ -834,7 +842,8 @@ public class TaskOperator implements ITaskOperator {
 	 *
 	 * @param currentUrl the browser's current URL, or {@code null} if unreadable
 	 * @param pageSource the page source, or {@code null} if unreadable
-	 * @param solved     whether a captcha was actually solved during this job
+	 * @param solved     whether the solver got the page this job ended on past a
+	 *                   challenge ({@link #solvedOnFinalPage})
 	 */
 	static Optional<String> challengeWarning(String currentUrl, String pageSource, boolean solved) {
 		if (solved) {
@@ -846,30 +855,56 @@ public class TaskOperator implements ITaskOperator {
 	}
 
 	/**
-	 * Whether the anti-captcha plugin actually solved a captcha during this job.
+	 * The captcha solver's results for this job, or {@code null} when there are
+	 * none or they cannot be read.
 	 *
 	 * <p>
 	 * Both solve attempts ({@code BEFORE} and {@code AFTER}) run inside the job
 	 * handler via {@code CaptchaJobHelper}, so by the time the page source is read
-	 * the recorder already holds whichever results there were. Anything we cannot
-	 * read -- no recordings yet, no solver result at all -- counts as
+	 * the recorder already holds whichever results there were.
+	 */
+	private static @Nullable CaptchaSolverResultHolder captchaResultsFor(IJobDataRecorder dataRecorder) {
+		try {
+			RecordedJobData recordings = dataRecorder.getRecordings();
+			return recordings == null ? null : recordings.getCaptchaResults();
+		} catch (Exception ex) {
+			logger.debug("Could not read captcha solver results", ex);
+			return null;
+		}
+	}
+
+	/**
+	 * Whether the solver got the page this job <b>ended on</b> past a challenge.
+	 *
+	 * <p>
+	 * Only the {@code AFTER} attempt looks at that page. A challenge solved
+	 * {@code BEFORE} the job's action says nothing about where the action landed --
+	 * a search can solve its way in and land on a fresh challenge -- and letting it
+	 * count would report that job as a success. Anything we cannot read counts as
 	 * <b>not solved</b>, which is the honest default: the page in front of us says
 	 * "prove you are not a robot" and nothing told us otherwise.
 	 */
-	private static boolean captchaSolvedFor(IJobDataRecorder dataRecorder) {
-		try {
-			RecordedJobData recordings = dataRecorder.getRecordings();
-			CaptchaSolverResultHolder results = recordings == null ? null : recordings.getCaptchaResults();
-			if (results == null) {
-				return false;
-			}
+	static boolean solvedOnFinalPage(@Nullable CaptchaSolverResultHolder results) {
+		return results != null && results.getAfterJob() != null && results.getAfterJob().isCaptchaSolved();
+	}
 
-			return (results.getBeforeJob() != null && results.getBeforeJob().isCaptchaSolved())
-					|| (results.getAfterJob() != null && results.getAfterJob().isCaptchaSolved());
-		} catch (Exception ex) {
-			logger.debug("Could not read captcha solver results", ex);
-			return false;
+	/**
+	 * {@code captcha_solved} as the API stores it: whether the challenge the solver
+	 * met during this job was got past -- the {@code AFTER} attempt's verdict when it
+	 * met one, else the {@code BEFORE} attempt's -- or {@code null} when it met none.
+	 * {@code null} means "no challenge seen, or no solver ran", never "not solved".
+	 */
+	static @Nullable Boolean captchaSolvedReport(@Nullable CaptchaSolverResultHolder results) {
+		if (results == null) {
+			return null;
 		}
+		if (results.getAfterJob() != null && results.getAfterJob().isCaptchaDetected()) {
+			return results.getAfterJob().isCaptchaSolved();
+		}
+		if (results.getBeforeJob() != null && results.getBeforeJob().isCaptchaDetected()) {
+			return results.getBeforeJob().isCaptchaSolved();
+		}
+		return null;
 	}
 
 	/**

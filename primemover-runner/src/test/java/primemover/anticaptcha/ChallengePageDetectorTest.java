@@ -90,6 +90,47 @@ class ChallengePageDetectorTest {
 				"<html><head><title>Just a moment...</title></head><body>loading</body></html>")).isEmpty();
 	}
 
+	@Test
+	@DisplayName("the real Bing Turnstile challenge from experiment 199 is detected")
+	void realBingChallengeFixture() throws IOException {
+		String source = fixture("bing-turnstile-exp199-job715588.html");
+
+		assertThat(ChallengePageDetector.detect("https://www.bing.com/search?q=food+stamps&form=QBLH", source))
+				.contains("bing challenge page (turnstile)");
+		assertThat(ChallengePageDetector.detect(null, source)).contains("bing challenge page (turnstile)");
+	}
+
+	@Test
+	@DisplayName("an ordinary Bing results page is not a challenge, though it names challenges.cloudflare.com")
+	void ordinaryBingResultsPageIsNotAChallenge() throws IOException {
+		String source = fixture("bing-serp-ordinary-exp199-job715553.html");
+
+		assertThat(source).contains("challenges.cloudflare.com");
+		assertThat(ChallengePageDetector.detect("https://www.bing.com/search?q=x&form=QBLH", source)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("Bing's verify endpoint without the challenge sentence is not a challenge")
+	void bingVerifyEndpointAloneIsNotEnough() {
+		String source = "<html><body><script>var CfConfig={\"verifyEndpoint\":"
+				+ "\"https://www.bing.com/challenge/verify?partner=7&token=\"};</script>"
+				+ "<ol id=\"b_results\"><li class=\"b_algo\">result</li></ol></body></html>";
+
+		assertThat(ChallengePageDetector.detect("https://www.bing.com/search?q=x", source)).isEmpty();
+	}
+
+	@Test
+	@DisplayName("a Turnstile widget on an ordinary form is not a challenge")
+	void turnstileWidgetIsNotAChallenge() {
+		String source = "<html><body><form action=\"/login\">"
+				+ "<script src=\"https://challenges.cloudflare.com/turnstile/v0/api.js\" async defer></script>"
+				+ "<div class=\"cf-turnstile\" data-sitekey=\"0x4AAAAAAAAAAAAAAAAAAAAA\"></div>"
+				+ "<input type=\"hidden\" name=\"cf-turnstile-response\">"
+				+ "<button type=\"submit\">log in</button></form></body></html>";
+
+		assertThat(ChallengePageDetector.detect("https://shop.example.com/login", source)).isEmpty();
+	}
+
 	// --- the false positives the naive contains("captcha") check produced ---
 
 	@Test
