@@ -220,6 +220,19 @@ class WatchPageAnchorTest {
 	}
 
 	@Test
+	@DisplayName("a page off YouTube is neither waited on nor reloaded")
+	void pageOffYouTubeIsLeftAlone() {
+		// Experiment 199 on pm-vm, 2026-10-12: every Bing results page was waited on
+		// for 10 s for YouTube's tiles, reloaded -- the search sent to Bing a second
+		// time -- and waited on for 15 s more, and the click was chosen on the reload.
+		WebDriver driver = mock(WebDriver.class);
+		when(driver.getCurrentUrl()).thenReturn("https://www.bing.com/search?q=affordable+care+act&form=QBLH");
+		assertEquals(WatchPageAnchor.Outcome.NOT_YOUTUBE, run(driver, true));
+		verify(driver, never()).navigate();
+		verify(driver, never()).findElements(any(By.class));
+	}
+
+	@Test
 	@DisplayName("the selector matches both containers YouTube renders into")
 	void selectorCoversBothContainers() {
 		// #related is the classic container; #secondary is what a number of the
