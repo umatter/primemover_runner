@@ -2,6 +2,7 @@ package primemover.runner;
 
 import org.openqa.selenium.Cookie;
 import primemover.anticaptcha.CaptchaSolverResult;
+import primemover.capture.SessionStorageRef;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 
@@ -21,6 +22,8 @@ public class RecordedJobDataBuilder {
 	private String sessionStorage = null;
 	private String localStorage = null;
 	private byte[] screenshot = null;
+	private String screenshotExtension = "png";
+	private SessionStorageRef sessionStorageRef = null;
 	private LocationInfo location = null;
 	private CaptchaSolverResult capchaInfoBefore = null;
 	private CaptchaSolverResult capchaInfoAfter = null;
@@ -87,12 +90,32 @@ public class RecordedJobDataBuilder {
 	}
 
 	public RecordedJobDataBuilder setScreenshot(byte[] screenshot) {
+		return setScreenshot(screenshot, "png");
+	}
+
+	/** The screenshot and the extension of its format ({@code png}, or {@code jpg} for a compact capture). */
+	public RecordedJobDataBuilder setScreenshot(byte[] screenshot, String extension) {
 		this.screenshot = screenshot;
+		this.screenshotExtension = extension;
 		return this;
 	}
 
 	public byte[] getScreenshot() {
 		return screenshot;
+	}
+
+	public String getScreenshotExtension() {
+		return screenshotExtension;
+	}
+
+	/** Stored instead of the session storage when it is unchanged (compact capture). */
+	public RecordedJobDataBuilder setSessionStorageRef(@Nullable SessionStorageRef sessionStorageRef) {
+		this.sessionStorageRef = sessionStorageRef;
+		return this;
+	}
+
+	public @Nullable SessionStorageRef getSessionStorageRef() {
+		return sessionStorageRef;
 	}
 
 	public RecordedJobDataBuilder setLocation(LocationInfo location) {

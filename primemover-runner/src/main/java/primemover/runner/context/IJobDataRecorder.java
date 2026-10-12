@@ -2,6 +2,7 @@ package primemover.runner.context;
 
 import org.openqa.selenium.Cookie;
 import primemover.anticaptcha.CaptchaSolverResult;
+import primemover.capture.SessionStorageRef;
 import primemover.model.LocationInfo;
 import primemover.runner.RecordedJobData;
 
@@ -21,6 +22,12 @@ public interface IJobDataRecorder {
 	void setLocalStorage(String localStorage);
 
 	void setScreenshot(byte[] screenshot);
+
+	/** The screenshot in another format than PNG; {@code extension} names it ({@code jpg}). */
+	void setScreenshot(byte[] screenshot, String extension);
+
+	/** Store this pointer instead of the session storage, which is unchanged (compact capture). */
+	void setSessionStorageRef(SessionStorageRef sessionStorageRef);
 
 	void setLocation(LocationInfo location);
 

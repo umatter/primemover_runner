@@ -2,6 +2,7 @@ package primemover.runner;
 
 import org.openqa.selenium.Cookie;
 import org.springframework.util.StringUtils;
+import primemover.capture.SessionStorageRef;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 import primemover.service.datawriter.IRecordedData;
@@ -16,6 +17,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class RecordedJobData implements IRecordedData {
 
 	private byte[] screenshot;
+	private String screenshotExtension = "png";
+	private SessionStorageRef sessionStorageRef;
 	private String har;
 	private String pageSource;
 	private Set<Cookie> cookies;
@@ -58,6 +61,8 @@ public class RecordedJobData implements IRecordedData {
 		this.location = builder.getLocation();
 		this.har = builder.getHar();
 		this.screenshot = builder.getScreenshot();
+		this.screenshotExtension = builder.getScreenshotExtension();
+		this.sessionStorageRef = builder.getSessionStorageRef();
 		this.captchaResults = builder.getCaptchaResults();
 	}
 
@@ -137,6 +142,20 @@ public class RecordedJobData implements IRecordedData {
 
 	public boolean hasScreenshot() {
 		return this.screenshot != null;
+	}
+
+	/** {@code png}, or {@code jpg} when a compact capture re-encoded it. */
+	public String getScreenshotExtension() {
+		return this.screenshotExtension;
+	}
+
+	/** The pointer stored instead of an unchanged session storage, or {@code null}. */
+	public SessionStorageRef getSessionStorageRef() {
+		return this.sessionStorageRef;
+	}
+
+	public boolean hasSessionStorageRef() {
+		return this.sessionStorageRef != null;
 	}
 
 	public LocationInfo getLocation() {
