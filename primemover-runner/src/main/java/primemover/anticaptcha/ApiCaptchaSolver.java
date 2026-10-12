@@ -38,8 +38,15 @@ import java.util.concurrent.TimeUnit;
  * again. The page after the reload decides: solved means the challenge is gone,
  * whatever the verify call said. A challenge still there is tried once more with
  * the new page's parameters (Bing re-renders the widget with a fresh
- * {@code impressionGuid}), then given up. Google's sorry page and the generic
- * Cloudflare interstitial are reported as found and not solved, never paid for.
+ * {@code impressionGuid}), then given up. After {@value #MAX_UNSUCCESSFUL_TOKENS}
+ * tokens in a row that did not get through, the session stops buying and only
+ * reports. Google's sorry page and the generic Cloudflare interstitial are
+ * reported as found and not solved, never paid for.
+ *
+ * <p>
+ * Anti-Captcha is told the page's address without its query string: the bot's
+ * search terms are experiment data, and a token is bound to the site, not the
+ * query.
  *
  * <p>
  * {@code solve} never throws: a challenge it could not get through is a result,
@@ -53,6 +60,17 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 
 	/** One token, and one more if the reload shows a fresh challenge. */
 	static final int MAX_ATTEMPTS = 2;
+
+	/**
+	 * Tokens in a row that did not get the session through, after which it stops
+	 * buying. Every visit, wait and search job calls the solver before and after
+	 * itself, so a session Bing will not let through would otherwise buy two
+	 * tokens per call, and spend ~30 s per token, for the rest of its run.
+	 */
+	static final int MAX_UNSUCCESSFUL_TOKENS = 4;
+
+	/** Per solver, and a solver lives as long as one browser session. */
+	private int unsuccessfulTokens = 0;
 
 	@Autowired
 	private TurnstileTokenSource service;
@@ -126,6 +144,12 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 		boolean machineryFailed = false;
 
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+			if (unsuccessfulTokens >= MAX_UNSUCCESSFUL_TOKENS) {
+				LOGGER.warn("job {}: {}, but {} tokens in a row have failed this session; not buying more",
+						job.getId(), label, unsuccessfulTokens);
+				break;
+			}
+
 			Optional<BingTurnstileChallenge> challenge = BingTurnstileChallenge.parse(source);
 			if (challenge.isEmpty()) {
 				LOGGER.warn("job {}: {} without a readable widget config, not solving", job.getId(), label);
@@ -135,7 +159,7 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 
 			LOGGER.info("job {}: {} (attempt {}/{}), asking Anti-Captcha for {}", job.getId(), label, attempt,
 					MAX_ATTEMPTS, challenge.get());
-			Optional<String> token = service.solveTurnstileProxyless(url, challenge.get().getSiteKey(),
+			Optional<String> token = service.solveTurnstileProxyless(withoutQuery(url), challenge.get().getSiteKey(),
 					challenge.get().getAction(), challenge.get().getCData());
 			if (token.isEmpty()) {
 				LOGGER.warn("job {}: no Turnstile token from Anti-Captcha", job.getId());
@@ -149,6 +173,7 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 			url = currentUrl(driver);
 			source = pageSource(driver);
 			if (ChallengePageDetector.detect(url, source).isEmpty()) {
+				unsuccessfulTokens = 0;
 				timing.stop();
 				LOGGER.info("job {}: {} solved on attempt {} in {} s", job.getId(), label, attempt,
 						timing.getTime(TimeUnit.SECONDS));
@@ -156,6 +181,7 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 						false, label);
 			}
 
+			unsuccessfulTokens++;
 			LOGGER.warn("job {}: still on {} after attempt {}", job.getId(), label, attempt);
 		}
 
@@ -187,6 +213,23 @@ public class ApiCaptchaSolver implements ICaptchaSolver {
 			// a slow reload still leaves a page to look at
 			LOGGER.warn("job {}: reload after the verify call failed: {}", job.getId(), e.getMessage());
 		}
+	}
+
+	/** {@code scheme://host/path}: the page, without the query and fragment. */
+	static String withoutQuery(@Nullable String url) {
+		if (url == null) {
+			return "";
+		}
+		int end = url.length();
+		int query = url.indexOf('?');
+		int fragment = url.indexOf('#');
+		if (query >= 0) {
+			end = query;
+		}
+		if (fragment >= 0 && fragment < end) {
+			end = fragment;
+		}
+		return url.substring(0, end);
 	}
 
 	private static @Nullable String currentUrl(WebDriver driver) {

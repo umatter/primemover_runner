@@ -41,6 +41,8 @@ class ApiCaptchaSolverTest {
 
 	private static final String BING_URL = "https://www.bing.com/search?q=food+stamps&form=QBLH";
 	private static final String VERIFY_ENDPOINT = "https://www.bing.com/challenge/verify?partner=7&token=";
+	/** What Anti-Captcha is told: the page, without the bot's search query. */
+	private static final String WEBSITE_URL = "https://www.bing.com/search";
 
 	private static String challengePage;
 	private static String ordinaryPage;
@@ -123,7 +125,7 @@ class ApiCaptchaSolverTest {
 		assertThat(result.hasError()).isFalse();
 		assertThat(result.getCaptchaType()).isEqualTo(ChallengePageDetector.BING_TURNSTILE_LABEL);
 		assertThat(service.calls).containsExactly(
-				List.of(BING_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "AEE96B5FD39F4A399BEB7847BE9FD66C"));
+				List.of(WEBSITE_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "AEE96B5FD39F4A399BEB7847BE9FD66C"));
 		verifyScriptCall("0.token", "CC7527");
 		verify(navigation).refresh();
 	}
@@ -157,9 +159,27 @@ class ApiCaptchaSolverTest {
 		assertThat(result.isCaptchaDetected()).isTrue();
 		assertThat(result.isCaptchaSolved()).isFalse();
 		assertThat(service.calls).containsExactly(
-				List.of(BING_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "AEE96B5FD39F4A399BEB7847BE9FD66C"),
-				List.of(BING_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"));
+				List.of(WEBSITE_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "AEE96B5FD39F4A399BEB7847BE9FD66C"),
+				List.of(WEBSITE_URL, "0x4AAAAAABgNScUsbCFCjwIZ", "CC7527", "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"));
 		verify(navigation, times(2)).refresh();
+	}
+
+	@Test
+	@DisplayName("a session Bing will not let through stops buying tokens after four in a row fail")
+	void unsuccessfulTokensAreCappedPerSession() {
+		when(driver.getPageSource()).thenReturn(challengePage);
+		service.fallback = Optional.of("0.token");
+		when(((JavascriptExecutor) driver).executeAsyncScript(anyString(), any(), any(), any(), any()))
+				.thenReturn(Map.of("status", 200L, "success", false));
+		ApiCaptchaSolver solver = new ApiCaptchaSolver(service, true);
+
+		solver.solve(context, job, true);
+		solver.solve(context, job, true);
+		CaptchaSolverResult third = solver.solve(context, job, true);
+
+		assertThat(service.calls).hasSize(4);
+		assertThat(third.isCaptchaDetected()).isTrue();
+		assertThat(third.isCaptchaSolved()).isFalse();
 	}
 
 	@Test
