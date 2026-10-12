@@ -76,7 +76,13 @@ public final class WatchPageAnchor {
 		 */
 		REANCHORED,
 		/** Still no recommendations. The decision will fail, and should. */
-		ABSENT
+		ABSENT,
+		/**
+		 * The page is not YouTube's (a search engine's results page, say), so there are
+		 * no recommendations to wait for: nothing was waited on and nothing reloaded.
+		 * See {@link YouTubePage}.
+		 */
+		NOT_YOUTUBE
 	}
 
 	/**
@@ -123,6 +129,9 @@ public final class WatchPageAnchor {
 	static Outcome ensureRecommendations(WebDriver driver, long jobId, boolean recoveryEnabled,
 			Duration firstWait, Duration secondWait, Duration poll) {
 
+		if (YouTubePage.isOffYouTube(currentUrl(driver))) {
+			return Outcome.NOT_YOUTUBE;
+		}
 		if (awaitRecommendations(driver, firstWait, poll)) {
 			remember(driver);
 			return Outcome.PRESENT;
