@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  * <p>
  * Every signature therefore requires a <b>page-level</b> signal -- the URL the
  * block redirected to, or text that only the block page carries -- and never a
- * widget marker. Two signatures are implemented, both seen in our own data:
+ * widget marker. Three signatures are implemented, all seen in our own data:
  *
  * <ul>
  * <li><b>Google sorry page.</b> A {@code /sorry/} URL on any Google domain, or
@@ -40,6 +40,14 @@ import java.util.regex.Pattern;
  * {@code cf-chl-bypass} and {@code __cf_chl_f_tk}), or
  * {@code challenge-platform}. The title alone is not enough: plenty of ordinary
  * loading screens use it.</li>
+ * <li><b>Bing challenge.</b> Bing's own "One last step" page, which keeps the
+ * {@code /search} URL and renders a Cloudflare Turnstile widget in place of the
+ * results. Two signals, both required: the sentence "please solve the challenge
+ * below to continue" and Bing's {@code bing.com/challenge/verify} endpoint in the
+ * page config. Experiment 199 hit it twice on 2026-10-12 (jobs 715588, 715686);
+ * of the 126 Bing result pages stored that month, those two carry either signal
+ * and no other does. {@code challenges.cloudflare.com} is useless as a signal:
+ * every ordinary Bing results page names it in an inline allow-list.</li>
  * </ul>
  *
  * <p>
@@ -77,6 +85,15 @@ public final class ChallengePageDetector {
 			.compile("<title[^>]*>\\s*just a moment\\s*(?:\\.\\.\\.|\\u2026)?\\s*</title>", Pattern.CASE_INSENSITIVE);
 
 	private static final String CLOUDFLARE_LABEL = "cloudflare challenge page";
+
+	/** The visible sentence under Bing's "One last step" header. */
+	private static final String BING_CHALLENGE_TEXT = "please solve the challenge below to continue";
+
+	/** Where Bing's page sends the Turnstile token; only its challenge page carries it. */
+	private static final String BING_VERIFY_ENDPOINT = "bing.com/challenge/verify";
+
+	/** The label of Bing's Turnstile challenge, the one challenge the runner can solve. */
+	public static final String BING_TURNSTILE_LABEL = "bing challenge page (turnstile)";
 
 	private ChallengePageDetector() {
 		// static utility
@@ -121,6 +138,13 @@ public final class ChallengePageDetector {
 		if (CLOUDFLARE_TITLE.matcher(lower).find() && (lower.contains("cf-chl") || lower.contains("cf_chl")
 				|| lower.contains("challenge-platform"))) {
 			return Optional.of(CLOUDFLARE_LABEL);
+		}
+
+		// The sentence says "block page"; the endpoint says "Bing's". Both are
+		// required, so a page config shipped on ordinary result pages cannot
+		// turn every search into a challenge.
+		if (lower.contains(BING_CHALLENGE_TEXT) && lower.contains(BING_VERIFY_ENDPOINT)) {
+			return Optional.of(BING_TURNSTILE_LABEL);
 		}
 
 		return Optional.empty();
