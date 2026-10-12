@@ -23,9 +23,12 @@ import org.springframework.beans.factory.annotation.Value;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ChallengePageDetector;
 import primemover.anticaptcha.ICaptchaSolver;
+import primemover.capture.CaptureProfile;
 import primemover.capture.HarRecordingFilter;
 import primemover.capture.RecordingProxy;
 import primemover.capture.RecordingProxyFactory;
+import primemover.capture.ScreenshotEncoder;
+import primemover.capture.SessionStorageDeduplicator;
 import primemover.model.*;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.model.jobs.VisitJob;
@@ -42,6 +45,8 @@ import primemover.service.*;
 import primemover.service.datawriter.DataWriterCachingDecorator;
 import primemover.service.datawriter.IDataWriter;
 import primemover.service.datawriter.IDataWriterFactory;
+import primemover.service.datawriter.StorageUtility;
+import primemover.service.datawriter.WriterUtil;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,6 +61,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Nullable;
 
 import javax.annotation.Nullable;
 
@@ -236,6 +242,16 @@ public class TaskOperator implements ITaskOperator {
 
 	@Autowired
 	private HarRecordingFilter harRecordingFilter;
+
+	/** JPEG quality (1..100) of a compact capture's screenshot. */
+	@Value("${capture.compact.jpegQuality:80}")
+	private int compactJpegQuality = 80;
+
+	/**
+	 * This session's record of which job holds its session storage in full; used
+	 * only by a compact capture (one TaskOperator runs one crawler's job list).
+	 */
+	private final SessionStorageDeduplicator sessionStorageDedup = new SessionStorageDeduplicator();
 
 	private IpService ipService;
 
@@ -540,9 +556,13 @@ public class TaskOperator implements ITaskOperator {
 				logger.warn("IP-Checking (before job) was unsuccessfull for job {}", job.getId(), e);
 			}
 
+			// how much of this job to store: the crawler's capture_profile preference
+			CaptureProfile captureProfile = CaptureProfile
+					.of(context.getCrawler() == null ? null : context.getCrawler().getRawConfiguration());
+
 			// start MITM
 			// Determine if HAR recording should be enabled for this job type
-			boolean shouldRecordHar = harRecordingFilter.shouldRecordHar(job);
+			boolean shouldRecordHar = recordsHar(captureProfile, harRecordingFilter.shouldRecordHar(job));
 
 			// start MITM (conditionally based on job type)
 			if (shouldRecordHar) {
@@ -652,7 +672,7 @@ public class TaskOperator implements ITaskOperator {
 					TakesScreenshot camera = (TakesScreenshot) driver;
 					byte[] screenshot = camera.getScreenshotAs(OutputType.BYTES);
 
-					dataRecorder.setScreenshot(screenshot);
+					recordScreenshot(dataRecorder, screenshot, captureProfile, compactJpegQuality);
 				}
 			} catch (Exception e) {
 				// noting to do
@@ -689,7 +709,8 @@ public class TaskOperator implements ITaskOperator {
 			}
 
 			try {
-				dataRecorder.setSessionStorage(primemover.util.SessionStorage.getItems(driver));
+				recordSessionStorage(dataRecorder, job, primemover.util.SessionStorage.getItems(driver), captureProfile,
+						sessionStorageDedup);
 			} catch (Exception ex) {
 				logger.warn("Could not read session storage for job {}", job.getId(), ex);
 				dataRecorder.setSessionStorage(null);
@@ -740,7 +761,10 @@ public class TaskOperator implements ITaskOperator {
 			writerFactories.forEach((factory) -> {
 				RecordedJobData recordings = jobContext.getJobDataRecorder().getRecordings();
 				recordings.addWarnings(jobWarnings);
-				writers.add(factory.getWriter(recordings));
+				IDataWriter writer = factory.getWriter(recordings);
+				if (keepsWriter(captureProfile, writer)) {
+					writers.add(writer);
+				}
 			});
 
 			boolean writeRes = true;
@@ -770,6 +794,9 @@ public class TaskOperator implements ITaskOperator {
 					}
 				}
 			}
+
+			// a full session storage copy may be pointed at only once it is stored
+			sessionStorageDedup.written(job.getId(), writeRes);
 
 			if (writeRes && runJobResult && jobWarnings.isEmpty()) {
 				logger.info("Done running job {}", job.getId());
@@ -818,6 +845,58 @@ public class TaskOperator implements ITaskOperator {
 		}
 
 		return runJobResult;
+	}
+
+	/**
+	 * Whether this job's traffic is captured as HAR: where the job type allows it
+	 * ({@code har.recording.excludeJobTypes}), and only under a
+	 * {@link CaptureProfile#FULL} capture. A compact capture skips the HAR; the
+	 * recorder itself stays in the browser's path either way.
+	 */
+	static boolean recordsHar(CaptureProfile profile, boolean jobTypeRecordsHar) {
+		return profile.recordsHar() && jobTypeRecordsHar;
+	}
+
+	/**
+	 * Whether this writer runs for a job of this capture profile. A compact capture
+	 * drops only the separate {@code page-finalsource} object: the job-data ZIP holds
+	 * the same page source, and the lambda job's own object still holds the page its
+	 * decision was made on.
+	 */
+	static boolean keepsWriter(CaptureProfile profile, IDataWriter writer) {
+		return profile.writesSeparatePageSource() || !WriterUtil.isPageSourceWriter(writer);
+	}
+
+	/**
+	 * The screenshot as the driver returned it (PNG), or under a compact capture as
+	 * a JPEG -- falling back to the PNG when it cannot be re-encoded, so a
+	 * screenshot is never lost to the conversion.
+	 */
+	static void recordScreenshot(IJobDataRecorder recorder, byte[] png, CaptureProfile profile, int jpegQuality) {
+		if (profile.jpegScreenshot()) {
+			Optional<byte[]> jpeg = ScreenshotEncoder.toJpeg(png, jpegQuality);
+			if (jpeg.isPresent()) {
+				recorder.setScreenshot(jpeg.get(), "jpg");
+				return;
+			}
+			logger.warn("screenshot could not be re-encoded as JPEG; storing the PNG");
+		}
+		recorder.setScreenshot(png);
+	}
+
+	/**
+	 * The session storage, and under a compact capture a pointer instead of it when
+	 * it is unchanged since the job of this session that stored it in full. The
+	 * content stays on the recorder either way (the dead-browser check reads it);
+	 * the job-data writer stores the pointer when there is one.
+	 */
+	static void recordSessionStorage(IJobDataRecorder recorder, IJob job, @Nullable String storage,
+			CaptureProfile profile, SessionStorageDeduplicator dedup) {
+		recorder.setSessionStorage(storage);
+		if (profile.dedupesSessionStorage()) {
+			dedup.check(job.getId(), StorageUtility.getIdentifier("static-jobdata", job), storage)
+					.ifPresent(recorder::setSessionStorageRef);
+		}
 	}
 
 	/**
