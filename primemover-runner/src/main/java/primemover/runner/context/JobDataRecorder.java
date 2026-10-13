@@ -2,6 +2,7 @@ package primemover.runner.context;
 
 import org.openqa.selenium.Cookie;
 import primemover.anticaptcha.CaptchaSolverResult;
+import primemover.capture.SessionStorageRef;
 import primemover.model.IJob;
 import primemover.model.LocationInfo;
 import primemover.runner.RecordedJobData;
@@ -22,6 +23,8 @@ public class JobDataRecorder implements IJobDataRecorder {
 	private String sessionStorage = null;
 	private String localStorage = null;
 	private byte[] screenshot = null;
+	private String screenshotExtension = "png";
+	private SessionStorageRef sessionStorageRef = null;
 	private LocationInfo location = null;
 	@Nullable
 	private CaptchaSolverResult capchaInfoBefore = null;
@@ -60,7 +63,18 @@ public class JobDataRecorder implements IJobDataRecorder {
 
 	@Override
 	public void setScreenshot(byte[] screenshot) {
+		setScreenshot(screenshot, "png");
+	}
+
+	@Override
+	public void setScreenshot(byte[] screenshot, String extension) {
 		this.screenshot = screenshot;
+		this.screenshotExtension = extension;
+	}
+
+	@Override
+	public void setSessionStorageRef(SessionStorageRef sessionStorageRef) {
+		this.sessionStorageRef = sessionStorageRef;
 	}
 
 	@Override
@@ -88,8 +102,9 @@ public class JobDataRecorder implements IJobDataRecorder {
 				.setLocalStorage(localStorage)//
 				.setLocation(location)//
 				.setPageSource(pageSource)//
-				.setScreenshot(screenshot)//
+				.setScreenshot(screenshot, screenshotExtension)//
 				.setSessionStorage(sessionStorage)//
+				.setSessionStorageRef(sessionStorageRef)//
 				.build();
 	}
 

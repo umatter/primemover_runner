@@ -87,7 +87,8 @@ public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 			String cookies = datePrefix + "_page_cookies_" + jobId + ".json";
 			String localStorage = datePrefix + "_page_localstorage_" + jobId + ".json";
 			String sessionStorage = datePrefix + "_page_sessionstorage_" + jobId + ".json";
-			String screenshot = datePrefix + "_page_screenshot_" + jobId + ".png";
+			String sessionStorageRef = datePrefix + "_page_sessionstorage_ref_" + jobId + ".json";
+			String screenshot = datePrefix + "_page_screenshot_" + jobId + "." + data.getScreenshotExtension();
 			String warnings = datePrefix + "_job_warnings_" + jobId + ".json";
 
 			ZipEntry zipEntry;
@@ -132,8 +133,13 @@ public class JobDataWriter extends RecordedJobDataBaseWriter<RecordedJobData> {
 				zipOut.write(tmpByte);
 			}
 
-			// session storage
-			if (data.hasSessionStorage()) {
+			// session storage: a compact capture stores an unchanged one as a pointer
+			// to the earlier job of this session that holds it in full
+			if (data.hasSessionStorageRef()) {
+				zipEntry = new ZipEntry(sessionStorageRef);
+				zipOut.putNextEntry(zipEntry);
+				zipOut.write(data.getSessionStorageRef().toJson().getBytes(StandardCharsets.UTF_8));
+			} else if (data.hasSessionStorage()) {
 				zipEntry = new ZipEntry(sessionStorage);
 				zipOut.putNextEntry(zipEntry);
 				byte[] tmpByte = data.getSessionStorage().getBytes(StandardCharsets.UTF_8);
