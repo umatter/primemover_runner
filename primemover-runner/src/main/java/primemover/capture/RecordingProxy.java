@@ -253,6 +253,16 @@ public class RecordingProxy {
 		return "http";
 	}
 
+	/**
+	 * The session's upstream proxy -- the decorated session the browser egresses
+	 * through, behind the recorder when one intercepts -- or empty when there is
+	 * none. Out-of-band traffic that must leave from the bot's exit (the IP check,
+	 * a captcha worker) goes through this, not through the recorder's local address.
+	 */
+	public Optional<SessionDecorator> getUpstreamSession() {
+		return recorderProxy.getUpstreamSession();
+	}
+
 	public Optional<BasicAuthorization> getAuthorization() {
 		return recorderProxy.getAuthorization();
 	}
