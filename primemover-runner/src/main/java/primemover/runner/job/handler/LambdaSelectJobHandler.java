@@ -26,6 +26,7 @@ import primemover.lambda.LambdaCallerFactory;
 import primemover.model.jobs.LambdaSelectJob;
 import primemover.runner.DecisionVerdict;
 import primemover.runner.JobDiagnostics;
+import primemover.util.SameTabClick;
 import primemover.util.WatchPageAnchor;
 import primemover.util.YouTubePage;
 import primemover.runner.context.IJobAwareRunnerContext;
@@ -524,6 +525,13 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				// TimeoutException from elementToBeClickable -- see the catch below.
 				WebDriverException lastClickFailure = null;
 
+				// Off YouTube a result link may open a new tab (Bing marks every one
+				// target="_blank"); the click is kept in this tab and checked below.
+				// See SameTabClick. On YouTube nothing here changes.
+				boolean offYouTube = YouTubePage.isOffYouTube(decisionPageUrl);
+				Set<String> handlesBeforeClick = null;
+				String decisionTab = null;
+
 				for (int attempt = 1; attempt <= maxAttempts; attempt++) {
 					try {
 						WebElement element = driver.findElement(By.xpath(parsedResult.getXpath()));
@@ -538,6 +546,16 @@ public class LambdaSelectJobHandler implements IJobHandler {
 						// Wait for element to be clickable
 						WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
 						wait.until(ExpectedConditions.elementToBeClickable(element));
+
+						if (offYouTube) {
+							String removedTarget = SameTabClick.keepInTab(js, element);
+							if (removedTarget != null) {
+								logger.info("Job {}: removed link target '{}' so the click opens in this tab",
+										typedJob.getId(), removedTarget);
+							}
+							handlesBeforeClick = driver.getWindowHandles();
+							decisionTab = driver.getWindowHandle();
+						}
 
 						// Use JavaScript click to bypass overlapping elements like sticky headers
 						js.executeScript("arguments[0].click();", element);
@@ -618,6 +636,22 @@ public class LambdaSelectJobHandler implements IJobHandler {
 						throw new RuntimeException("Lambda select job " + typedJob.getId()
 								+ " neither clicked a recommendation nor received a video id to fall back to."
 								+ " xpath was: " + parsedResult.getXpath());
+					}
+				}
+
+				// Off YouTube, wait for the clicked page, so that what is captured
+				// after this job (and the dwell that follows) is that page, and say
+				// so when the click went nowhere.
+				if (clicked && offYouTube) {
+					SameTabClick.Outcome outcome = SameTabClick.awaitNavigation(driver, decisionPageUrl,
+							handlesBeforeClick, decisionTab, Duration.ofSeconds(15));
+					logger.info("Job {}: click outcome {}, now at {}", typedJob.getId(), outcome,
+							YouTubePage.currentUrl(driver));
+					if (outcome == SameTabClick.Outcome.FOLLOWED_NEW_TAB) {
+						JobDiagnostics.addWarning("the click opened a new tab; the session continued in it"
+								+ " and the results tab was closed");
+					} else if (outcome == SameTabClick.Outcome.STAYED) {
+						JobDiagnostics.addWarning("the click did not leave the page the decision was made on");
 					}
 				}
 
