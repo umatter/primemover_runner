@@ -490,6 +490,9 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 			XPath xpath = factory.newXPath();
 			boolean navigatedDirectly = false;
+			// Set when an off-YouTube click left the page: what it landed on is checked
+			// once the page has had a moment, below.
+			boolean checkLandingPage = false;
 
 			// An empty xpath with a selection is recoverable, and used to be fatal.
 			// When the recommendations sidebar has not rendered, the decision
@@ -680,6 +683,7 @@ public class LambdaSelectJobHandler implements IJobHandler {
 					} else if (outcome == SameTabClick.Outcome.STAYED) {
 						JobDiagnostics.addWarning("the click did not leave the page the decision was made on");
 					}
+					checkLandingPage = outcome != SameTabClick.Outcome.STAYED;
 				}
 
 				// The click (SPA navigation) or the fallback driver.get() can bring the
@@ -689,6 +693,18 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 			Thread.sleep(1500);
 			ConsentHandler.handle(driver);
+
+			// A click that navigated can still land on the browser's error page (a site
+			// the proxy refuses, a dead host). The job would read as a success while the
+			// dwell that follows is spent on that page; say so on the job instead.
+			if (checkLandingPage) {
+				String errorCode = SameTabClick.browserErrorPage((JavascriptExecutor) driver);
+				if (errorCode != null) {
+					logger.warn("Job {}: the click landed on a browser error page ({}) at {}", typedJob.getId(),
+							errorCode, YouTubePage.currentUrl(driver));
+					JobDiagnostics.addWarning("the click landed on a browser error page (" + errorCode + ")");
+				}
+			}
 
 		} catch (Exception e) {
 			logger.warn("error executing lambda", e);

@@ -90,6 +90,20 @@ public final class SameTabClick {
 			+ "}"
 			+ "return null;";
 
+	/**
+	 * The error code when the tab shows the browser's own network-error page, else
+	 * null. Chrome serves it from {@code chrome-error://}, with {@code body.neterror},
+	 * {@code #main-frame-error} and the code in {@code .error-code}.
+	 */
+	static final String BROWSER_ERROR_JS = "var b = document.body;"
+			+ "var err = location.protocol === 'chrome-error:'"
+			+ " || (!!b && !!b.classList && b.classList.contains('neterror')"
+			+ "     && !!document.getElementById('main-frame-error'));"
+			+ "if (!err) { return null; }"
+			+ "var c = document.querySelector('.error-code');"
+			+ "var t = c ? (c.textContent || '').trim() : '';"
+			+ "return t || 'unknown error';";
+
 	static final Duration POLL = Duration.ofMillis(250);
 	/** How long the URL must stay put before the page counts as arrived (redirects pass through). */
 	static final Duration SETTLE = Duration.ofMillis(1000);
@@ -129,6 +143,22 @@ public final class SameTabClick {
 			return Boolean.TRUE.equals(js.executeScript(OPENS_POPOVER_JS, element));
 		} catch (RuntimeException e) {
 			return false;
+		}
+	}
+
+	/**
+	 * The error code (e.g. {@code ERR_TUNNEL_CONNECTION_FAILED}) when the tab shows
+	 * the browser's network-error page instead of the clicked site, else null. The
+	 * click itself navigated, so without this the job reads as a success while the
+	 * session dwells on an error page (experiment 200: 7 of 28 clicks, every one a
+	 * government site the proxy refuses). Never throws.
+	 */
+	public static String browserErrorPage(JavascriptExecutor js) {
+		try {
+			Object code = js.executeScript(BROWSER_ERROR_JS);
+			return code == null ? null : code.toString();
+		} catch (RuntimeException e) {
+			return null;
 		}
 	}
 

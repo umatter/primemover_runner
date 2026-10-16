@@ -154,6 +154,25 @@ class SameTabClickTest {
 	}
 
 	@Test
+	@DisplayName("a click that lands on the browser's error page reports its code")
+	void browserErrorPageReportsCode() {
+		JavascriptExecutor js = mock(JavascriptExecutor.class);
+		when(js.executeScript(SameTabClick.BROWSER_ERROR_JS)).thenReturn("ERR_TUNNEL_CONNECTION_FAILED");
+		assertEquals("ERR_TUNNEL_CONNECTION_FAILED", SameTabClick.browserErrorPage(js));
+	}
+
+	@Test
+	@DisplayName("a real page, or a page that will not run the check, is not an error page")
+	void browserErrorPageOtherwiseNull() {
+		JavascriptExecutor real = mock(JavascriptExecutor.class);
+		when(real.executeScript(SameTabClick.BROWSER_ERROR_JS)).thenReturn(null);
+		assertNull(SameTabClick.browserErrorPage(real));
+		JavascriptExecutor broken = mock(JavascriptExecutor.class);
+		when(broken.executeScript(anyString())).thenThrow(new WebDriverException("no such window"));
+		assertNull(SameTabClick.browserErrorPage(broken));
+	}
+
+	@Test
 	@DisplayName("a page still loading at the timeout counts as left")
 	void slowLandingCountsAsNavigated() throws InterruptedException {
 		WebDriver driver = mock(WebDriver.class);
