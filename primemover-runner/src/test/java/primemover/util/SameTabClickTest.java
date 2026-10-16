@@ -100,6 +100,60 @@ class SameTabClickTest {
 	}
 
 	@Test
+	@DisplayName("a link announcing a popover is recognised, and a failing script says no")
+	void opensPopover() {
+		JavascriptExecutor js = mock(JavascriptExecutor.class);
+		WebElement chip = mock(WebElement.class);
+		WebElement plain = mock(WebElement.class);
+		WebElement stale = mock(WebElement.class);
+		when(js.executeScript(SameTabClick.OPENS_POPOVER_JS, chip)).thenReturn(Boolean.TRUE);
+		when(js.executeScript(SameTabClick.OPENS_POPOVER_JS, plain)).thenReturn(Boolean.FALSE);
+		when(js.executeScript(SameTabClick.OPENS_POPOVER_JS, stale)).thenThrow(new WebDriverException("stale"));
+		assertTrue(SameTabClick.opensPopover(js, chip));
+		assertFalse(SameTabClick.opensPopover(js, plain));
+		assertFalse(SameTabClick.opensPopover(js, stale));
+	}
+
+	@Test
+	@DisplayName("the link in the popover is returned once the popover shows it")
+	void findsPopoverLink() throws InterruptedException {
+		WebDriver driver = mock(WebDriver.class, withSettings().extraInterfaces(JavascriptExecutor.class));
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		WebElement chip = mock(WebElement.class);
+		WebElement card = mock(WebElement.class);
+		when(driver.getCurrentUrl()).thenReturn("https://www.bing.com/search?q=x");
+		// not built yet, then failing mid-build, then there
+		when(js.executeScript(SameTabClick.LINK_IN_POPOVER_JS, chip)).thenReturn(null)
+				.thenThrow(new WebDriverException("detached")).thenReturn(card);
+		assertSame(card, SameTabClick.awaitPopoverLink(driver, js, chip, "https://www.bing.com/search?q=x",
+				Duration.ofSeconds(2), FAST_POLL));
+	}
+
+	@Test
+	@DisplayName("no popover link is looked for once the page has left")
+	void noPopoverLinkAfterNavigation() throws InterruptedException {
+		WebDriver driver = mock(WebDriver.class, withSettings().extraInterfaces(JavascriptExecutor.class));
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		WebElement chip = mock(WebElement.class);
+		when(driver.getCurrentUrl()).thenReturn("https://www.bing.com/ck/a?!&&p=abc");
+		assertNull(SameTabClick.awaitPopoverLink(driver, js, chip, "https://www.bing.com/search?q=x",
+				Duration.ofSeconds(2), FAST_POLL));
+		verify(js, never()).executeScript(anyString(), any());
+	}
+
+	@Test
+	@DisplayName("a popover that never shows the link gives up at the timeout")
+	void popoverLinkTimesOut() throws InterruptedException {
+		WebDriver driver = mock(WebDriver.class, withSettings().extraInterfaces(JavascriptExecutor.class));
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		WebElement chip = mock(WebElement.class);
+		when(driver.getCurrentUrl()).thenReturn("https://www.bing.com/search?q=x");
+		when(js.executeScript(SameTabClick.LINK_IN_POPOVER_JS, chip)).thenReturn(null);
+		assertNull(SameTabClick.awaitPopoverLink(driver, js, chip, "https://www.bing.com/search?q=x",
+				Duration.ofMillis(60), FAST_POLL));
+	}
+
+	@Test
 	@DisplayName("a page still loading at the timeout counts as left")
 	void slowLandingCountsAsNavigated() throws InterruptedException {
 		WebDriver driver = mock(WebDriver.class);

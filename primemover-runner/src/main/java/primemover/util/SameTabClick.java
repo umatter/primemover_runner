@@ -29,6 +29,13 @@ import org.openqa.selenium.WebElement;
  * one the decision was made on, so the browser keeps a single tab as before.
  *
  * <p>
+ * A link that announces a popover ({@code aria-haspopup}) does not navigate when
+ * clicked: Bing's AI-answer citations are such links, and a click on one opens a
+ * "Citation details" card holding a link to the same address. The job then
+ * follows that link, as a person would (experiment 200, 2026-10-16: 4 of 4
+ * citation clicks stayed on the results page with the card open).
+ *
+ * <p>
  * Only used off YouTube: recommendation links there never carry a target, and the
  * YouTube path stays exactly as it was.
  */
@@ -55,6 +62,33 @@ public final class SameTabClick {
 			+ "if (t === null || /^\\s*$/.test(t) || /^\\s*_(self|top|parent)\\s*$/i.test(t)) { return null; }"
 			+ "a.removeAttribute('target');"
 			+ "return t;";
+
+	/** Whether the clicked element, or the link around it, announces a popover. */
+	static final String OPENS_POPOVER_JS = "var el = arguments[0];"
+			+ "var a = (el && el.closest) ? (el.closest('a[href]') || el) : el;"
+			+ "var p = (a && a.getAttribute) ? a.getAttribute('aria-haspopup') : null;"
+			+ "return p !== null && !/^\\s*false\\s*$/i.test(p);";
+
+	/**
+	 * A shown link with the clicked link's href inside a shown dialog, other than the
+	 * clicked link itself; null when there is none. A hidden dialog holding the same
+	 * link (Bing keeps a hidden "References" panel) is passed over.
+	 */
+	static final String LINK_IN_POPOVER_JS = "var el = arguments[0];"
+			+ "var a = (el && el.closest) ? (el.closest('a[href]') || el) : el;"
+			+ "var href = (a && a.getAttribute) ? a.getAttribute('href') : null;"
+			+ "if (!href) { return null; }"
+			+ "var shown = function (n) { var r = n.getBoundingClientRect(); var s = window.getComputedStyle(n);"
+			+ " return r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden'; };"
+			+ "var ds = document.querySelectorAll('[role=\"dialog\"]');"
+			+ "for (var i = 0; i < ds.length; i++) {"
+			+ " if (!shown(ds[i])) { continue; }"
+			+ " var ls = ds[i].querySelectorAll('a[href]');"
+			+ " for (var j = 0; j < ls.length; j++) {"
+			+ "  if (ls[j] !== a && ls[j].getAttribute('href') === href && shown(ls[j])) { return ls[j]; }"
+			+ " }"
+			+ "}"
+			+ "return null;";
 
 	static final Duration POLL = Duration.ofMillis(250);
 	/** How long the URL must stay put before the page counts as arrived (redirects pass through). */
@@ -83,6 +117,51 @@ public final class SameTabClick {
 			return removed == null ? null : removed.toString();
 		} catch (RuntimeException e) {
 			return null;
+		}
+	}
+
+	/**
+	 * True when the element about to be clicked announces a popover instead of a
+	 * page; never throws, since a failure here must not cost the click.
+	 */
+	public static boolean opensPopover(JavascriptExecutor js, WebElement element) {
+		try {
+			return Boolean.TRUE.equals(js.executeScript(OPENS_POPOVER_JS, element));
+		} catch (RuntimeException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Waits, up to {@code timeout}, for the popover a click opened to show a link to
+	 * the clicked address, and returns it. Returns null as soon as the page has left
+	 * {@code fromUrl} (the click navigated after all), or when no such link appeared.
+	 */
+	public static WebElement awaitPopoverLink(WebDriver driver, JavascriptExecutor js, WebElement clicked,
+			String fromUrl, Duration timeout) throws InterruptedException {
+		return awaitPopoverLink(driver, js, clicked, fromUrl, timeout, POLL);
+	}
+
+	static WebElement awaitPopoverLink(WebDriver driver, JavascriptExecutor js, WebElement clicked,
+			String fromUrl, Duration timeout, Duration poll) throws InterruptedException {
+		long deadline = System.nanoTime() + timeout.toNanos();
+		while (true) {
+			String url = YouTubePage.currentUrl(driver);
+			if (url != null && !url.equals(fromUrl)) {
+				return null;
+			}
+			try {
+				Object found = js.executeScript(LINK_IN_POPOVER_JS, clicked);
+				if (found instanceof WebElement) {
+					return (WebElement) found;
+				}
+			} catch (RuntimeException e) {
+				// the popover is still being built, or the page is changing: look again
+			}
+			if (System.nanoTime() >= deadline) {
+				return null;
+			}
+			Thread.sleep(poll.toMillis());
 		}
 	}
 

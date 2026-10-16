@@ -531,6 +531,8 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				boolean offYouTube = YouTubePage.isOffYouTube(decisionPageUrl);
 				Set<String> handlesBeforeClick = null;
 				String decisionTab = null;
+				WebElement clickedElement = null;
+				boolean clickedOpensPopover = false;
 
 				for (int attempt = 1; attempt <= maxAttempts; attempt++) {
 					try {
@@ -555,12 +557,14 @@ public class LambdaSelectJobHandler implements IJobHandler {
 							}
 							handlesBeforeClick = driver.getWindowHandles();
 							decisionTab = driver.getWindowHandle();
+							clickedOpensPopover = SameTabClick.opensPopover(js, element);
 						}
 
 						// Use JavaScript click to bypass overlapping elements like sticky headers
 						js.executeScript("arguments[0].click();", element);
 
 						clicked = true;
+						clickedElement = element;
 						if (attempt > 1) {
 							logger.info("Element found and clicked on attempt {}/{}", attempt, maxAttempts);
 						}
@@ -643,6 +647,29 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				// after this job (and the dwell that follows) is that page, and say
 				// so when the click went nowhere.
 				if (clicked && offYouTube) {
+					// A link that announces a popover (Bing's AI-answer citations) opens a
+					// card instead of a page; the card links to the same address, and that
+					// link is the one followed. See SameTabClick.
+					if (clickedOpensPopover) {
+						JavascriptExecutor js = (JavascriptExecutor) driver;
+						WebElement popoverLink = SameTabClick.awaitPopoverLink(driver, js, clickedElement,
+								decisionPageUrl, Duration.ofSeconds(5));
+						if (popoverLink != null) {
+							try {
+								SameTabClick.keepInTab(js, popoverLink);
+								handlesBeforeClick = driver.getWindowHandles();
+								js.executeScript("arguments[0].click();", popoverLink);
+								logger.info("Job {}: the click opened a popover; followed the same link in it",
+										typedJob.getId());
+							} catch (WebDriverException e) {
+								logger.warn("Job {}: could not click the link in the popover: {}", typedJob.getId(),
+										e.getMessage());
+							}
+						} else {
+							logger.info("Job {}: the clicked link announces a popover, but none showed its link",
+									typedJob.getId());
+						}
+					}
 					SameTabClick.Outcome outcome = SameTabClick.awaitNavigation(driver, decisionPageUrl,
 							handlesBeforeClick, decisionTab, Duration.ofSeconds(15));
 					logger.info("Job {}: click outcome {}, now at {}", typedJob.getId(), outcome,
