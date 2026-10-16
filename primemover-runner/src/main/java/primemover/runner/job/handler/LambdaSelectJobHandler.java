@@ -536,6 +536,8 @@ public class LambdaSelectJobHandler implements IJobHandler {
 				String decisionTab = null;
 				WebElement clickedElement = null;
 				boolean clickedOpensPopover = false;
+				// Set when the clicked page was still loading at the page-load timeout.
+				boolean slowLanding = false;
 
 				for (int attempt = 1; attempt <= maxAttempts; attempt++) {
 					try {
@@ -564,7 +566,20 @@ public class LambdaSelectJobHandler implements IJobHandler {
 						}
 
 						// Use JavaScript click to bypass overlapping elements like sticky headers
-						js.executeScript("arguments[0].click();", element);
+						try {
+							js.executeScript("arguments[0].click();", element);
+						} catch (TimeoutException e) {
+							// Off YouTube the click navigates, and the driver holds it until the
+							// page it opened has loaded: a page that never finishes ends in this
+							// timeout although the click went through. Counting it as a failed
+							// click made the decision again on the clicked page. See SameTabClick.
+							if (!offYouTube || !SameTabClick.leftAfterTimeout(driver, decisionPageUrl)) {
+								throw e;
+							}
+							slowLanding = true;
+							logger.warn("Job {}: the clicked page was still loading at the page-load timeout; the driver"
+									+ " stopped the load at {}", typedJob.getId(), YouTubePage.currentUrl(driver));
+						}
 
 						clicked = true;
 						clickedElement = element;
@@ -664,6 +679,17 @@ public class LambdaSelectJobHandler implements IJobHandler {
 								js.executeScript("arguments[0].click();", popoverLink);
 								logger.info("Job {}: the click opened a popover; followed the same link in it",
 										typedJob.getId());
+							} catch (TimeoutException e) {
+								// as for the click above: the link was followed, its page was slow
+								if (SameTabClick.leftAfterTimeout(driver, decisionPageUrl)) {
+									slowLanding = true;
+									logger.warn("Job {}: followed the link in the popover; its page was still loading at"
+											+ " the page-load timeout and the driver stopped the load at {}",
+											typedJob.getId(), YouTubePage.currentUrl(driver));
+								} else {
+									logger.warn("Job {}: could not click the link in the popover: {}", typedJob.getId(),
+											e.getMessage());
+								}
 							} catch (WebDriverException e) {
 								logger.warn("Job {}: could not click the link in the popover: {}", typedJob.getId(),
 										e.getMessage());
@@ -682,6 +708,10 @@ public class LambdaSelectJobHandler implements IJobHandler {
 								+ " and the results tab was closed");
 					} else if (outcome == SameTabClick.Outcome.STAYED) {
 						JobDiagnostics.addWarning("the click did not leave the page the decision was made on");
+					}
+					if (slowLanding) {
+						JobDiagnostics.addWarning("the clicked page did not finish loading within the page-load"
+								+ " timeout; its load was stopped");
 					}
 					checkLandingPage = outcome != SameTabClick.Outcome.STAYED;
 				}

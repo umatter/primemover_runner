@@ -12,6 +12,7 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -170,6 +171,25 @@ class SameTabClickTest {
 		JavascriptExecutor broken = mock(JavascriptExecutor.class);
 		when(broken.executeScript(anyString())).thenThrow(new WebDriverException("no such window"));
 		assertNull(SameTabClick.browserErrorPage(broken));
+	}
+
+	@Test
+	@DisplayName("a click the driver timed out on went through when the tab has left the page")
+	void timedOutClickThatLeft() {
+		WebDriver driver = mock(WebDriver.class);
+		when(driver.getCurrentUrl()).thenReturn("https://apnews.com/projects/election-results-2026/");
+		assertTrue(SameTabClick.leftAfterTimeout(driver, "https://www.bing.com/search?q=x"));
+	}
+
+	@Test
+	@DisplayName("a click the driver timed out on failed when the tab is still on the page, or does not answer")
+	void timedOutClickThatStayed() {
+		WebDriver stayed = mock(WebDriver.class);
+		when(stayed.getCurrentUrl()).thenReturn("https://www.bing.com/search?q=x");
+		assertFalse(SameTabClick.leftAfterTimeout(stayed, "https://www.bing.com/search?q=x"));
+		WebDriver frozen = mock(WebDriver.class);
+		when(frozen.getCurrentUrl()).thenThrow(new TimeoutException("Timed out receiving message from renderer"));
+		assertFalse(SameTabClick.leftAfterTimeout(frozen, "https://www.bing.com/search?q=x"));
 	}
 
 	@Test

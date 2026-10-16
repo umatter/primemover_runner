@@ -36,6 +36,11 @@ import org.openqa.selenium.WebElement;
  * citation clicks stayed on the results page with the card open).
  *
  * <p>
+ * A click into a page that never finishes loading is held by the driver until
+ * the page-load timeout and then answered with a timeout, although the tab did
+ * follow it; {@link #leftAfterTimeout} tells the two apart.
+ *
+ * <p>
  * Only used off YouTube: recommendation links there never carry a target, and the
  * YouTube path stays exactly as it was.
  */
@@ -160,6 +165,26 @@ public final class SameTabClick {
 		} catch (RuntimeException e) {
 			return null;
 		}
+	}
+
+	/**
+	 * After a click that the driver answered with a timeout: whether the click went
+	 * through all the same. A scripted click that navigates is held by ChromeDriver
+	 * until the page it opened has loaded; a page that never finishes (a live
+	 * results page) makes it answer {@code TimeoutException} after the page-load
+	 * timeout, with the load stopped and the tab on the clicked page. True when the
+	 * tab has left {@code fromUrl}. A tab that does not answer reads as false, and
+	 * the caller treats the click as failed, as before.
+	 *
+	 * <p>
+	 * Observed on experiment 200, 2026-10-16 (job 1083577): the click on an AP
+	 * results page was held for two minutes and counted as a failed click, so the
+	 * decision was made again on the AP page, came back empty and failed the job,
+	 * and its record replaced the one made on the results page.
+	 */
+	public static boolean leftAfterTimeout(WebDriver driver, String fromUrl) {
+		String url = YouTubePage.currentUrl(driver);
+		return url != null && !url.equals(fromUrl);
 	}
 
 	/**
