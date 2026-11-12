@@ -112,3 +112,10 @@ primemover-runner/config/application-local.properties
 # regenerating the CA invalidates the certificate the running browser profiles trust.
 primemover-runner/littleproxy_cert
 primemover-runner/littleproxy_keystore.jks
+
+# Key material never belongs in git. The recorder CA (cert/2024/ca-cert.p12) is
+# generated per installation with util/create-ca-keystore.sh and stays on the box.
+*.p12
+*.jks
+*.key
+*.pem

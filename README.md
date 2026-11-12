@@ -176,11 +176,20 @@ For detailed information, see our comprehensive documentation:
 
 ## Support
 
-This is an enterprise automation tool designed for technical teams. Proper configuration and deployment require understanding of web technologies, browser automation, and the specific websites being targeted.
+Configuring and deploying the runner assumes familiarity with browser automation and with the
+websites being studied. Guides are in the `doc/` directory; the wider PrimeMover ecosystem
+(API, GUI, orchestrator) is described in the
+[orchestrator repository](https://github.com/umatter/primemover-orchestrator).
 
-For detailed documentation and guides, see the `doc/` directory.
+## Key material
+
+No private keys or keystores are tracked. The HAR recorder needs a CA keystore at
+`recorder.certificate.path` (default `cert/2024/ca-cert.p12`); generate one per installation with
+`primemover-runner/util/create-ca-keystore.sh` and put its password in the untracked
+`config/secrets.properties` (see `secrets.properties.template`).
 
 ## License
 
-[Add your license information here]
-
+MIT, see [LICENSE](LICENSE). Bundled third-party files (the Anti-Captcha browser extension under
+`primemover-runner/anticaptcha/`, Multilogin's OpenAPI description in `primemover-generated/`)
+remain under their own vendors' terms.
