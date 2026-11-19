@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import primemover.multilogin.mlx.MlxErrors;
 import primemover.anticaptcha.CaptchaSolverFactory;
 import primemover.anticaptcha.ChallengePageDetector;
 import primemover.anticaptcha.ICaptchaSolver;
@@ -1337,6 +1338,14 @@ public class TaskOperator implements ITaskOperator {
 		return null;
 	}
 
+	// The last startup round's failure, for the queue's status message.
+	private volatile String lastSetupFailure;
+
+	@Override
+	public String lastSetupFailure() {
+		return lastSetupFailure;
+	}
+
 	@Override
 	public Boolean prepareExeuction(Crawler crawler) {
 
@@ -1347,8 +1356,10 @@ public class TaskOperator implements ITaskOperator {
 		if (refusal != null) {
 			logger.error("cannot start crawler {} (agent {}): {}", crawler.getId(), crawler.getAgent().getId(),
 					refusal);
+			lastSetupFailure = refusal;
 			return false;
 		}
+		lastSetupFailure = null;
 
 		boolean done = false;
 		Integer curRetry = 0;
@@ -1412,6 +1423,7 @@ public class TaskOperator implements ITaskOperator {
 				done = true;
 			} catch (Exception ex) {
 				logger.error("error during setup for crawler {}", crawler.getId(), ex);
+				lastSetupFailure = MlxErrors.describe(ex);
 
 				discardRecorder(crawler, roundRecorder);
 

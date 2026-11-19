@@ -145,9 +145,16 @@ public class MlxConfiguration {
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper,
 			@Autowired(required = false) ProfileCreateBatcher profileCreateBatcher,
 			@Value("${multilogin.defaultFolderId}") String defaultFolderId,
-			@Value("${multilogin.h264ExtensionPath:}") String h264ExtensionPath) {
-    	return new ProfileService(launcherApi, profileManagementApi, profileAccessManagementApi, templateMapper,
-    			profileCreateBatcher, defaultFolderId, h264ExtensionPath);
+			@Value("${multilogin.h264ExtensionPath:}") String h264ExtensionPath,
+			@Value("${multilogin.unlockStaleProfileLock:true}") boolean unlockStaleProfileLock,
+			AuthTokenProvider authTokenProvider) {
+    	ProfileService profileService = new ProfileService(launcherApi, profileManagementApi,
+    			profileAccessManagementApi, templateMapper, profileCreateBatcher, defaultFolderId, h264ExtensionPath);
+    	if (unlockStaleProfileLock) {
+    		profileService.setProfileUnlocker(
+    				new HttpProfileUnlocker(API_BASEPATH_SERVER, () -> authTokenProvider.getToken()));
+    	}
+    	return profileService;
     }
     
     @Bean(name = "MlxContextBuilder")

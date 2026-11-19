@@ -3,6 +3,8 @@ package primemover.multilogin.mlx;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import primemover.capture.BasicAuthorization;
 import primemover.capture.RecordingProxy;
 import primemover.model.MultiLoginAgent;
@@ -35,8 +37,12 @@ public class ProfileService {
 	private static final String DEFAULT_H264_EXTENSION_PATH =
 			"/home/primemover/primemover_runner/primemover-runner/config/h264-override-extension";
 
+	private static final Logger logger = LoggerFactory.getLogger(ProfileService.class);
+
 	private final String folderId;
 	private final String h264ExtensionPath;
+
+	private ProfileUnlocker profileUnlocker;
 
 	public ProfileService(LauncherApi launcherApi, ProfileManagementApi profileManagementApi,
 			ProfileAccessManagementApi profileAccessManagementApi, TemplateMapper templateMapper) {
@@ -115,7 +121,24 @@ public class ProfileService {
 			throw new IllegalArgumentException("Profile id is empty");
 		}
 		
-		StartBrowserProfile200Response startResponse = launcherApi.startBrowserProfile("selenium", "false", folderId, id, "application/json", "true");
+		StartBrowserProfile200Response startResponse;
+		try {
+			startResponse = launch(id);
+		} catch (RuntimeException ex) {
+			if (profileUnlocker == null || !MlxErrors.isProfileLocked(ex)) {
+				throw ex;
+			}
+			// The runner starts a profile only when no session of that bot is
+			// running, so a lock met here was left behind: Multilogin's cloud failed
+			// the release when an earlier session closed. Nothing else ever clears
+			// it. In experiment 240 three bots lost 98 sessions to one such lock each.
+			logger.warn("profile {} is locked in Multilogin's cloud; unlocking it and starting again", id);
+			if (!profileUnlocker.unlock(id)) {
+				throw ex;
+			}
+			startResponse = launch(id);
+			logger.info("profile {} started after its stale lock was removed", id);
+		}
 		
 		return new StartProfileResult(
 				startResponse.getStatus().getHttpCode() == 200,
@@ -123,6 +146,18 @@ public class ProfileService {
 				"localhost");
 	}
 	
+	private StartBrowserProfile200Response launch(String id) {
+		return launcherApi.startBrowserProfile("selenium", "false", folderId, id, "application/json", "true");
+	}
+
+	/**
+	 * Lets startProfile remove a stale cloud lock and try once more. Null (the
+	 * default) keeps the old behaviour: a locked profile fails the start.
+	 */
+	public void setProfileUnlocker(ProfileUnlocker profileUnlocker) {
+		this.profileUnlocker = profileUnlocker;
+	}
+
 	public void stopProfile(MultiLoginAgent agent) {
 		String id = agent.getMultiLoginId();
 		
