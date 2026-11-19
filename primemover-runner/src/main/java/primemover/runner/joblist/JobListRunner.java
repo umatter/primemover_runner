@@ -105,7 +105,7 @@ public class JobListRunner implements IJobListRunner {
 		} else {
 			logger.warn("setup failure for crawler {} for joblist {}", crawler.getId(), jobs.getId());
 			reportJoblistState(JoblistState.RUNNING_INITFAILED,
-					"browser/profile startup did not complete for crawler " + crawler.getId(), ZonedDateTime.now(), null,
+					initFailedDetail(), ZonedDateTime.now(), null,
 					null, null); // set new state
 			return SetupState.FAILURE;
 		}
@@ -150,7 +150,7 @@ public class JobListRunner implements IJobListRunner {
 		switch (setupRes) {
 		case FAILURE:
 			reportJoblistState(JoblistState.DONE_INITFAILED,
-					"browser/profile startup did not complete for crawler " + crawler.getId(), null,
+					initFailedDetail(), null,
 					ZonedDateTime.now(), Boolean.TRUE, Boolean.FALSE);
 
 			break;
@@ -203,6 +203,20 @@ public class JobListRunner implements IJobListRunner {
 	 * Exceptions are deliberately <b>not</b> caught here -- {@link #run()} already
 	 * has a catch-all that reports DONE_FAILURE and tears the crawler down.
 	 */
+	/**
+	 * The detail of an initialisation failure. It used to be the same fixed text
+	 * whatever went wrong, so telling a locked profile from a dead proxy meant
+	 * reading the runner log of the box that ran the bot.
+	 */
+	private String initFailedDetail() {
+		return initFailedDetail(crawler.getId(), taskOperator.lastSetupFailure());
+	}
+
+	static String initFailedDetail(Object crawlerId, String reason) {
+		String detail = "browser/profile startup did not complete for crawler " + crawlerId;
+		return reason == null || reason.isBlank() ? detail : detail + ": " + reason;
+	}
+
 	private void reportJoblistState(JoblistState state, String detail, ZonedDateTime startTime, ZonedDateTime endTime,
 			Boolean processed, Boolean processing) {
 		if (aborted.get()) {

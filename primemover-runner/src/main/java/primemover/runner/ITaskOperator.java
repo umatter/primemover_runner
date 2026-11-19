@@ -13,6 +13,15 @@ public interface ITaskOperator {
 	Boolean prepareExeuction(Crawler crawler);
 
 	/**
+	 * Why the last {@link #prepareExeuction} returned false, in one line, or null
+	 * if it is not known. Goes into the queue's status message, so that a locked
+	 * profile and a dead proxy do not read the same.
+	 */
+	default String lastSetupFailure() {
+		return null;
+	}
+
+	/**
 	 * Tears down the TaskService
 	 * 
 	 */
