@@ -119,3 +119,8 @@ primemover-runner/littleproxy_keystore.jks
 *.jks
 *.key
 *.pem
+
+# The Anti-Captcha browser extension is third-party; download it, do not commit it (see README).
+primemover-runner/anticaptcha/*.crx
+primemover-runner/anticaptcha/*.crx_orig
+primemover-runner/anticaptcha/*.xpi

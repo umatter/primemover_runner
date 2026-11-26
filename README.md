@@ -188,8 +188,21 @@ No private keys or keystores are tracked. The HAR recorder needs a CA keystore a
 `primemover-runner/util/create-ca-keystore.sh` and put its password in the untracked
 `config/secrets.properties` (see `secrets.properties.template`).
 
+## Anti-Captcha browser extension
+
+The Anti-Captcha browser extension is not part of this repository. It is needed only when
+captchas are solved through the extension (`anticaptcha.extension.firefox` /
+`anticaptcha.extension.chrome` in `config/application.properties`); solving through the
+Anti-Captcha API needs no extension. Download it from https://anti-captcha.com and place the
+file in `primemover-runner/anticaptcha/` under the name those two settings point to. The
+directory's `.crx` and `.xpi` files are ignored by git.
+
+## Funding
+
+Development of PrimeMover was funded by the Swiss National Science Foundation (SNSF),
+grants 100018_207698 and CRSK-1_190429.
+
 ## License
 
-MIT, see [LICENSE](LICENSE). Bundled third-party files (the Anti-Captcha browser extension under
-`primemover-runner/anticaptcha/`, Multilogin's OpenAPI description in `primemover-generated/`)
-remain under their own vendors' terms.
+MIT, see [LICENSE](LICENSE). Multilogin's OpenAPI description in `primemover-generated/` remains under
+Multilogin's own terms.
