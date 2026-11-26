@@ -27,6 +27,7 @@ import primemover.model.jobs.LambdaSelectJob;
 import primemover.runner.DecisionVerdict;
 import primemover.runner.JobDiagnostics;
 import primemover.util.WatchPageAnchor;
+import primemover.util.YouTubePage;
 import primemover.runner.context.IJobAwareRunnerContext;
 import primemover.runner.job.IJobHandler;
 import primemover.service.ICrawlerService;
@@ -392,6 +393,12 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 		try {
 
+			// The page the decision is made on. The anchor below and the navigate-by-id
+			// fallbacks further down are YouTube's; off YouTube they are skipped (see
+			// YouTubePage), and the fallbacks are decided against this URL, not against
+			// wherever a failed click left the browser.
+			String decisionPageUrl = YouTubePage.currentUrl(driver);
+
 			// --- Layer C: DOM Stabilization ---
 			// Wait for recommendations, and re-anchor once if the page came back
 			// as an empty SPA shell. Without this a single bad landing costs the
@@ -491,10 +498,11 @@ public class LambdaSelectJobHandler implements IJobHandler {
 			// validateXpath then threw before Layer B's navigate-by-id fallback
 			// could run, failing a job whose answer we already had. Observed on
 			// experiment 146: 20 recommendations recovered, one selected, job failed.
-			if (StringUtils.isBlank(parsedResult.getXpath()) && parsedResult.getSelected() != null
-					&& StringUtils.isNotBlank(parsedResult.getSelected().getId())) {
+			String directUrl = parsedResult.getSelected() == null ? null
+					: YouTubePage.watchUrlFor(decisionPageUrl, parsedResult.getSelected().getId());
+			if (StringUtils.isBlank(parsedResult.getXpath()) && directUrl != null) {
 				String videoId = parsedResult.getSelected().getId();
-				String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+				String videoUrl = directUrl;
 				logger.warn("No xpath for job {} (the page had no rendered recommendation elements);"
 						+ " navigating directly to the selected video {}", typedJob.getId(), videoUrl);
 				JobDiagnostics.addWarning("no clickable recommendation on the page; navigated directly to "
@@ -584,17 +592,19 @@ public class LambdaSelectJobHandler implements IJobHandler {
 
 				// --- Layer B: Direct URL navigation fallback ---
 				if (!clicked) {
-					if (parsedResult.getSelected() != null && parsedResult.getSelected().getId() != null) {
-						String videoId = parsedResult.getSelected().getId();
-						String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+					String fallbackUrl = parsedResult.getSelected() == null ? null
+							: YouTubePage.watchUrlFor(decisionPageUrl, parsedResult.getSelected().getId());
+					if (fallbackUrl != null) {
+						String videoUrl = fallbackUrl;
 						logger.warn("Element not found after {} attempts, falling back to direct navigation: {}",
 								maxAttempts, videoUrl);
 						driver.get(videoUrl);
 						// Wait for page load
 						Thread.sleep(3000);
 					} else {
-						logger.error("All {} click attempts failed and no selected video ID available for fallback",
-								maxAttempts);
+						// Off YouTube there is no fallback page: the job fails on its click.
+						logger.error("All {} click attempts failed and there is no YouTube video to fall back to"
+								+ " (no selected id, or the page is not YouTube's: {})", maxAttempts, decisionPageUrl);
 
 						// lastClickFailure is null whenever the loop ended for a reason other
 						// than a caught click failure. Rethrowing it unguarded then raised a bare
